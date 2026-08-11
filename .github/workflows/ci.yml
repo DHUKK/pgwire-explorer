@@ -1,0 +1,50 @@
+# Go and site checks. The scenario recordings are not regenerated here, because
+# that needs Docker and a live Postgres. TestScenarios checks the committed
+# captures instead.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "$unformatted"
+            exit 1
+          fi
+      - run: go vet ./...
+      # This runs FuzzDecode's saved inputs as ordinary tests, which is the part
+      # that catches regressions. Searching for new ones with `-fuzz` is not run
+      # here: it fails when the machine is too busy for its workers to report
+      # back in time, which is a red build about nothing. Run it by hand, see the
+      # README.
+      - run: go test ./...
+
+  site:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

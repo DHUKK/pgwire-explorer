@@ -1,0 +1,1872 @@
+/*
+ * Design tokens first, then layout, then components.
+ *
+ * The palette is defined once on :root for light, and only the tokens are
+ * redefined for dark, so no component rule needs to know which theme is active.
+ * Dark follows the system preference unless the reader pinned a theme, which
+ * ThemeToggle records as data-theme on the root element.
+ */
+
+:root {
+  /* Both, so an unpinned theme follows the system. The two rules below narrow it
+     when the reader pins one, otherwise native widgets such as button text and
+     scrollbars keep using the system scheme and clash with our palette. */
+  color-scheme: light dark;
+
+  --bg: #fbfbfd;
+  --bg-panel: #ffffff;
+  --bg-sunken: #f2f3f7;
+  --bg-hover: #eef0f6;
+  --bg-active: #e4e8f5;
+
+  --text: #14161c;
+  --text-soft: #4d5361;
+  --text-faint: #7b8194;
+
+  --border: #e2e4ec;
+  --border-strong: #c9ccd8;
+
+  --accent: #2f6fd0;
+  --accent-soft: #e8f0fd;
+  --accent-text: #1b4c99;
+
+  /* Client and server must stay distinguishable for the ~8% of men with
+     red/green colour blindness, so they differ in lightness as well as hue. */
+  --c2s: #0f766e;
+  --c2s-soft: #dcf5f1;
+  --s2c: #7c3aed;
+  --s2c-soft: #efe7fd;
+
+  /* The active field's bytes. Derived from the accent so the highlight belongs
+     to the palette instead of reading as a warning. */
+  --highlight: var(--accent);
+  --highlight-text: #ffffff;
+  --highlight-soft: var(--accent-soft);
+
+  --error: #c02626;
+  --error-soft: #fdeaea;
+  --warn: #a8620a;
+
+  /* Merged-view session badges. Each session gets its own hue (see sessionHue
+     in PacketList.tsx), set per-badge as --badge-hue, so the palette scales to
+     any number of sessions instead of repeating after a fixed count. Only the
+     saturation and lightness are theme tokens. Decoration only: the badge's
+     text (S1, S2, ...) is what actually tells sessions apart. */
+  --badge-sat: 65%;
+  --badge-light: 34%;
+
+  --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
+
+  --radius: 8px;
+  --radius-sm: 5px;
+  --shadow: 0 1px 2px rgb(20 22 28 / 6%), 0 4px 12px rgb(20 22 28 / 4%);
+}
+
+/* The dark tokens apply in two situations: the system asks for dark and the
+   reader has not overridden it, or the reader picked dark explicitly. CSS cannot
+   share a declaration block between a media query and a plain selector, so the
+   token list is written twice. Nothing else in the file knows about themes. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0e1015;
+    --bg-panel: #16191f;
+    --bg-sunken: #1c2027;
+    --bg-hover: #232830;
+    --bg-active: #2b3341;
+
+    --text: #e8eaf0;
+    --text-soft: #a9b0be;
+    --text-faint: #7a8292;
+
+    --border: #262b34;
+    --border-strong: #39404d;
+
+    --accent: #5b9bf8;
+    --accent-soft: #17253c;
+    --accent-text: #a9caff;
+
+    --c2s: #2dd4bf;
+    --c2s-soft: #10312e;
+    --s2c: #a78bfa;
+    --s2c-soft: #241a3d;
+
+    --highlight: var(--accent);
+    --highlight-text: #0b1220;
+    --highlight-soft: var(--accent-soft);
+
+    --error: #f87171;
+    --error-soft: #341717;
+    --warn: #e0a458;
+
+    --badge-sat: 70%;
+    --badge-light: 68%;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 4px 14px rgb(0 0 0 / 30%);
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0e1015;
+  --bg-panel: #16191f;
+  --bg-sunken: #1c2027;
+  --bg-hover: #232830;
+  --bg-active: #2b3341;
+
+  --text: #e8eaf0;
+  --text-soft: #a9b0be;
+  --text-faint: #7a8292;
+
+  --border: #262b34;
+  --border-strong: #39404d;
+
+  --accent: #5b9bf8;
+  --accent-soft: #17253c;
+  --accent-text: #a9caff;
+
+  --c2s: #2dd4bf;
+  --c2s-soft: #10312e;
+  --s2c: #a78bfa;
+  --s2c-soft: #241a3d;
+
+  --highlight: var(--accent);
+  --highlight-text: #0b1220;
+  --highlight-soft: var(--accent-soft);
+
+  --error: #f87171;
+  --error-soft: #341717;
+  --warn: #e0a458;
+
+  --badge-sat: 70%;
+  --badge-light: 68%;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 4px 14px rgb(0 0 0 / 30%);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  height: 100%;
+}
+
+code,
+kbd,
+.mono {
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
+
+/* Inline code inside prose, from renderInline. Tinted rather than boxed: these
+   appear several times per sentence, and a border on each would turn a paragraph
+   into a fence. */
+.inline-code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  padding: 0.05em 0.3em;
+  border-radius: 3px;
+  background: var(--bg-sunken);
+  color: var(--accent-text);
+  white-space: nowrap;
+}
+
+/* On the tinted panels the sunken grey disappears, so lift it instead. */
+.status-explain .inline-code {
+  background: color-mix(in srgb, var(--text) 9%, transparent);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+}
+
+/* ============================================================ landing screen */
+
+.landing {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 6rem;
+}
+
+.landing-header h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.lede {
+  font-size: 1.1rem;
+  color: var(--text-soft);
+  max-width: 46rem;
+  margin: 0;
+}
+
+/* The second lede line, which says who the site is for. Set a step smaller than
+   the first so the two read as headline then aside, not as one long block. */
+.lede-more {
+  margin-top: 0.9rem;
+  font-size: 1rem;
+  color: var(--text-faint);
+}
+
+.landing-section {
+  margin-top: 3.5rem;
+}
+
+.landing-section > h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.35rem;
+}
+
+.section-note {
+  color: var(--text-soft);
+  margin: 0 0 1.5rem;
+  max-width: 46rem;
+}
+
+.scenario-group {
+  margin-bottom: 1.75rem;
+}
+
+.scenario-group h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  margin-bottom: 0.6rem;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+  gap: 0.75rem;
+}
+
+.scenario-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-align: left;
+  padding: 0.95rem 1.05rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.12s, transform 0.12s, box-shadow 0.12s;
+}
+
+.scenario-card:hover:not(:disabled) {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.scenario-card:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.scenario-title {
+  font-weight: 600;
+}
+
+.scenario-blurb {
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.scenario-loading {
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+
+.steps {
+  list-style: none;
+  counter-reset: step;
+  padding: 0;
+  margin: 0 0 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.steps li {
+  counter-increment: step;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.steps li::before {
+  content: counter(step);
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+.step-label {
+  font-weight: 600;
+  min-width: 9.5rem;
+}
+
+.step-text {
+  color: var(--text-soft);
+}
+
+.steps code {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.5rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.command-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+kbd {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.85em;
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 2.5rem 1.5rem;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg-panel);
+  text-align: center;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.dropzone:hover,
+.dropzone.dragging {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dropzone span {
+  color: var(--text-soft);
+}
+
+.dropzone-note {
+  font-size: 0.85rem;
+  color: var(--text-faint);
+  margin-top: 0.4rem;
+}
+
+/* --------------------------------------------------------- saved captures */
+
+.saved-captures {
+  margin-top: 1.75rem;
+}
+
+.saved-captures h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  margin-bottom: 0.4rem;
+}
+
+.saved-note {
+  color: var(--text-faint);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.saved-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Two separate <button>s side by side, not one nested in the other: a delete
+   control cannot itself be interactive markup inside another button. Open is
+   the wide, ordinary action; delete is deliberately its own smaller target
+   with a gap and its own border, so the two do not read as one split button
+   that a stray click could trigger either half of. */
+.saved-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.3rem;
+}
+
+.saved-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+}
+
+.saved-open:hover {
+  background: var(--bg-hover);
+}
+
+.saved-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.saved-meta {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.saved-delete {
+  flex: none;
+  align-self: center;
+  background: none;
+  border: 1px solid var(--border-strong);
+  color: var(--text-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.saved-delete:hover {
+  border-color: var(--error);
+  color: var(--error);
+  background: var(--error-soft);
+}
+
+/* ------------------------------------------------------------ save notice */
+
+/* A brief, dismissible note when saving or reopening a saved capture failed.
+   Rendered by App itself rather than by Landing or Explorer, so it can appear
+   over either screen regardless of which one is on display when the failure
+   happens. */
+.save-notice {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  max-width: 22rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.7rem 0.85rem;
+  font-size: 0.85rem;
+  z-index: 30;
+}
+
+.save-notice button {
+  flex: none;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.save-notice button:hover {
+  color: var(--text);
+}
+
+.alert {
+  background: var(--error-soft);
+  border: 1px solid var(--error);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  margin-top: 2rem;
+  color: var(--text);
+}
+
+.alert p {
+  margin: 0.4rem 0 0;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+/* =================================================================== explorer */
+
+.explorer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.explorer-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+  flex: none;
+}
+
+.explorer-title {
+  min-width: 0;
+  flex: 1;
+}
+
+.explorer-title h1 {
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.explorer-meta {
+  color: var(--text-faint);
+  font-size: 0.82rem;
+}
+
+.ghost-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.ghost-button:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.ghost-button.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* One chip per session, each with two targets. The body narrows the list to
+   just that session, which is the common intent, and the swatch adds or removes
+   it from what is already shown. Two buttons rather than a checkbox, because a
+   checkbox can only express the second of those and the primary click would
+   have nowhere to live. */
+.session-select {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+  flex: none;
+}
+
+.session-chip {
+  --chip: hsl(var(--chip-hue) var(--badge-sat) var(--badge-light));
+
+  display: inline-flex;
+  align-items: stretch;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.session-chip.shown {
+  border-color: var(--chip);
+  background: var(--bg-panel);
+}
+
+/* Not a tick in a box: a swatch in the session's own hue, filled while the
+   session is on screen and hollow while it is not. Fill and outline differ in
+   shape as well as colour, so it does not rely on hue alone. */
+.session-chip-swatch {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border);
+  padding: 0;
+}
+
+.session-chip-swatch::before {
+  content: '';
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 2px;
+  border: 1.5px solid var(--chip);
+  background: none;
+  transition: background 0.12s;
+}
+
+.session-chip.shown .session-chip-swatch {
+  border-right-color: var(--chip);
+}
+
+.session-chip.shown .session-chip-swatch::before {
+  background: var(--chip);
+}
+
+.session-chip-swatch:hover:not(:disabled)::before {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--chip) 30%, transparent);
+}
+
+/* The swatch of the only session left on screen. Dimmed rather than hidden, so
+   the rule that at least one session stays on is visible instead of the control
+   silently refusing. */
+.session-chip-swatch:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.session-chip-body {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  padding: 0.35rem 0.7rem;
+  text-align: left;
+}
+
+.session-chip-body:hover {
+  background: var(--bg-hover);
+}
+
+.session-chip-id {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.session-chip-meta {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+/* --------------------------------------------------------------- transport */
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+  flex-wrap: wrap;
+  flex: none;
+}
+
+.transport {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.transport-button {
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+  font-size: 0.8rem;
+}
+
+.transport-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.transport-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.scrubber {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 12rem;
+}
+
+/* A custom track rather than <input type="range">. A native thumb's position
+   comes from its value, so it cannot be transitioned, and the key-message marks
+   would mean styling vendor pseudo-elements per browser. */
+.scrub-track {
+  position: relative;
+  flex: 1;
+  height: 1.25rem;
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* The groove. Drawn as a child rather than a background so the fill and the
+   marks can sit inside it at the same vertical centre. */
+.scrub-track::before {
+  content: '';
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: var(--bg-active);
+}
+
+.scrub-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0.45;
+  transition: width 130ms ease-out;
+}
+
+/* One per stretch the scenario exists to show, so the track doubles as a map of
+   where the interesting parts of the session are. */
+.scrub-band {
+  position: absolute;
+  top: 50%;
+  height: 9px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: var(--c2s);
+  opacity: 0.8;
+}
+
+.scrub-thumb {
+  position: absolute;
+  top: 50%;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-left: -0.425rem;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg-panel);
+  transition: left 130ms ease-out;
+}
+
+/* Following the pointer must be immediate, or the thumb trails the cursor. */
+.scrub-track.dragging .scrub-fill,
+.scrub-track.dragging .scrub-thumb {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrub-fill,
+  .scrub-thumb {
+    transition: none;
+  }
+}
+
+.scrub-track:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.scrubber-label {
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+
+/* ------------------------------------------------------------ three columns */
+
+.explorer-body {
+  display: grid;
+  /* Two columns since the connection state moved into a drawer. The message list
+     and the message itself, which is where the reading happens. */
+  grid-template-columns: minmax(20rem, 1fr) minmax(26rem, 1.6fr);
+  gap: 1px;
+  background: var(--border);
+  flex: 1;
+  min-height: 0;
+}
+
+.panel {
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.panel.empty {
+  padding: 2rem;
+  color: var(--text-faint);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  flex: none;
+}
+
+.panel-head h2 {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.panel-note {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+/* Below two comfortable columns the panels stack and the page scrolls, rather
+   than several narrow scroll areas competing. */
+/* Below two comfortable columns the panels stack and the body scrolls. Each
+   panel keeps its OWN scroll area and a bounded height. An earlier version used
+   overflow: visible with a max-height, which does not clip. The content spilled
+   out of the box and painted over the panel below it. */
+@media (max-width: 1100px) {
+  .explorer-body {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+
+  /* Definite heights, not max-heights. The panels are flex columns whose only
+     child is a scroll area, so they have no intrinsic height, and a max-height
+     let them collapse to their minimum of four visible rows. The list gets less
+     room than the message, which is the part being read. */
+  .packet-list-panel {
+    height: 45vh;
+  }
+
+  .detail-panel {
+    height: 75vh;
+  }
+}
+
+/* Narrow enough that fixed widths and side-by-side controls stop fitting. */
+@media (max-width: 700px) {
+  .explorer-header {
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .explorer-title {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .controls {
+    gap: 0.5rem 0.75rem;
+  }
+
+  .scrubber {
+    /* Full width on its own line. At this size it needs the room most. */
+    flex-basis: 100%;
+    order: 5;
+  }
+
+  .drawer {
+    /* Full width. A 30rem drawer over a 24rem viewport is just a modal. */
+    width: 100%;
+    border-left: none;
+  }
+
+  .state-bar,
+  .controls,
+  .explorer-header {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .landing {
+    padding: 2.5rem 1rem 4rem;
+  }
+
+  .steps li {
+    /* Label above the command, so the command keeps its full width instead of
+       being squeezed to a few characters. */
+    align-items: flex-start;
+  }
+
+  .step-label {
+    min-width: 0;
+  }
+}
+
+/* ------------------------------------------------------------- packet list */
+
+.lane-legend {
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+}
+
+.lane-legend-item.c2s {
+  color: var(--c2s);
+}
+
+.lane-legend-item.s2c {
+  color: var(--s2c);
+}
+
+/* The scroll container. Virtualized: only the rows near this box's scroll
+   position are ever mounted, the same idea as .hex-dump below. .packet-list-
+   sizer is given the height the full list would occupy, so the scrollbar
+   still represents every packet, and each mounted row is positioned
+   absolutely within it at its own precomputed offset. */
+.packet-list {
+  padding: 0.4rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.packet-list-sizer {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* Positioned at its own precomputed top (see packetWindow.ts). No explicit
+   height: a row's real height comes from its content, exactly as it did
+   before virtualization, and PacketList measures that real height off-screen
+   (see RowProbe) rather than asserting one here that could drift from it. */
+.packet-list-row {
+  position: absolute;
+  left: 0;
+  width: 100%;
+}
+
+/* RowProbe's two rows: rendered in the real markup, each also carrying
+   `.packet-list-row` so they are positioned (and sized) exactly the way a
+   real row is, inside the same `.packet-list` scroll container real rows
+   render in. That match has to be exact on two axes, not just width: a
+   `position: absolute` row starts a new block formatting context, which
+   stops `.time-gap`'s own top margin from collapsing into it the way it
+   would in ordinary flow, so a row that is only in normal flow measures a
+   few pixels shorter than the real, absolutely positioned thing. `height: 0`
+   with `overflow: hidden` on `.packet-list-probe` is what keeps its children
+   from being seen or adding scroll height despite that: a zero-height box
+   clips its overflowing children from the page without stopping
+   `getBoundingClientRect()` from reporting their real, unclipped size, which
+   is the whole point of measuring them. This used to render with
+   `position: fixed` at a corner far outside the viewport instead, which
+   escaped the row list's own width along with its layout and drifted the
+   measured height of a gap row from its real one for the same underlying
+   reason: a shortcut that changes the very thing being measured. */
+.packet-list-probe {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.time-gap {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  text-align: center;
+  margin: 0.3rem 0;
+  position: relative;
+}
+
+.time-gap::before,
+.time-gap::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 3.2rem);
+  border-top: 1px dashed var(--border-strong);
+}
+
+.time-gap::before {
+  left: 0;
+}
+
+.time-gap::after {
+  right: 0;
+}
+
+.packet-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  /* width: 100% is required, not redundant. A <button> shrink-to-fits its
+     content even as display:flex, so without this every row was as wide as its
+     own text and no two matched. Safe only because the rows carry no horizontal
+     margins. With a margin, 100% would overflow by exactly that margin. */
+  width: 100%;
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
+  border-radius: var(--radius-sm);
+  color: inherit;
+}
+
+/* Every row is the same width, which is what makes the list scannable. The eye
+   tracks one set of columns down the page instead of a zigzag. */
+.packet-row.c2s {
+  border-left-color: var(--c2s);
+}
+
+.packet-row.s2c {
+  border-left-color: var(--s2c);
+}
+
+/* The marked rows are the point of the scenario, so they keep full contrast and
+   gain a tint. Everything else is the preamble every capture shares. */
+.packet-row.key-message {
+  background: color-mix(in srgb, var(--c2s) 15%, transparent);
+}
+
+.packet-row.key-message .packet-type {
+  font-weight: 700;
+}
+
+/* The rest is stepped back rather than dimmed out. It still has to be readable
+   at a glance, since the preamble is worth reading once, so most of the contrast
+   between marked and unmarked comes from the tint and the weight above. Hover
+   restores full strength. */
+.packet-row:not(.key-message):not(.selected) {
+  opacity: 0.72;
+}
+
+.packet-row:not(.key-message):hover {
+  opacity: 1;
+}
+
+.packet-row:hover {
+  background: var(--bg-hover);
+}
+
+.packet-row.selected {
+  background: var(--bg-active);
+  border-color: var(--border-strong);
+  outline: 1px solid var(--border-strong);
+  outline-offset: -1px;
+}
+
+/* Selection has to read on top of the mark, not instead of it. A plain
+   background on .selected won because it comes later in the file, so selecting a
+   marked row silently un-marked it: the tint vanished exactly on the row being
+   read. Mixing the tint into the selected background keeps both meanings
+   visible, and the border and outline carry the selection either way. */
+.packet-row.key-message.selected {
+  background: color-mix(in srgb, var(--c2s) 22%, var(--bg-active));
+}
+
+.packet-row.c2s.selected {
+  border-left-color: var(--c2s);
+}
+
+.packet-row.s2c.selected {
+  border-left-color: var(--s2c);
+}
+
+.packet-dir {
+  flex: none;
+  width: 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.packet-row.c2s .packet-dir {
+  color: var(--c2s);
+}
+
+.packet-row.s2c .packet-dir {
+  color: var(--s2c);
+}
+
+.packet-index {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  min-width: 1.6rem;
+  padding-top: 0.1rem;
+}
+
+/* Merged view only. The letter+number is the actual identifier; the colour on
+   top is decoration, so this still works for a colour-blind reader with the
+   colour alone removed. `--badge-hue` is set inline per row (see sessionHue in
+   PacketList.tsx), one per session, spaced by the golden angle so the colour
+   stays distinct how many sessions there ever are, rather than cycling a fixed
+   palette. */
+.session-badge {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 0 0.3rem;
+  border-radius: 3px;
+  border: 1px solid hsl(var(--badge-hue) var(--badge-sat) var(--badge-light));
+  color: hsl(var(--badge-hue) var(--badge-sat) var(--badge-light));
+}
+
+.packet-body {
+  flex: 1;
+  /* min-width AND overflow are both needed. A flex item will not shrink below
+     the min-content width of its contents, and long protocol names are single
+     unbreakable words. Without both, rows grow wider than the panel and the
+     size/time column gets clipped. */
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Block with inline children rather than a flex row. Every nested flex container
+   introduces another min-content floor that stops the row shrinking, which is
+   what made these rows overflow. Plain inline layout ellipsizes cleanly. */
+.packet-name {
+  display: block;
+  font-weight: 560;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.packet-type {
+  margin-right: 0.35rem;
+}
+
+.packet-category {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.packet-length {
+  flex: none;
+  /* Fixed width so the sizes line up as a column down the list. */
+  width: 3.4rem;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-faint);
+}
+
+.type-char {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0 0.25rem;
+  font-size: 0.72rem;
+  color: var(--text-soft);
+}
+
+.badge {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+}
+
+/* ------------------------------------------------------------ packet detail */
+
+.detail-scroll,
+.state-scroll {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding: 0.9rem;
+}
+
+.category-chip {
+  font-size: 0.72rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 99px;
+  background: var(--bg-sunken);
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* Scoped to the chip so it cannot leak into the message list again. The chip
+   states its category in words, so colour only earns its place where it says
+   something the label does not: that this message is a failure. Six of the ten
+   categories had no rule at all, which made the colouring look meaningful when it
+   was really just whichever ones someone had got around to. */
+.category-chip.cat-error {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.doc-block {
+  margin-bottom: 1.25rem;
+}
+
+.doc-summary {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.doc-detail {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.doc-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin: 0.9rem 0 0;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-sunken);
+  border-radius: var(--radius-sm);
+}
+
+.doc-facts dt {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.doc-facts dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.85rem;
+  font-family: var(--mono);
+}
+
+.fields-block,
+.hex-block {
+  margin-bottom: 1.25rem;
+}
+
+.fields-block h3,
+.hex-block h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-faint);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.hint {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--text-faint);
+  font-size: 0.72rem;
+}
+
+.field-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.field-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.field-row:hover {
+  background: var(--bg-hover);
+}
+
+.field-row.active {
+  background: var(--highlight-soft);
+  border-color: var(--highlight);
+}
+
+.field-twisty {
+  flex: none;
+  width: 1rem;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-faint);
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.field-twisty.placeholder {
+  cursor: default;
+}
+
+.field-name {
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.field-value {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--accent-text);
+}
+
+.field-value.number {
+  color: var(--c2s);
+}
+
+.empty-string {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.field-bytes {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.empty-note {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+/* ----------------------------------------------------------------- hex dump */
+
+/* The scroll container. Virtualized: only the rows near this box's scroll
+   position are ever mounted, so the box needs a bounded height to scroll
+   within. A packet small enough to fit never grows to this height at all,
+   since height here is a ceiling (max-height), not a fixed size. */
+.hex-dump {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.6rem;
+  max-height: 26rem;
+  overflow-x: auto;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Given the height the full (unvirtualized) dump would occupy, so the
+   scrollbar represents every byte in the packet, not just the mounted rows.
+   Rows are positioned absolutely within it by their real row number. */
+.hex-dump-sizer {
+  position: relative;
+}
+
+.hex-row {
+  position: absolute;
+  left: 0;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  white-space: nowrap;
+}
+
+.hex-offset {
+  color: var(--text-faint);
+  flex: none;
+}
+
+/* Stretched to the row's full height, so a highlight spanning several rows has
+   no horizontal seam between them. A cell only as tall as its own line box
+   leaves a fraction of a pixel of background showing through at every row. */
+.hex-bytes,
+.hex-ascii {
+  display: flex;
+  flex: none;
+  align-self: stretch;
+}
+
+.hex-byte,
+.ascii-char {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--text-soft);
+  border-radius: 2px;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hex-byte {
+  width: 1.55em;
+  text-align: center;
+}
+
+.ascii-char {
+  width: 0.8em;
+  text-align: center;
+}
+
+.hex-byte:hover,
+.ascii-char:hover {
+  background: var(--bg-active);
+  color: var(--text);
+}
+
+/* A contiguous highlighted range reads as one block, not a row of separate
+   rounded squares: square by default (an interior byte, or one that continues
+   across a row wrap), then the run-* modifier below reinstates rounding only
+   at the run's two real ends. Cell width and alignment are untouched, since
+   only border-radius changes here. */
+.hex-byte.highlighted,
+.ascii-char.highlighted {
+  background: var(--highlight);
+  color: var(--highlight-text);
+  font-weight: 700;
+  border-radius: 0;
+}
+
+.hex-byte.highlighted.run-start,
+.ascii-char.highlighted.run-start {
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+
+.hex-byte.highlighted.run-end,
+.ascii-char.highlighted.run-end {
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+}
+
+.hex-byte.highlighted.run-solo,
+.ascii-char.highlighted.run-solo {
+  border-radius: 2px;
+}
+
+.hex-byte.pad,
+.ascii-char.pad {
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------- state bar */
+
+.state-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-sunken);
+  flex: none;
+  overflow-x: auto;
+}
+
+/* One pill definition, used in the bar and in the drawer. The drawer is the bar
+   expanded. */
+.pills {
+  display: flex;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+/* stretch, not baseline: the label carries a background, and a label only as
+   tall as its own text leaves the pill's rounded ends unfilled behind it. */
+.pill {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 99px;
+  overflow: hidden;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  background: var(--bg-panel);
+}
+
+/* Label and value are two halves of the pill. The label reads as a fixed caption
+   and the value as the thing that changes, so a row of pills scans as a set of
+   gauges rather than a sentence. */
+.pill-label {
+  display: flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem 0.1rem 0.6rem;
+  background: var(--bg-hover);
+  color: var(--text-faint);
+  font-size: 0.63rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-right: 1px solid var(--border);
+}
+
+.pill-value {
+  display: flex;
+  align-items: center;
+  padding: 0.1rem 0.6rem 0.1rem 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text);
+}
+
+.pill.tone-ok {
+  border-color: var(--c2s);
+}
+
+.pill.tone-ok .pill-label {
+  background: var(--c2s-soft);
+  color: var(--c2s);
+  border-right-color: var(--c2s);
+}
+
+.pill.tone-ok .pill-value {
+  color: var(--c2s);
+}
+
+.pill.tone-busy {
+  border-color: var(--accent);
+}
+
+.pill.tone-busy .pill-label {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border-right-color: var(--accent);
+}
+
+.pill.tone-busy .pill-value {
+  color: var(--accent);
+}
+
+.pill.tone-error {
+  border-color: var(--error);
+}
+
+.pill.tone-error .pill-label {
+  background: var(--error-soft);
+  color: var(--error);
+  border-right-color: var(--error);
+}
+
+.pill.tone-error .pill-value {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.pill.tone-muted .pill-value {
+  color: var(--text-faint);
+}
+
+.state-bar-more {
+  flex: none;
+  /* auto margin rather than relying on a flex-grow sibling: the chip list grows
+     and pushes this right, but the "nothing established yet" placeholder that
+     replaces it does not, which left the button stranded mid-bar. */
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.45rem;
+}
+
+.state-bar-more kbd {
+  font-size: 0.65rem;
+  padding: 0 0.2rem;
+  border-bottom-width: 1px;
+}
+
+/* ------------------------------------------------------------------- drawer */
+
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 35%);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 20;
+}
+
+.drawer {
+  width: min(30rem, 100vw);
+  height: 100%;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 24px rgb(0 0 0 / 18%);
+  display: flex;
+  flex-direction: column;
+  animation: drawer-in 0.14s ease-out;
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(1.5rem);
+    opacity: 0.6;
+  }
+}
+
+/* The slide is decoration. The drawer is the content. */
+@media (prefers-reduced-motion: reduce) {
+  .drawer {
+    animation: none;
+  }
+}
+
+.drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  flex: none;
+}
+
+.drawer-head h2 {
+  font-size: 0.95rem;
+}
+
+.drawer-sub {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+
+.drawer-scroll {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding: 0.75rem 1rem 2rem;
+}
+
+/* The pills, expanded: pill on the left of its own line, explanation under it. */
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-bottom: 0.9rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.status-item .pill {
+  font-size: 0.78rem;
+}
+
+.status-item .pill-label,
+.status-item .pill-value {
+  padding-top: 0.12rem;
+  padding-bottom: 0.12rem;
+}
+
+.status-explain {
+  margin: 0.3rem 0 0;
+  font-size: 0.76rem;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+.group {
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.group-title {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-faint);
+  margin-bottom: 0.35rem;
+}
+
+/* One grid for the whole group, with each .row contributing its two cells via
+   display: contents. Every label column lines up regardless of length, with no
+   fixed width. Anything that is not a row spans both columns. */
+.rows {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 0.85rem;
+  row-gap: 0.1rem;
+  align-items: baseline;
+}
+
+.row {
+  display: contents;
+}
+
+.rows > :not(.row) {
+  grid-column: 1 / -1;
+}
+
+.row-label {
+  font-size: 0.73rem;
+  color: var(--text-faint);
+}
+
+.row-value {
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.drawer-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  line-height: 1.45;
+}
+
+.theme-toggle {
+  min-width: 2rem;
+  text-align: center;
+  line-height: 1;
+}
+
+.landing-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.landing-actions a {
+  text-decoration: none;
+}
+
+/* Visually hidden but still announced. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Visible focus for keyboard users, everywhere. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}

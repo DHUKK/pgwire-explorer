@@ -1,0 +1,250 @@
+import { useCallback, useRef, useState } from 'react'
+import type { CaptureError } from '../lib/capture'
+import { SCENARIOS, SCENARIO_GROUPS } from '../lib/scenarios'
+import { formatFileSize, formatSavedAt, type SavedCaptureMeta } from '../lib/savedCaptures'
+import { Inline } from '../lib/inline'
+import { ThemeToggle } from './ThemeToggle'
+
+interface Props {
+  error: CaptureError | null
+  loadingId: string | null
+  onPickScenario: (id: string) => void
+  onPickFile: (file: File) => void
+  savedCaptures: SavedCaptureMeta[]
+  onOpenSaved: (name: string) => void
+  onDeleteSaved: (name: string) => void
+}
+
+const REPO_URL = 'https://github.com/DHUKK/pgwire-explorer'
+
+// The proxy defaults to listening on 5433 and forwarding to 5432, so the common
+// case needs no flags beyond the output file.
+const RECORD_COMMAND = 'go run ./cmd/pgwire-capture --out cap.json'
+
+/** The GitHub mark. `currentColor` so it follows the button's text colour in both themes. */
+function GitHubIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+    </svg>
+  )
+}
+
+export function Landing({
+  error,
+  loadingId,
+  onPickScenario,
+  onPickFile,
+  savedCaptures,
+  onOpenSaved,
+  onDeleteSaved,
+}: Props) {
+  const [dragging, setDragging] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const fileInput = useRef<HTMLInputElement>(null)
+
+  const handleDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault()
+      setDragging(false)
+      const file = event.dataTransfer.files[0]
+      if (file) onPickFile(file)
+    },
+    [onPickFile],
+  )
+
+  // A confirmation, not just spacing, guards a destructive action that sits
+  // right next to an everyday one: a misclick that opens the wrong capture
+  // costs nothing, a misclick that deletes one is permanent.
+  const handleDelete = useCallback(
+    (name: string) => {
+      if (window.confirm(`Delete "${name}"? This only removes it from this browser.`)) {
+        onDeleteSaved(name)
+      }
+    },
+    [onDeleteSaved],
+  )
+
+  const copyCommand = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(RECORD_COMMAND)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1600)
+    } catch {
+      // Clipboard access can be denied. The command is selectable either way.
+    }
+  }, [])
+
+  return (
+    <div className="landing">
+      <header className="landing-header">
+        <div className="landing-actions">
+          <a className="ghost-button" href={REPO_URL} target="_blank" rel="noreferrer">
+            <GitHubIcon />
+            source on GitHub
+          </a>
+          <ThemeToggle />
+        </div>
+        <h1>
+          Explore the <span className="accent">Postgres wire protocol</span>
+        </h1>
+        <p className="lede">
+          Every Postgres client talks to the server over a binary protocol that is thoroughly
+          documented and almost never seen. This site shows real recorded sessions, one message
+          at a time, with every byte of every packet mapped to the field that produced it.
+        </p>
+        <p className="lede lede-more">
+          <Inline
+            text={
+              'Useful for writing a driver, a pooler or a proxy, for debugging a connection that ' +
+              'fails before any SQL runs, or for finally seeing what `psql` sends when you type ' +
+              '`SELECT 1`.'
+            }
+          />
+        </p>
+      </header>
+
+      {error && (
+        <div className="alert" role="alert">
+          <strong>{error.message}</strong>
+          {error.hint && <p>{error.hint}</p>}
+        </div>
+      )}
+
+      <section className="landing-section">
+        <h2>Start with an example</h2>
+
+        {SCENARIO_GROUPS.map((group) => {
+          const scenarios = SCENARIOS.filter((s) => s.group === group)
+          if (scenarios.length === 0) return null
+          return (
+            <div key={group} className="scenario-group">
+              <h3>{group}</h3>
+              <div className="scenario-grid">
+                {scenarios.map((scenario) => (
+                  <button
+                    key={scenario.id}
+                    className="scenario-card"
+                    onClick={() => onPickScenario(scenario.id)}
+                    disabled={loadingId !== null}
+                    aria-busy={loadingId === scenario.id}
+                  >
+                    <span className="scenario-title">{scenario.title}</span>
+                    <span className="scenario-blurb">
+                      <Inline text={scenario.blurb} />
+                    </span>
+                    {loadingId === scenario.id && <span className="scenario-loading">loading…</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </section>
+
+      <section className="landing-section">
+        <h2>Or explore your own traffic</h2>
+        <p className="section-note">
+          The proxy sits between your client and your database and relays every byte untouched.
+          Clone{' '}
+          <a href={REPO_URL} target="_blank" rel="noreferrer">
+            the repo
+          </a>
+          , then point your client at port <Inline text="`5433` instead of `5432`"/>.
+        </p>
+
+        <ol className="steps">
+          <li>
+            <span className="step-label">Start the proxy</span>
+            <div className="command-row">
+              <code>{RECORD_COMMAND}</code>
+              <button className="ghost-button" onClick={copyCommand}>
+                {copied ? 'copied' : 'copy'}
+              </button>
+            </div>
+          </li>
+          <li>
+            <span className="step-label">Connect through it</span>
+            <code>psql -h localhost -p 5433</code>
+          </li>
+          <li>
+            <span className="step-label">Stop the proxy</span>
+            <span className="step-text">
+              <kbd>Ctrl</kbd>+<kbd>C</kbd> writes the capture.
+            </span>
+          </li>
+        </ol>
+
+        <div
+          className={dragging ? 'dropzone dragging' : 'dropzone'}
+          onDragOver={(e) => {
+            e.preventDefault()
+            setDragging(true)
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={handleDrop}
+          onClick={() => fileInput.current?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') fileInput.current?.click()
+          }}
+        >
+          <input
+            ref={fileInput}
+            type="file"
+            accept=".json,application/json"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) onPickFile(file)
+              e.target.value = ''
+            }}
+          />
+          <strong>Drop your capture here</strong>
+          <span>or click to choose a file</span>
+          <span className="dropzone-note">
+            Parsed entirely in your browser. Nothing is uploaded anywhere.
+          </span>
+        </div>
+
+        {savedCaptures.length > 0 && (
+          <div className="saved-captures">
+            <h3>Saved in this browser</h3>
+            <p className="saved-note">
+              Captures you open are kept in this browser only. Delete one below to remove it.
+            </p>
+            <ul className="saved-list">
+              {savedCaptures.map((entry) => (
+                <li key={entry.name} className="saved-row">
+                  <button
+                    type="button"
+                    className="saved-open"
+                    onClick={() => onOpenSaved(entry.name)}
+                    title={`Open "${entry.name}"`}
+                  >
+                    <span className="saved-name">{entry.name}</span>
+                    <span className="saved-meta">
+                      {entry.sessionCount} session{entry.sessionCount === 1 ? '' : 's'} ·{' '}
+                      {entry.packetCount} packet{entry.packetCount === 1 ? '' : 's'} ·{' '}
+                      {formatFileSize(entry.size)} · saved {formatSavedAt(entry.savedAt)}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="saved-delete"
+                    onClick={() => handleDelete(entry.name)}
+                    aria-label={`Delete saved capture "${entry.name}"`}
+                    title={`Delete "${entry.name}"`}
+                  >
+                    delete
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+    </div>
+  )
+}

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="pgwire explorer">
+  <!--
+    Two arrows, one each way: a client to server message above, a server to
+    client message below. The colours are the site's own c2s and s2c palette
+    tokens, so the icon and the packet list say the same thing in the same
+    language.
+
+    An SVG favicon can follow the browser's theme, which a PNG cannot, so the
+    dark variants below are the same values styles.css uses.
+
+    Note for editors: an XML comment cannot contain two hyphens in a row, so the
+    tokens are named here without their CSS prefix.
+  -->
+  <style>
+    .c2s { fill: #0f766e; }
+    .s2c { fill: #7c3aed; }
+    @media (prefers-color-scheme: dark) {
+      .c2s { fill: #2dd4bf; }
+      .s2c { fill: #a78bfa; }
+    }
+  </style>
+
+  <g class="c2s">
+    <rect x="3" y="7" width="16" height="5" rx="1" />
+    <path d="M18 3.5 29 9.5 18 15.5Z" />
+  </g>
+
+  <g class="s2c">
+    <rect x="13" y="20" width="16" height="5" rx="1" />
+    <path d="M14 16.5 3 22.5 14 28.5Z" />
+  </g>
+</svg>

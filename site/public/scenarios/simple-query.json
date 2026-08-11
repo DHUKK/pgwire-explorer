@@ -1,0 +1,2880 @@
+{
+  "version": "2.0",
+  "recorded_at": "2026-08-12T14:20:14.099565+01:00",
+  "sessions": [
+    {
+      "id": 1,
+      "client_addr": "127.0.0.1:54742",
+      "server_addr": "127.0.0.1:55432",
+      "started_at": "2026-08-12T14:20:15.107761+01:00",
+      "ended_at": "2026-08-12T14:20:15.131668+01:00",
+      "ssl_requested": true,
+      "ssl_accepted": false,
+      "packets": [
+        {
+          "id": 1,
+          "direction": "C2S",
+          "timestamp_ms": 0.029,
+          "stream_offset": 0,
+          "length": 8,
+          "raw_hex": "0000000804d2162f",
+          "type_name": "SSLRequest",
+          "fields": [
+            {
+              "name": "Message Length",
+              "value": 8,
+              "bytes": [
+                0,
+                3
+              ]
+            },
+            {
+              "name": "Request Code",
+              "value": 80877103,
+              "bytes": [
+                4,
+                7
+              ]
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "direction": "S2C",
+          "timestamp_ms": 0.049,
+          "stream_offset": 0,
+          "length": 1,
+          "raw_hex": "4e",
+          "type_char": "N",
+          "type_name": "SSLResponse",
+          "fields": [
+            {
+              "name": "Response",
+              "value": "N",
+              "bytes": [
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "direction": "C2S",
+          "timestamp_ms": 0.164,
+          "stream_offset": 8,
+          "length": 63,
+          "raw_hex": "0000003f000300007573657200706f73746772657300646174616261736500706f737467726573006170706c69636174696f6e5f6e616d65007073716c0000",
+          "type_name": "StartupMessage",
+          "fields": [
+            {
+              "name": "Message Length",
+              "value": 63,
+              "bytes": [
+                0,
+                3
+              ]
+            },
+            {
+              "name": "Protocol Version",
+              "value": "3.0 (196608)",
+              "bytes": [
+                4,
+                7
+              ]
+            },
+            {
+              "name": "Parameters",
+              "bytes": [
+                8,
+                61
+              ],
+              "children": [
+                {
+                  "name": "user = postgres",
+                  "bytes": [
+                    8,
+                    21
+                  ],
+                  "children": [
+                    {
+                      "name": "Key",
+                      "value": "user",
+                      "bytes": [
+                        8,
+                        12
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "postgres",
+                      "bytes": [
+                        13,
+                        21
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "database = postgres",
+                  "bytes": [
+                    22,
+                    39
+                  ],
+                  "children": [
+                    {
+                      "name": "Key",
+                      "value": "database",
+                      "bytes": [
+                        22,
+                        30
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "postgres",
+                      "bytes": [
+                        31,
+                        39
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "application_name = psql",
+                  "bytes": [
+                    40,
+                    61
+                  ],
+                  "children": [
+                    {
+                      "name": "Key",
+                      "value": "application_name",
+                      "bytes": [
+                        40,
+                        56
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "psql",
+                      "bytes": [
+                        57,
+                        61
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Parameter List Terminator",
+              "value": 0,
+              "bytes": [
+                62,
+                62
+              ]
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "direction": "S2C",
+          "timestamp_ms": 4.847,
+          "stream_offset": 1,
+          "length": 24,
+          "raw_hex": "52000000170000000a534352414d2d5348412d3235360000",
+          "type_char": "R",
+          "type_name": "AuthenticationSASL",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "R",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 23,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Auth Type (10 = SASL)",
+              "value": 10,
+              "bytes": [
+                5,
+                8
+              ]
+            },
+            {
+              "name": "Auth Mechanisms",
+              "bytes": [
+                9,
+                22
+              ],
+              "children": [
+                {
+                  "name": "Mechanism[0]",
+                  "value": "SCRAM-SHA-256",
+                  "bytes": [
+                    9,
+                    22
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Terminator",
+              "value": 0,
+              "bytes": [
+                23,
+                23
+              ]
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "direction": "C2S",
+          "timestamp_ms": 6.44,
+          "stream_offset": 71,
+          "length": 55,
+          "raw_hex": "7000000036534352414d2d5348412d32353600000000206e2c2c6e3d2c723d31447a4a3247647637694e41413849664c46347938586769",
+          "type_char": "p",
+          "type_name": "SASLInitialResponse",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "p",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 54,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Auth Mechanism",
+              "value": "SCRAM-SHA-256",
+              "bytes": [
+                5,
+                18
+              ]
+            },
+            {
+              "name": "SASL Data Length",
+              "value": 32,
+              "bytes": [
+                19,
+                22
+              ]
+            },
+            {
+              "name": "SASL Data (client-first-message)",
+              "value": "n,,n=,r=1DzJ2Gdv7iNAA8IfLF4y8Xgi",
+              "bytes": [
+                23,
+                54
+              ]
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "direction": "S2C",
+          "timestamp_ms": 7.144,
+          "stream_offset": 25,
+          "length": 93,
+          "raw_hex": "520000005c0000000b723d31447a4a3247647637694e41413849664c46347938586769577769794738636471735266655858785a6e713870356b4c2c733d45525174304a63375248746677584d7a5a2b764c65673d3d2c693d34303936",
+          "type_char": "R",
+          "type_name": "AuthenticationSASLContinue",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "R",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 92,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Auth Type (11 = SASLContinue)",
+              "value": 11,
+              "bytes": [
+                5,
+                8
+              ]
+            },
+            {
+              "name": "SASL Data (server-first-message)",
+              "value": "r=1DzJ2Gdv7iNAA8IfLF4y8XgiWwiyG8cdqsRfeXXxZnq8p5kL,s=ERQt0Jc7RHtfwXMzZ+vLeg==,i=4096",
+              "bytes": [
+                9,
+                92
+              ]
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "direction": "C2S",
+          "timestamp_ms": 9.368,
+          "stream_offset": 126,
+          "length": 109,
+          "raw_hex": "700000006c633d626977732c723d31447a4a3247647637694e41413849664c46347938586769577769794738636471735266655858785a6e713870356b4c2c703d6235434e5543315766617774596d74353979556b776d337451562b797868466448515562554136444461343d",
+          "type_char": "p",
+          "type_name": "SASLResponse",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "p",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 108,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "SASL Data (client-final-message)",
+              "value": "c=biws,r=1DzJ2Gdv7iNAA8IfLF4y8XgiWwiyG8cdqsRfeXXxZnq8p5kL,p=b5CNUC1WfawtYmt59yUkwm3tQV+yxhFdHQUbUA6DDa4=",
+              "bytes": [
+                5,
+                108
+              ]
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "direction": "S2C",
+          "timestamp_ms": 11.194,
+          "stream_offset": 118,
+          "length": 55,
+          "raw_hex": "52000000360000000c763d6f2b6d553536574c3957592f7270664a6858434b484961474c4a65713043654b3045334e68493273574c303d",
+          "type_char": "R",
+          "type_name": "AuthenticationSASLFinal",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "R",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 54,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Auth Type (12 = SASLFinal)",
+              "value": 12,
+              "bytes": [
+                5,
+                8
+              ]
+            },
+            {
+              "name": "SASL Data (server-final-message)",
+              "value": "v=o+mU56WL9WY/rpfJhXCKHIaGLJeq0CeK0E3NhI2sWL0=",
+              "bytes": [
+                9,
+                54
+              ]
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "direction": "S2C",
+          "timestamp_ms": 11.209,
+          "stream_offset": 173,
+          "length": 9,
+          "raw_hex": "520000000800000000",
+          "type_char": "R",
+          "type_name": "AuthenticationOk",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "R",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 8,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Auth Type (0 = Ok)",
+              "value": 0,
+              "bytes": [
+                5,
+                8
+              ]
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "direction": "S2C",
+          "timestamp_ms": 11.22,
+          "stream_offset": 182,
+          "length": 24,
+          "raw_hex": "5300000017696e5f686f745f7374616e646279006f666600",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 23,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "in_hot_standby",
+              "bytes": [
+                5,
+                19
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "off",
+              "bytes": [
+                20,
+                23
+              ]
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "direction": "S2C",
+          "timestamp_ms": 11.233,
+          "stream_offset": 206,
+          "length": 26,
+          "raw_hex": "5300000019696e74656765725f6461746574696d6573006f6e00",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 25,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "integer_datetimes",
+              "bytes": [
+                5,
+                22
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "on",
+              "bytes": [
+                23,
+                25
+              ]
+            }
+          ]
+        },
+        {
+          "id": 12,
+          "direction": "S2C",
+          "timestamp_ms": 11.243,
+          "stream_offset": 232,
+          "length": 22,
+          "raw_hex": "530000001554696d655a6f6e65004574632f55544300",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 21,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "TimeZone",
+              "bytes": [
+                5,
+                13
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "Etc/UTC",
+              "bytes": [
+                14,
+                21
+              ]
+            }
+          ]
+        },
+        {
+          "id": 13,
+          "direction": "S2C",
+          "timestamp_ms": 11.252,
+          "stream_offset": 254,
+          "length": 28,
+          "raw_hex": "530000001b496e74657276616c5374796c6500706f73746772657300",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 27,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "IntervalStyle",
+              "bytes": [
+                5,
+                18
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "postgres",
+              "bytes": [
+                19,
+                27
+              ]
+            }
+          ]
+        },
+        {
+          "id": 14,
+          "direction": "S2C",
+          "timestamp_ms": 11.262,
+          "stream_offset": 282,
+          "length": 21,
+          "raw_hex": "530000001469735f737570657275736572006f6e00",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 20,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "is_superuser",
+              "bytes": [
+                5,
+                17
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "on",
+              "bytes": [
+                18,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "id": 15,
+          "direction": "S2C",
+          "timestamp_ms": 11.268,
+          "stream_offset": 303,
+          "length": 27,
+          "raw_hex": "530000001a6170706c69636174696f6e5f6e616d65007073716c00",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 26,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "application_name",
+              "bytes": [
+                5,
+                21
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "psql",
+              "bytes": [
+                22,
+                26
+              ]
+            }
+          ]
+        },
+        {
+          "id": 16,
+          "direction": "S2C",
+          "timestamp_ms": 11.278,
+          "stream_offset": 330,
+          "length": 39,
+          "raw_hex": "530000002664656661756c745f7472616e73616374696f6e5f726561645f6f6e6c79006f666600",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 38,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "default_transaction_read_only",
+              "bytes": [
+                5,
+                34
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "off",
+              "bytes": [
+                35,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "id": 17,
+          "direction": "S2C",
+          "timestamp_ms": 11.285,
+          "stream_offset": 369,
+          "length": 27,
+          "raw_hex": "530000001a736372616d5f697465726174696f6e73003430393600",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 26,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "scram_iterations",
+              "bytes": [
+                5,
+                21
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "4096",
+              "bytes": [
+                22,
+                26
+              ]
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "direction": "S2C",
+          "timestamp_ms": 11.294,
+          "stream_offset": 396,
+          "length": 24,
+          "raw_hex": "5300000017446174655374796c650049534f2c204d445900",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 23,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "DateStyle",
+              "bytes": [
+                5,
+                14
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "ISO, MDY",
+              "bytes": [
+                15,
+                23
+              ]
+            }
+          ]
+        },
+        {
+          "id": 19,
+          "direction": "S2C",
+          "timestamp_ms": 11.307,
+          "stream_offset": 420,
+          "length": 36,
+          "raw_hex": "53000000237374616e646172645f636f6e666f726d696e675f737472696e6773006f6e00",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 35,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "standard_conforming_strings",
+              "bytes": [
+                5,
+                32
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "on",
+              "bytes": [
+                33,
+                35
+              ]
+            }
+          ]
+        },
+        {
+          "id": 20,
+          "direction": "S2C",
+          "timestamp_ms": 11.312,
+          "stream_offset": 456,
+          "length": 36,
+          "raw_hex": "530000002373657373696f6e5f617574686f72697a6174696f6e00706f73746772657300",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 35,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "session_authorization",
+              "bytes": [
+                5,
+                26
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "postgres",
+              "bytes": [
+                27,
+                35
+              ]
+            }
+          ]
+        },
+        {
+          "id": 21,
+          "direction": "S2C",
+          "timestamp_ms": 11.323,
+          "stream_offset": 492,
+          "length": 26,
+          "raw_hex": "5300000019636c69656e745f656e636f64696e67005554463800",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 25,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "client_encoding",
+              "bytes": [
+                5,
+                20
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "UTF8",
+              "bytes": [
+                21,
+                25
+              ]
+            }
+          ]
+        },
+        {
+          "id": 22,
+          "direction": "S2C",
+          "timestamp_ms": 11.333,
+          "stream_offset": 518,
+          "length": 51,
+          "raw_hex": "53000000327365727665725f76657273696f6e0031362e39202844656269616e2031362e392d312e706764673132302b312900",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 50,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "server_version",
+              "bytes": [
+                5,
+                19
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "16.9 (Debian 16.9-1.pgdg120+1)",
+              "bytes": [
+                20,
+                50
+              ]
+            }
+          ]
+        },
+        {
+          "id": 23,
+          "direction": "S2C",
+          "timestamp_ms": 11.34,
+          "stream_offset": 569,
+          "length": 26,
+          "raw_hex": "53000000197365727665725f656e636f64696e67005554463800",
+          "type_char": "S",
+          "type_name": "ParameterStatus",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "S",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 25,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Parameter Name",
+              "value": "server_encoding",
+              "bytes": [
+                5,
+                20
+              ]
+            },
+            {
+              "name": "Parameter Value",
+              "value": "UTF8",
+              "bytes": [
+                21,
+                25
+              ]
+            }
+          ]
+        },
+        {
+          "id": 24,
+          "direction": "S2C",
+          "timestamp_ms": 11.35,
+          "stream_offset": 595,
+          "length": 13,
+          "raw_hex": "4b0000000c0000006ae9236cd4",
+          "type_char": "K",
+          "type_name": "BackendKeyData",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "K",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 12,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Backend PID",
+              "value": 106,
+              "bytes": [
+                5,
+                8
+              ]
+            },
+            {
+              "name": "Secret Key",
+              "value": 3911412948,
+              "bytes": [
+                9,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "id": 25,
+          "direction": "S2C",
+          "timestamp_ms": 11.363,
+          "stream_offset": 608,
+          "length": 6,
+          "raw_hex": "5a0000000549",
+          "type_char": "Z",
+          "type_name": "ReadyForQuery",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Z",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 5,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Transaction Status",
+              "value": "Idle",
+              "bytes": [
+                5,
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "id": 26,
+          "direction": "C2S",
+          "timestamp_ms": 11.642,
+          "stream_offset": 235,
+          "length": 47,
+          "raw_hex": "510000002e53454c4543542031204153206e2c202768656c6c6f273a3a74657874204153206772656574696e673b00",
+          "type_char": "Q",
+          "type_name": "Query",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Q",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 46,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "SQL Query String",
+              "value": "SELECT 1 AS n, 'hello'::text AS greeting;",
+              "bytes": [
+                5,
+                46
+              ]
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "direction": "S2C",
+          "timestamp_ms": 12.566,
+          "stream_offset": 614,
+          "length": 54,
+          "raw_hex": "540000003500026e00000000000000000000170004ffffffff00006772656574696e670000000000000000000019ffffffffffff0000",
+          "type_char": "T",
+          "type_name": "RowDescription",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "T",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 53,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Field Count",
+              "value": 2,
+              "bytes": [
+                5,
+                6
+              ]
+            },
+            {
+              "name": "Column[0]: n",
+              "bytes": [
+                7,
+                26
+              ],
+              "children": [
+                {
+                  "name": "Name",
+                  "value": "n",
+                  "bytes": [
+                    7,
+                    8
+                  ]
+                },
+                {
+                  "name": "Table OID",
+                  "value": 0,
+                  "bytes": [
+                    9,
+                    12
+                  ]
+                },
+                {
+                  "name": "Column Attribute Number",
+                  "value": 0,
+                  "bytes": [
+                    13,
+                    14
+                  ]
+                },
+                {
+                  "name": "Data Type OID",
+                  "value": 23,
+                  "bytes": [
+                    15,
+                    18
+                  ]
+                },
+                {
+                  "name": "Data Type Size",
+                  "value": 4,
+                  "bytes": [
+                    19,
+                    20
+                  ]
+                },
+                {
+                  "name": "Type Modifier",
+                  "value": -1,
+                  "bytes": [
+                    21,
+                    24
+                  ]
+                },
+                {
+                  "name": "Format Code",
+                  "value": 0,
+                  "bytes": [
+                    25,
+                    26
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Column[1]: greeting",
+              "bytes": [
+                27,
+                53
+              ],
+              "children": [
+                {
+                  "name": "Name",
+                  "value": "greeting",
+                  "bytes": [
+                    27,
+                    35
+                  ]
+                },
+                {
+                  "name": "Table OID",
+                  "value": 0,
+                  "bytes": [
+                    36,
+                    39
+                  ]
+                },
+                {
+                  "name": "Column Attribute Number",
+                  "value": 0,
+                  "bytes": [
+                    40,
+                    41
+                  ]
+                },
+                {
+                  "name": "Data Type OID",
+                  "value": 25,
+                  "bytes": [
+                    42,
+                    45
+                  ]
+                },
+                {
+                  "name": "Data Type Size",
+                  "value": -1,
+                  "bytes": [
+                    46,
+                    47
+                  ]
+                },
+                {
+                  "name": "Type Modifier",
+                  "value": -1,
+                  "bytes": [
+                    48,
+                    51
+                  ]
+                },
+                {
+                  "name": "Format Code",
+                  "value": 0,
+                  "bytes": [
+                    52,
+                    53
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "direction": "S2C",
+          "timestamp_ms": 12.655,
+          "stream_offset": 668,
+          "length": 21,
+          "raw_hex": "4400000014000200000001310000000568656c6c6f",
+          "type_char": "D",
+          "type_name": "DataRow",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "D",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 20,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Column Count",
+              "value": 2,
+              "bytes": [
+                5,
+                6
+              ]
+            },
+            {
+              "name": "Column[0]",
+              "bytes": [
+                7,
+                11
+              ],
+              "children": [
+                {
+                  "name": "Column[0] Length",
+                  "value": 1,
+                  "bytes": [
+                    7,
+                    10
+                  ]
+                },
+                {
+                  "name": "Column[0]",
+                  "value": "1",
+                  "bytes": [
+                    11,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Column[1]",
+              "bytes": [
+                12,
+                20
+              ],
+              "children": [
+                {
+                  "name": "Column[1] Length",
+                  "value": 5,
+                  "bytes": [
+                    12,
+                    15
+                  ]
+                },
+                {
+                  "name": "Column[1]",
+                  "value": "hello",
+                  "bytes": [
+                    16,
+                    20
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "direction": "S2C",
+          "timestamp_ms": 12.713,
+          "stream_offset": 689,
+          "length": 14,
+          "raw_hex": "430000000d53454c454354203100",
+          "type_char": "C",
+          "type_name": "CommandComplete",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "C",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 13,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Command Tag",
+              "value": "SELECT 1",
+              "bytes": [
+                5,
+                13
+              ]
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "direction": "S2C",
+          "timestamp_ms": 12.756,
+          "stream_offset": 703,
+          "length": 6,
+          "raw_hex": "5a0000000549",
+          "type_char": "Z",
+          "type_name": "ReadyForQuery",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Z",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 5,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Transaction Status",
+              "value": "Idle",
+              "bytes": [
+                5,
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "id": 31,
+          "direction": "C2S",
+          "timestamp_ms": 12.933,
+          "stream_offset": 282,
+          "length": 50,
+          "raw_hex": "51000000314352454154452054454d50205441424c452064656d6f2028696420696e742c206c6162656c2074657874293b00",
+          "type_char": "Q",
+          "type_name": "Query",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Q",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 49,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "SQL Query String",
+              "value": "CREATE TEMP TABLE demo (id int, label text);",
+              "bytes": [
+                5,
+                49
+              ]
+            }
+          ]
+        },
+        {
+          "id": 32,
+          "direction": "S2C",
+          "timestamp_ms": 17.097,
+          "stream_offset": 709,
+          "length": 18,
+          "raw_hex": "4300000011435245415445205441424c4500",
+          "type_char": "C",
+          "type_name": "CommandComplete",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "C",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 17,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Command Tag",
+              "value": "CREATE TABLE",
+              "bytes": [
+                5,
+                17
+              ]
+            }
+          ]
+        },
+        {
+          "id": 33,
+          "direction": "S2C",
+          "timestamp_ms": 17.105,
+          "stream_offset": 727,
+          "length": 6,
+          "raw_hex": "5a0000000549",
+          "type_char": "Z",
+          "type_name": "ReadyForQuery",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Z",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 5,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Transaction Status",
+              "value": "Idle",
+              "bytes": [
+                5,
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "id": 34,
+          "direction": "C2S",
+          "timestamp_ms": 17.252,
+          "stream_offset": 332,
+          "length": 53,
+          "raw_hex": "5100000034494e5345525420494e544f2064656d6f2056414c5545532028312c27666972737427292c2028322c204e554c4c293b00",
+          "type_char": "Q",
+          "type_name": "Query",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Q",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 52,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "SQL Query String",
+              "value": "INSERT INTO demo VALUES (1,'first'), (2, NULL);",
+              "bytes": [
+                5,
+                52
+              ]
+            }
+          ]
+        },
+        {
+          "id": 35,
+          "direction": "S2C",
+          "timestamp_ms": 18.01,
+          "stream_offset": 733,
+          "length": 16,
+          "raw_hex": "430000000f494e534552542030203200",
+          "type_char": "C",
+          "type_name": "CommandComplete",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "C",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 15,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Command Tag",
+              "value": "INSERT 0 2",
+              "bytes": [
+                5,
+                15
+              ]
+            }
+          ]
+        },
+        {
+          "id": 36,
+          "direction": "S2C",
+          "timestamp_ms": 18.044,
+          "stream_offset": 749,
+          "length": 6,
+          "raw_hex": "5a0000000549",
+          "type_char": "Z",
+          "type_name": "ReadyForQuery",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Z",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 5,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Transaction Status",
+              "value": "Idle",
+              "bytes": [
+                5,
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "id": 37,
+          "direction": "C2S",
+          "timestamp_ms": 18.117,
+          "stream_offset": 385,
+          "length": 45,
+          "raw_hex": "510000002c53454c4543542069642c206c6162656c2046524f4d2064656d6f204f524445522042592069643b00",
+          "type_char": "Q",
+          "type_name": "Query",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Q",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 44,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "SQL Query String",
+              "value": "SELECT id, label FROM demo ORDER BY id;",
+              "bytes": [
+                5,
+                44
+              ]
+            }
+          ]
+        },
+        {
+          "id": 38,
+          "direction": "S2C",
+          "timestamp_ms": 19.082,
+          "stream_offset": 755,
+          "length": 52,
+          "raw_hex": "54000000330002696400000040020001000000170004ffffffff00006c6162656c0000004002000200000019ffffffffffff0000",
+          "type_char": "T",
+          "type_name": "RowDescription",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "T",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 51,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Field Count",
+              "value": 2,
+              "bytes": [
+                5,
+                6
+              ]
+            },
+            {
+              "name": "Column[0]: id",
+              "bytes": [
+                7,
+                27
+              ],
+              "children": [
+                {
+                  "name": "Name",
+                  "value": "id",
+                  "bytes": [
+                    7,
+                    9
+                  ]
+                },
+                {
+                  "name": "Table OID",
+                  "value": 16386,
+                  "bytes": [
+                    10,
+                    13
+                  ]
+                },
+                {
+                  "name": "Column Attribute Number",
+                  "value": 1,
+                  "bytes": [
+                    14,
+                    15
+                  ]
+                },
+                {
+                  "name": "Data Type OID",
+                  "value": 23,
+                  "bytes": [
+                    16,
+                    19
+                  ]
+                },
+                {
+                  "name": "Data Type Size",
+                  "value": 4,
+                  "bytes": [
+                    20,
+                    21
+                  ]
+                },
+                {
+                  "name": "Type Modifier",
+                  "value": -1,
+                  "bytes": [
+                    22,
+                    25
+                  ]
+                },
+                {
+                  "name": "Format Code",
+                  "value": 0,
+                  "bytes": [
+                    26,
+                    27
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Column[1]: label",
+              "bytes": [
+                28,
+                51
+              ],
+              "children": [
+                {
+                  "name": "Name",
+                  "value": "label",
+                  "bytes": [
+                    28,
+                    33
+                  ]
+                },
+                {
+                  "name": "Table OID",
+                  "value": 16386,
+                  "bytes": [
+                    34,
+                    37
+                  ]
+                },
+                {
+                  "name": "Column Attribute Number",
+                  "value": 2,
+                  "bytes": [
+                    38,
+                    39
+                  ]
+                },
+                {
+                  "name": "Data Type OID",
+                  "value": 25,
+                  "bytes": [
+                    40,
+                    43
+                  ]
+                },
+                {
+                  "name": "Data Type Size",
+                  "value": -1,
+                  "bytes": [
+                    44,
+                    45
+                  ]
+                },
+                {
+                  "name": "Type Modifier",
+                  "value": -1,
+                  "bytes": [
+                    46,
+                    49
+                  ]
+                },
+                {
+                  "name": "Format Code",
+                  "value": 0,
+                  "bytes": [
+                    50,
+                    51
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 39,
+          "direction": "S2C",
+          "timestamp_ms": 19.1,
+          "stream_offset": 807,
+          "length": 21,
+          "raw_hex": "440000001400020000000131000000056669727374",
+          "type_char": "D",
+          "type_name": "DataRow",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "D",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 20,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Column Count",
+              "value": 2,
+              "bytes": [
+                5,
+                6
+              ]
+            },
+            {
+              "name": "Column[0]",
+              "bytes": [
+                7,
+                11
+              ],
+              "children": [
+                {
+                  "name": "Column[0] Length",
+                  "value": 1,
+                  "bytes": [
+                    7,
+                    10
+                  ]
+                },
+                {
+                  "name": "Column[0]",
+                  "value": "1",
+                  "bytes": [
+                    11,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Column[1]",
+              "bytes": [
+                12,
+                20
+              ],
+              "children": [
+                {
+                  "name": "Column[1] Length",
+                  "value": 5,
+                  "bytes": [
+                    12,
+                    15
+                  ]
+                },
+                {
+                  "name": "Column[1]",
+                  "value": "first",
+                  "bytes": [
+                    16,
+                    20
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 40,
+          "direction": "S2C",
+          "timestamp_ms": 19.114,
+          "stream_offset": 828,
+          "length": 16,
+          "raw_hex": "440000000f00020000000132ffffffff",
+          "type_char": "D",
+          "type_name": "DataRow",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "D",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 15,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Column Count",
+              "value": 2,
+              "bytes": [
+                5,
+                6
+              ]
+            },
+            {
+              "name": "Column[0]",
+              "bytes": [
+                7,
+                11
+              ],
+              "children": [
+                {
+                  "name": "Column[0] Length",
+                  "value": 1,
+                  "bytes": [
+                    7,
+                    10
+                  ]
+                },
+                {
+                  "name": "Column[0]",
+                  "value": "2",
+                  "bytes": [
+                    11,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Column[1] (NULL)",
+              "bytes": [
+                12,
+                15
+              ],
+              "children": [
+                {
+                  "name": "Column[1] Length",
+                  "value": -1,
+                  "bytes": [
+                    12,
+                    15
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 41,
+          "direction": "S2C",
+          "timestamp_ms": 19.127,
+          "stream_offset": 844,
+          "length": 14,
+          "raw_hex": "430000000d53454c454354203200",
+          "type_char": "C",
+          "type_name": "CommandComplete",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "C",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 13,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Command Tag",
+              "value": "SELECT 2",
+              "bytes": [
+                5,
+                13
+              ]
+            }
+          ]
+        },
+        {
+          "id": 42,
+          "direction": "S2C",
+          "timestamp_ms": 19.133,
+          "stream_offset": 858,
+          "length": 6,
+          "raw_hex": "5a0000000549",
+          "type_char": "Z",
+          "type_name": "ReadyForQuery",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Z",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 5,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Transaction Status",
+              "value": "Idle",
+              "bytes": [
+                5,
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "id": 43,
+          "direction": "C2S",
+          "timestamp_ms": 19.238,
+          "stream_offset": 430,
+          "length": 34,
+          "raw_hex": "510000002153454c454354202a2046524f4d206e6f5f737563685f7461626c653b00",
+          "type_char": "Q",
+          "type_name": "Query",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Q",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 33,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "SQL Query String",
+              "value": "SELECT * FROM no_such_table;",
+              "bytes": [
+                5,
+                33
+              ]
+            }
+          ]
+        },
+        {
+          "id": 44,
+          "direction": "S2C",
+          "timestamp_ms": 19.691,
+          "stream_offset": 864,
+          "length": 113,
+          "raw_hex": "4500000070534552524f5200564552524f5200433432503031004d72656c6174696f6e20226e6f5f737563685f7461626c652220646f6573206e6f7420657869737400503135004670617273655f72656c6174696f6e2e63004c3134343900527061727365724f70656e5461626c650000",
+          "type_char": "E",
+          "type_name": "ErrorResponse",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "E",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 112,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Fields",
+              "bytes": [
+                5,
+                111
+              ],
+              "children": [
+                {
+                  "name": "Severity (S)",
+                  "value": "ERROR",
+                  "bytes": [
+                    5,
+                    11
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "S",
+                      "bytes": [
+                        5,
+                        5
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "ERROR",
+                      "bytes": [
+                        6,
+                        11
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Severity (unlocalized) (V)",
+                  "value": "ERROR",
+                  "bytes": [
+                    12,
+                    18
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "V",
+                      "bytes": [
+                        12,
+                        12
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "ERROR",
+                      "bytes": [
+                        13,
+                        18
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "SQLSTATE Code (C)",
+                  "value": "42P01 (undefined_table)",
+                  "bytes": [
+                    19,
+                    25
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "C",
+                      "bytes": [
+                        19,
+                        19
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "42P01",
+                      "bytes": [
+                        20,
+                        25
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Message (M)",
+                  "value": "relation \"no_such_table\" does not exist",
+                  "bytes": [
+                    26,
+                    66
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "M",
+                      "bytes": [
+                        26,
+                        26
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "relation \"no_such_table\" does not exist",
+                      "bytes": [
+                        27,
+                        66
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Position (P)",
+                  "value": "15",
+                  "bytes": [
+                    67,
+                    70
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "P",
+                      "bytes": [
+                        67,
+                        67
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "15",
+                      "bytes": [
+                        68,
+                        70
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "File (F)",
+                  "value": "parse_relation.c",
+                  "bytes": [
+                    71,
+                    88
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "F",
+                      "bytes": [
+                        71,
+                        71
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "parse_relation.c",
+                      "bytes": [
+                        72,
+                        88
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Line (L)",
+                  "value": "1449",
+                  "bytes": [
+                    89,
+                    94
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "L",
+                      "bytes": [
+                        89,
+                        89
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "1449",
+                      "bytes": [
+                        90,
+                        94
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Routine (R)",
+                  "value": "parserOpenTable",
+                  "bytes": [
+                    95,
+                    111
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "R",
+                      "bytes": [
+                        95,
+                        95
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "parserOpenTable",
+                      "bytes": [
+                        96,
+                        111
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Terminator",
+              "value": 0,
+              "bytes": [
+                112,
+                112
+              ]
+            }
+          ]
+        },
+        {
+          "id": 45,
+          "direction": "S2C",
+          "timestamp_ms": 19.812,
+          "stream_offset": 977,
+          "length": 6,
+          "raw_hex": "5a0000000549",
+          "type_char": "Z",
+          "type_name": "ReadyForQuery",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Z",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 5,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Transaction Status",
+              "value": "Idle",
+              "bytes": [
+                5,
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "id": 46,
+          "direction": "C2S",
+          "timestamp_ms": 19.866,
+          "stream_offset": 464,
+          "length": 77,
+          "raw_hex": "510000004c444f20242420424547494e205241495345204e4f54494345202761206e6f746963652074726176656c7320617320697473206f776e206d657373616765273b20454e442024243b00",
+          "type_char": "Q",
+          "type_name": "Query",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Q",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 76,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "SQL Query String",
+              "value": "DO $$ BEGIN RAISE NOTICE 'a notice travels as its own message'; END $$;",
+              "bytes": [
+                5,
+                76
+              ]
+            }
+          ]
+        },
+        {
+          "id": 47,
+          "direction": "S2C",
+          "timestamp_ms": 21.147,
+          "stream_offset": 983,
+          "length": 153,
+          "raw_hex": "4e00000098534e4f5449434500564e4f5449434500433030303030004d61206e6f746963652074726176656c7320617320697473206f776e206d6573736167650057504c2f706753514c2066756e6374696f6e20696e6c696e655f636f64655f626c6f636b206c696e6520312061742052414953450046706c5f657865632e63004c333931310052657865635f73746d745f72616973650000",
+          "type_char": "N",
+          "type_name": "NoticeResponse",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "N",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 152,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Fields",
+              "bytes": [
+                5,
+                151
+              ],
+              "children": [
+                {
+                  "name": "Severity (S)",
+                  "value": "NOTICE",
+                  "bytes": [
+                    5,
+                    12
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "S",
+                      "bytes": [
+                        5,
+                        5
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "NOTICE",
+                      "bytes": [
+                        6,
+                        12
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Severity (unlocalized) (V)",
+                  "value": "NOTICE",
+                  "bytes": [
+                    13,
+                    20
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "V",
+                      "bytes": [
+                        13,
+                        13
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "NOTICE",
+                      "bytes": [
+                        14,
+                        20
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "SQLSTATE Code (C)",
+                  "value": "00000 (successful_completion)",
+                  "bytes": [
+                    21,
+                    27
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "C",
+                      "bytes": [
+                        21,
+                        21
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "00000",
+                      "bytes": [
+                        22,
+                        27
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Message (M)",
+                  "value": "a notice travels as its own message",
+                  "bytes": [
+                    28,
+                    64
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "M",
+                      "bytes": [
+                        28,
+                        28
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "a notice travels as its own message",
+                      "bytes": [
+                        29,
+                        64
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Where (W)",
+                  "value": "PL/pgSQL function inline_code_block line 1 at RAISE",
+                  "bytes": [
+                    65,
+                    117
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "W",
+                      "bytes": [
+                        65,
+                        65
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "PL/pgSQL function inline_code_block line 1 at RAISE",
+                      "bytes": [
+                        66,
+                        117
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "File (F)",
+                  "value": "pl_exec.c",
+                  "bytes": [
+                    118,
+                    128
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "F",
+                      "bytes": [
+                        118,
+                        118
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "pl_exec.c",
+                      "bytes": [
+                        119,
+                        128
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Line (L)",
+                  "value": "3911",
+                  "bytes": [
+                    129,
+                    134
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "L",
+                      "bytes": [
+                        129,
+                        129
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "3911",
+                      "bytes": [
+                        130,
+                        134
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Routine (R)",
+                  "value": "exec_stmt_raise",
+                  "bytes": [
+                    135,
+                    151
+                  ],
+                  "children": [
+                    {
+                      "name": "Field Code",
+                      "value": "R",
+                      "bytes": [
+                        135,
+                        135
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "exec_stmt_raise",
+                      "bytes": [
+                        136,
+                        151
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Terminator",
+              "value": 0,
+              "bytes": [
+                152,
+                152
+              ]
+            }
+          ]
+        },
+        {
+          "id": 48,
+          "direction": "S2C",
+          "timestamp_ms": 21.178,
+          "stream_offset": 1136,
+          "length": 8,
+          "raw_hex": "4300000007444f00",
+          "type_char": "C",
+          "type_name": "CommandComplete",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "C",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 7,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Command Tag",
+              "value": "DO",
+              "bytes": [
+                5,
+                7
+              ]
+            }
+          ]
+        },
+        {
+          "id": 49,
+          "direction": "S2C",
+          "timestamp_ms": 21.186,
+          "stream_offset": 1144,
+          "length": 6,
+          "raw_hex": "5a0000000549",
+          "type_char": "Z",
+          "type_name": "ReadyForQuery",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "Z",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 5,
+              "bytes": [
+                1,
+                4
+              ]
+            },
+            {
+              "name": "Transaction Status",
+              "value": "Idle",
+              "bytes": [
+                5,
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "id": 50,
+          "direction": "C2S",
+          "timestamp_ms": 21.291,
+          "stream_offset": 541,
+          "length": 5,
+          "raw_hex": "5800000004",
+          "type_char": "X",
+          "type_name": "Terminate",
+          "fields": [
+            {
+              "name": "Type Identifier",
+              "value": "X",
+              "bytes": [
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Message Length",
+              "value": 4,
+              "bytes": [
+                1,
+                4
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

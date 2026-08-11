@@ -1,0 +1,190 @@
+/**
+ * The scenarios shipped with the site.
+ *
+ * Each `id` is a capture file in public/scenarios/<id>.json. All of them were
+ * recorded against a real Postgres by scripts/generate-scenarios.sh, so what a
+ * visitor reads here is what Postgres actually did.
+ *
+ * scenarios.test.ts checks this list against the files on disk in both
+ * directions. A scenario cannot be listed without a capture, or shipped without
+ * an explanation.
+ */
+
+import type { HighlightSpec } from './highlight'
+
+export interface Scenario {
+  /** Matches the capture filename, without .json. */
+  id: string
+  title: string
+  /** One sentence: what this capture shows, not how it works. Shown on the card. */
+  blurb: string
+  /**
+   * The stretches this scenario exists to show, as inclusive packet-ID ranges
+   * keyed by session ID. See HighlightSpec for why these are IDs.
+   */
+  highlight: HighlightSpec
+  /** Grouping on the landing page. */
+  group:
+    | 'Connection setup'
+    | 'Authentication'
+    | 'Queries'
+    | 'Bulk data'
+    | 'Failure and control'
+    | 'Replication'
+}
+
+export const SCENARIOS: Scenario[] = [
+  {
+    id: 'protocol-32-downgrade',
+    title: 'Protocol 3.2, downgraded',
+    blurb:
+      'A client asks for protocol 3.2 and an unrecognized `_pq_.` startup option, and `NegotiateProtocolVersion` downgrades the connection to 3.0 while reporting both.',
+    highlight: {
+      // The StartupMessage and the server's NegotiateProtocolVersion reply.
+      1: [[1, 2]],
+    },
+    group: 'Connection setup',
+  },
+  {
+    id: 'scram-auth',
+    title: 'SCRAM-SHA-256 authentication',
+    blurb: 'The SASL exchange, from `AuthenticationSASL` to `AuthenticationOk`, without the password appearing on the wire.',
+    highlight: {
+      // The SASL exchange, from the server's offer to AuthenticationOk.
+      1: [[4, 9]],
+    },
+    group: 'Authentication',
+  },
+  {
+    id: 'md5-auth',
+    title: 'MD5 authentication (deprecated)',
+    blurb: 'The two-message MD5 exchange: `AuthenticationMD5Password`, `PasswordMessage`, then `AuthenticationOk`.',
+    highlight: {
+      // Salt out, digest back, accepted.
+      1: [[4, 6]],
+    },
+    group: 'Authentication',
+  },
+  {
+    id: 'simple-query',
+    title: 'The simple query protocol',
+    blurb: 'A successful query cycle and a failed one, both run through the simple query protocol.',
+    highlight: {
+      // Every query cycle. The preamble ends at the first ReadyForQuery.
+      1: [[26, 49]],
+    },
+    group: 'Queries',
+  },
+  {
+    id: 'extended-query',
+    title: 'The extended query protocol',
+    blurb: 'The same query run twice through `Parse`, `Bind`, `Execute`, `Sync`, the second time without a `Parse`.',
+    highlight: {
+      // Both passes, so the missing Parse in the second is visible.
+      1: [[24, 44]],
+    },
+    group: 'Queries',
+  },
+  {
+    id: 'copy-in',
+    title: 'COPY: the bulk-loading sub-protocol',
+    blurb: 'A `COPY FROM STDIN` bulk load, from `CopyInResponse` to `CommandComplete`.',
+    highlight: {
+      // The COPY episode only. Excludes the CREATE TABLE before it and the
+      // read-back after, both of which also end in CommandComplete.
+      1: [[34, 39]],
+    },
+    group: 'Bulk data',
+  },
+  {
+    id: 'error-response',
+    title: 'Errors, and what Sync is for',
+    blurb: 'An extended-protocol failure recovered by `Sync`, and a unique-constraint violation from the simple protocol.',
+    highlight: {
+      // The extended-protocol failure, then the unique violation.
+      1: [
+        [24, 28],
+        [35, 37],
+      ],
+    },
+    group: 'Failure and control',
+  },
+  {
+    id: 'cancel-request',
+    title: 'Cancelling a running query',
+    blurb: 'A running query cancelled from a second connection with `CancelRequest`.',
+    highlight: {
+      // The cancelled query and its 57014, then the cancel on its own session.
+      1: [
+        [26, 29],
+        [24, 24],
+      ],
+      2: [[1, 1]],
+    },
+    group: 'Failure and control',
+  },
+  {
+    id: 'notify',
+    title: 'LISTEN / NOTIFY',
+    blurb: 'A `LISTEN` registration, a `NOTIFY`, and the resulting `NotificationResponse`.',
+    highlight: {
+      // LISTEN, then NOTIFY and the unsolicited NotificationResponse.
+      1: [[24, 30]],
+    },
+    group: 'Failure and control',
+  },
+  {
+    id: 'replication-physical',
+    title: 'Physical replication',
+    blurb:
+      'A physical replication slot set up with `IDENTIFY_SYSTEM` and `CREATE_REPLICATION_SLOT`, then `START_REPLICATION` streaming an `INSERT` from a second connection back as `XLogData`.',
+    highlight: {
+      // Session 1 is the replication connection: the slot setup and
+      // START_REPLICATION, then the XLogData it delivers.
+      1: [[29, 36]],
+      // Session 2 is the ordinary connection making the single write session
+      // 1's stream is showing.
+      2: [[24, 26]],
+    },
+    group: 'Replication',
+  },
+  {
+    id: 'replication-logical',
+    title: 'Logical replication',
+    blurb:
+      'A `pgoutput` logical replication slot set up with `CREATE_REPLICATION_SLOT`, then `START_REPLICATION` streaming an `INSERT` from a second connection back as `XLogData`.',
+    highlight: {
+      // Session 1 is the replication connection: the slot setup and
+      // START_REPLICATION, then the XLogData it delivers.
+      1: [
+        [24, 30],
+        [32, 36],
+      ],
+      // Session 2 is the ordinary connection making the single write session
+      // 1's stream is showing.
+      2: [[24, 26]],
+    },
+    group: 'Replication',
+  },
+]
+
+export const SCENARIO_GROUPS = [
+  'Authentication',
+  'Queries',
+  'Bulk data',
+  'Connection setup',
+  'Failure and control',
+  'Replication',
+] as const
+
+export function scenarioById(id: string): Scenario | undefined {
+  return SCENARIOS.find((s) => s.id === id)
+}
+
+/**
+ * URL of a scenario capture. Built from BASE_URL so the site works when served
+ * from a subdirectory, which is how GitHub Pages project sites are hosted.
+ */
+export function scenarioUrl(id: string): string {
+  return `${import.meta.env.BASE_URL}scenarios/${id}.json`
+}
