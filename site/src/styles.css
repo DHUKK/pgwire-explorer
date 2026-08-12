@@ -1313,6 +1313,36 @@ kbd {
   line-height: 1.6;
 }
 
+/* The way out to the spec, beside the message name in the title. Outlined and
+   labelled, because a bare icon there did not read as clickable. Sized off the
+   heading with em, so it stays subordinate to the name it follows rather than
+   growing with it. */
+.spec-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  margin-left: 0.5em;
+  padding: 0.2em 0.5em;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  color: var(--text-soft);
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.spec-link:hover,
+.spec-link:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
 .doc-facts {
   display: flex;
   flex-wrap: wrap;

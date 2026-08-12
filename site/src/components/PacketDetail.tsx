@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { FieldAnnotation, PacketRecord } from '../types'
 import { docForTypeName, CATEGORY_LABELS } from '../lib/messages'
+import { docsUrlForTypeName } from '../lib/docs'
+import { BookIcon } from './icons'
 import { Inline } from '../lib/inline'
 import { flattenFields, isEmptyRange } from '../lib/hex'
 import { HexDump } from './HexDump'
@@ -24,6 +26,7 @@ export function PacketDetail({
 }: Props) {
   const [hoveredPath, setHoveredPath] = useState<string | null>(null)
   const doc = docForTypeName(packet.type_name)
+  const specUrl = docsUrlForTypeName(packet.type_name)
   const rows = useMemo(
     () => flattenFields(packet.fields ?? [], collapsed),
     [packet.fields, collapsed],
@@ -43,6 +46,22 @@ export function PacketDetail({
       <div className="panel-head">
         <h2>
           {packet.type_name}
+          {/* Beside the name, because the name is what the reader wants to look
+              up. Outlined and labelled rather than a bare icon: an icon alone
+              did not read as something to click. */}
+          {specUrl && (
+            <a
+              className="spec-link"
+              href={specUrl}
+              target="_blank"
+              rel="noreferrer"
+              title="Postgres docs"
+              aria-label={`${packet.type_name} in the Postgres docs`}
+            >
+              <BookIcon size={13} />
+              docs
+            </a>
+          )}
           {packet.type_char && <code className="type-char">{packet.type_char}</code>}
         </h2>
         <span className={`category-chip cat-${doc.category}`}>{CATEGORY_LABELS[doc.category]}</span>
@@ -58,6 +77,7 @@ export function PacketDetail({
               <Inline text={doc.detail} />
             </p>
           )}
+
           <dl className="doc-facts">
             <div>
               <dt>Sender</dt>

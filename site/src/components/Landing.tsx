@@ -3,6 +3,8 @@ import type { CaptureError } from '../lib/capture'
 import { SCENARIOS, SCENARIO_GROUPS } from '../lib/scenarios'
 import { formatFileSize, formatSavedAt, type SavedCaptureMeta } from '../lib/savedCaptures'
 import { Inline } from '../lib/inline'
+import { PROTOCOL_DOCS_URL } from '../lib/docs'
+import { BookIcon } from './icons'
 import { ThemeToggle } from './ThemeToggle'
 
 interface Props {
@@ -79,6 +81,10 @@ export function Landing({
     <div className="landing">
       <header className="landing-header">
         <div className="landing-actions">
+          <a className="ghost-button" href={PROTOCOL_DOCS_URL} target="_blank" rel="noreferrer">
+            <BookIcon />
+            the protocol spec
+          </a>
           <a className="ghost-button" href={REPO_URL} target="_blank" rel="noreferrer">
             <GitHubIcon />
             source on GitHub
