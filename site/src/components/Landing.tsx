@@ -139,6 +139,10 @@ export function Landing({
 
         <section className="landing-section">
           <h2>Start with an example</h2>
+          <p className="section-note">
+            Each example is a full session recording, with the messages it focuses on{' '}
+            <span className="key-mark">highlighted</span>.
+          </p>
 
           {SCENARIO_GROUPS.map((group) => {
             const scenarios = SCENARIOS.filter((s) => s.group === group)
