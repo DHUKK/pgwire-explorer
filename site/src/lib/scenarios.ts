@@ -46,7 +46,7 @@ export interface Scenario {
 export const SCENARIOS: Scenario[] = [
   {
     id: 'protocol-32-downgrade',
-    title: 'Protocol 3.2, downgraded',
+    title: 'Protocol 3.2 downgraded',
     blurb:
       'A client asks for protocol 3.2 and an unrecognized `_pq_.` startup option, and `NegotiateProtocolVersion` downgrades the connection to 3.0 while reporting both.',
     teaches: ['StartupMessage', 'NegotiateProtocolVersion'],
@@ -56,14 +56,33 @@ export const SCENARIOS: Scenario[] = [
     },
     group: 'Connection setup',
   },
+  // The four authentication examples are listed weakest to strongest, so the
+  // group reads as a progression and ends on the method to actually use. Every
+  // other example is recorded under trust, which is why their preambles are as
+  // short as trust-auth's.
   {
-    id: 'scram-auth',
-    title: 'SCRAM-SHA-256 authentication',
-    blurb: 'The SASL exchange, from `AuthenticationSASL` to `AuthenticationOk`, without the password appearing on the wire.',
-    teaches: ['AuthenticationSASL', 'SASLInitialResponse', 'AuthenticationSASLFinal'],
+    id: 'trust-auth',
+    title: 'Trust: no authentication',
+    blurb:
+      'The shortest handshake the protocol allows, with `AuthenticationOk` arriving straight after `StartupMessage` and no credential asked for.',
+    teaches: ['StartupMessage', 'AuthenticationOk'],
     highlight: {
-      // The SASL exchange, from the server's offer to AuthenticationOk.
-      1: [[4, 9]],
+      // The handshake, which is the whole of it: a request and an acceptance
+      // with nothing in between.
+      1: [[3, 4]],
+    },
+    group: 'Authentication',
+  },
+  {
+    id: 'cleartext-auth',
+    title: 'Cleartext password authentication',
+    blurb:
+      'The `password` method, where `PasswordMessage` carries the password itself and it is readable in the hex dump.',
+    teaches: ['AuthenticationCleartextPassword', 'PasswordMessage'],
+    highlight: {
+      // Request, password, accepted. The password in the recording is the
+      // throwaway one from scripts/generate-scenarios.sh.
+      1: [[4, 6]],
     },
     group: 'Authentication',
   },
@@ -79,13 +98,23 @@ export const SCENARIOS: Scenario[] = [
     group: 'Authentication',
   },
   {
+    id: 'scram-auth',
+    title: 'SCRAM-SHA-256 authentication',
+    blurb: 'The SASL exchange, from `AuthenticationSASL` to `AuthenticationOk`, without the password appearing on the wire.',
+    teaches: ['AuthenticationSASL', 'SASLInitialResponse', 'AuthenticationSASLFinal'],
+    highlight: {
+      // The SASL exchange, from the server's offer to AuthenticationOk.
+      1: [[4, 9]],
+    },
+    group: 'Authentication',
+  },
+  {
     id: 'simple-query',
     title: 'The simple query protocol',
     blurb: 'A successful query cycle and a failed one, both run through the simple query protocol.',
     teaches: ['Query', 'RowDescription', 'DataRow', 'ReadyForQuery'],
     highlight: {
-      // Every query cycle. The preamble ends at the first ReadyForQuery.
-      1: [[26, 49]],
+      1: [[21, 29]],
     },
     group: 'Queries',
   },
@@ -96,7 +125,7 @@ export const SCENARIOS: Scenario[] = [
     teaches: ['Parse', 'Bind', 'Execute', 'Sync'],
     highlight: {
       // Both passes, so the missing Parse in the second is visible.
-      1: [[24, 44]],
+      1: [[19, 39]],
     },
     group: 'Queries',
   },
@@ -108,7 +137,7 @@ export const SCENARIOS: Scenario[] = [
     highlight: {
       // The COPY episode only. Excludes the CREATE TABLE before it and the
       // read-back after, both of which also end in CommandComplete.
-      1: [[34, 39]],
+      1: [[29, 34]],
     },
     group: 'Bulk data',
   },
@@ -125,8 +154,8 @@ export const SCENARIOS: Scenario[] = [
       // the transaction so the ROLLBACK leaves the row the second INSERT
       // collides with.
       1: [
-        [24, 28],
-        [35, 46],
+        [19, 23],
+        [30, 41],
       ],
     },
     group: 'Failure and control',
@@ -139,8 +168,8 @@ export const SCENARIOS: Scenario[] = [
     highlight: {
       // The cancelled query and its 57014, then the cancel on its own session.
       1: [
-        [26, 29],
-        [24, 24],
+        [21, 24],
+        [19, 19],
       ],
       2: [[1, 1]],
     },
@@ -153,7 +182,7 @@ export const SCENARIOS: Scenario[] = [
     teaches: ['Query', 'NotificationResponse', 'CommandComplete'],
     highlight: {
       // LISTEN, then NOTIFY and the unsolicited NotificationResponse.
-      1: [[24, 30]],
+      1: [[19, 25]],
     },
     group: 'Failure and control',
   },
@@ -166,10 +195,10 @@ export const SCENARIOS: Scenario[] = [
     highlight: {
       // Session 1 is the replication connection: the slot setup and
       // START_REPLICATION, then the XLogData it delivers.
-      1: [[29, 36]],
+      1: [[24, 31]],
       // Session 2 is the ordinary connection making the single write session
       // 1's stream is showing.
-      2: [[24, 26]],
+      2: [[19, 21]],
     },
     group: 'Replication',
   },
@@ -183,12 +212,12 @@ export const SCENARIOS: Scenario[] = [
       // Session 1 is the replication connection: the slot setup and
       // START_REPLICATION, then the XLogData it delivers.
       1: [
-        [24, 30],
-        [32, 36],
+        [19, 25],
+        [28, 31],
       ],
       // Session 2 is the ordinary connection making the single write session
       // 1's stream is showing.
-      2: [[24, 26]],
+      2: [[19, 21]],
     },
     group: 'Replication',
   },

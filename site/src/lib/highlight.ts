@@ -3,11 +3,12 @@ import type { PacketRecord } from '../types'
 /**
  * Inclusive ranges of packet IDs, keyed by session ID.
  *
- * Every capture opens with the same preamble: an encryption request, a startup
- * message, an authentication exchange, a burst of `ParameterStatus`, and a first
- * `ReadyForQuery`. That is most of the packets and it is nearly identical in all
- * eight scenarios, so a scenario only reads clearly if the part that differs is
- * marked.
+ * Every capture opens with the same preamble: a startup message, an
+ * `AuthenticationOk`, a burst of `ParameterStatus` and a first `ReadyForQuery`,
+ * plus an encryption request in the psql-driven ones. That is most of the packets
+ * and, since everything outside the authentication scenarios is recorded under
+ * trust, it is now nearly identical across all thirteen. A scenario only reads
+ * clearly if the part that differs is marked.
  *
  * Written as literal packet IDs rather than message type names, because a type
  * name cannot tell the `CommandComplete` that ends a `COPY` from the one that

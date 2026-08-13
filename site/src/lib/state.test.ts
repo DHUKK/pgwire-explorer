@@ -86,6 +86,29 @@ describe('stateAfter, over real captures', () => {
     expect(state.authenticated).toBe(true)
   })
 
+  it('identifies cleartext as the method', () => {
+    const [session] = loadScenario('cleartext-auth')
+    const state = finalState(session!)
+    expect(state.authMethod).toContain('cleartext')
+    expect(state.authenticated).toBe(true)
+  })
+
+  // Trust names itself from AuthenticationOk alone, since there is no earlier
+  // message to name it. Without that the pill would read a bare "ok" and leave a
+  // reader unable to tell "no password was asked for" from "the method is not
+  // worth reporting".
+  it('names trust as the method when no credential was ever requested', () => {
+    const [session] = loadScenario('trust-auth')
+    const state = finalState(session!)
+    expect(state.authMethod).toBe('trust (no password)')
+    expect(state.authenticated).toBe(true)
+
+    // Nothing between the request and the acceptance.
+    const types = session!.packets.map((p) => p.type_name)
+    const start = types.indexOf('StartupMessage')
+    expect(types[start + 1]).toBe('AuthenticationOk')
+  })
+
   it('reports authentication as incomplete before AuthenticationOk', () => {
     const [session] = loadScenario('scram-auth')
     const packets = session!.packets

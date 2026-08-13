@@ -31,9 +31,21 @@ var scenarioExpectations = map[string][]string{
 	"md5-auth": {
 		"StartupMessage", "AuthenticationMD5Password", "PasswordMessage", "AuthenticationOk",
 	},
+	"cleartext-auth": {
+		"StartupMessage", "AuthenticationCleartextPassword", "PasswordMessage", "AuthenticationOk",
+	},
+	// The absence is the subject here, so there is nothing to name beyond the two
+	// messages the handshake is reduced to. What actually holds this example is
+	// authScenarios below, which is what forbids a credential message.
+	"trust-auth": {
+		"SSLRequest", "SSLResponse", "StartupMessage", "AuthenticationOk",
+	},
+	// Two query cycles and nothing else, so NoticeResponse is no longer among
+	// them. It used to arrive from a DO block that raised one, which was a third
+	// cycle this example does not claim to show.
 	"simple-query": {
 		"Query", "RowDescription", "DataRow", "CommandComplete", "ReadyForQuery",
-		"NoticeResponse", "ErrorResponse", "Terminate",
+		"ErrorResponse", "Terminate",
 	},
 	"extended-query": {
 		"Parse", "Bind", "Describe", "Execute", "Sync",
@@ -59,11 +71,43 @@ var scenarioExpectations = map[string][]string{
 		"Query", "CopyBothResponse", "CopyData", "CopyDone", "CommandComplete", "ReadyForQuery",
 		"Terminate",
 	},
+	// Recorded under trust like everything outside authScenarios, so the SASL
+	// exchange it used to contain is gone. Version negotiation is the subject and
+	// an authentication method in front of it was only ever a distraction.
 	"protocol-32-downgrade": {
-		"StartupMessage", "NegotiateProtocolVersion", "AuthenticationSASL", "SASLInitialResponse",
-		"AuthenticationSASLContinue", "SASLResponse", "AuthenticationSASLFinal",
+		"StartupMessage", "NegotiateProtocolVersion",
 		"AuthenticationOk", "BackendKeyData", "ReadyForQuery", "Terminate",
 	},
+}
+
+// authScenarios are the examples that exist to show an authentication method,
+// and so the only ones allowed to contain a credential exchange. Every other
+// scenario is recorded under trust (see scripts/generate-scenarios.sh), which
+// cuts its preamble down to StartupMessage and AuthenticationOk.
+//
+// Worth enforcing rather than leaving to the script, for two reasons. The
+// highlight ranges in site/src/lib/scenarios.ts are literal packet IDs, so five
+// messages of SASL reappearing in front of every capture would silently move all
+// of them. And a capture recorded against a method that hashes a password
+// carries a salted hash of it, which is not something to commit by accident.
+var authScenarios = map[string]bool{
+	"scram-auth":     true,
+	"md5-auth":       true,
+	"cleartext-auth": true,
+}
+
+// isCredentialMessage reports whether typeName only ever appears because the
+// server asked for a credential. AuthenticationOk is deliberately not one of
+// them: every successful session ends its handshake with it, trust included.
+func isCredentialMessage(typeName string) bool {
+	switch typeName {
+	case "AuthenticationSASL", "AuthenticationSASLContinue", "AuthenticationSASLFinal",
+		"SASLInitialResponse", "SASLResponse",
+		"AuthenticationMD5Password", "AuthenticationCleartextPassword", "PasswordMessage",
+		"AuthenticationGSS", "AuthenticationGSSContinue", "GSSResponse":
+		return true
+	}
+	return false
 }
 
 // secretKeyLengthExpectations names the number of bytes BackendKeyData's
@@ -157,6 +201,11 @@ var replicationSubtypeExpectations = map[string][]string{
 // BEGIN, or one where the aborted transaction stopped rejecting the statement
 // after it, would still contain every message type the scenario advertises.
 var annotationValueExpectations = map[string][]string{
+	// The whole argument for the other three methods is that this one puts the
+	// password on the wire, so the recording has to actually show it. This is the
+	// throwaway password in scripts/generate-scenarios.sh, in a capture of a
+	// container that no longer exists.
+	"cleartext-auth": {"wire_demo_password"},
 	"error-response": {
 		// The extended-protocol failure.
 		"42P01 (undefined_table)",
@@ -237,6 +286,12 @@ func TestScenarios(t *testing.T) {
 
 					if pkt.TypeName == "Unknown" {
 						t.Errorf("session %d packet %d did not decode: %s", sess.ID, pkt.ID, pkt.RawHex)
+					}
+
+					if !authScenarios[name] && isCredentialMessage(pkt.TypeName) {
+						t.Errorf("session %d packet %d: %s is recorded under trust and must not contain "+
+							"a credential message, found %s. Re-record it with scripts/generate-scenarios.sh",
+							sess.ID, pkt.ID, name, pkt.TypeName)
 					}
 
 					if replicationScenarios[name] {
