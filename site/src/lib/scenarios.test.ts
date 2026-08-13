@@ -72,7 +72,14 @@ describe('scenario manifest', () => {
       ],
       2: [['CancelRequest', 'CancelRequest']],
     },
-    'notify': { 1: [['Query', 'ReadyForQuery']] },
+    'notify': {
+      // The listeners end on the notification itself, which is the message that
+      // arrives with nothing of theirs in flight. The notifier's own range ends
+      // on the ReadyForQuery for its NOTIFY.
+      1: [['Query', 'NotificationResponse']],
+      2: [['Query', 'NotificationResponse']],
+      3: [['Query', 'ReadyForQuery']],
+    },
     'replication-physical': {
       1: [['Query', 'CopyData']],
       2: [['Query', 'ReadyForQuery']],

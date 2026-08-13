@@ -46,16 +46,22 @@ func main() {
 }
 
 func run(ctx context.Context, dsn, setupDSN, mode string) error {
+	// These modes open their own connections, so they are dispatched before the
+	// shared one below is ever constructed. It would otherwise be recorded as an
+	// extra session that the example does nothing with.
+	//
 	// The replication modes drive the wire protocol by hand, because a
 	// replication connection needs the startup parameter replication=true or
 	// replication=database, which pgx's high-level Conn has no clean way to
-	// send. They bypass pgx.Conn entirely, so they are dispatched before it is
-	// ever constructed.
+	// send. notify needs three connections, since a single one notifying itself
+	// is not what LISTEN/NOTIFY is for.
 	switch mode {
 	case "replication-physical":
 		return replicationPhysical(ctx, dsn, setupDSN)
 	case "replication-logical":
 		return replicationLogical(ctx, dsn, setupDSN)
+	case "notify":
+		return notify(ctx, dsn)
 	}
 
 	cfg, err := pgx.ParseConfig(dsn)
@@ -82,8 +88,6 @@ func run(ctx context.Context, dsn, setupDSN, mode string) error {
 		return cancel(ctx, conn)
 	case "error":
 		return errorFlow(ctx, conn)
-	case "notify":
-		return notify(ctx, conn)
 	case "protocol32":
 		return protocol32(ctx, conn)
 	}
@@ -249,22 +253,65 @@ func errorFlow(ctx context.Context, conn *pgx.Conn) error {
 
 // notify exercises NotificationResponse, the only message a server sends
 // unprompted. It arrives with no request of its own in flight.
-func notify(ctx context.Context, conn *pgx.Conn) error {
-	if _, err := conn.Exec(ctx, `LISTEN wire_demo`); err != nil {
-		return fmt.Errorf("listen: %w", err)
+//
+// Three connections, because LISTEN/NOTIFY is a mechanism between connections
+// and a single one notifying itself hides that. Two listeners so that one NOTIFY
+// visibly fans out to every listener, and a third connection to send it, so the
+// NotificationResponse's "Notifying Backend PID" names a backend the reader can
+// go and find in another session rather than the one receiving the message.
+//
+// The order matters and is why this is sequential rather than concurrent. Both
+// LISTEN statements have to have completed before the NOTIFY is sent, or the
+// server has nobody registered to deliver to, and the connections have to be
+// opened in this order for the listeners to be sessions 1 and 2 and the notifier
+// session 3, which is what the highlight ranges are written against.
+//
+// Which listener the server delivers to first is not guaranteed, so nothing here
+// or in the site's tests may depend on the order the two NotificationResponse
+// messages appear in relative to each other.
+func notify(ctx context.Context, dsn string) error {
+	var listeners []*pgx.Conn
+	for i := 1; i <= 2; i++ {
+		conn, err := pgx.Connect(ctx, dsn)
+		if err != nil {
+			return fmt.Errorf("listener %d connect: %w", i, err)
+		}
+		defer conn.Close(ctx)
+		if _, err := conn.Exec(ctx, `LISTEN wire_demo`); err != nil {
+			return fmt.Errorf("listener %d listen: %w", i, err)
+		}
+		listeners = append(listeners, conn)
 	}
-	if _, err := conn.Exec(ctx, `NOTIFY wire_demo, 'hello from the wire'`); err != nil {
+
+	notifier, err := pgx.Connect(ctx, dsn)
+	if err != nil {
+		return fmt.Errorf("notifier connect: %w", err)
+	}
+	defer notifier.Close(ctx)
+
+	// Read before the NOTIFY is sent, so a failure to deliver cannot be papered
+	// over by reporting whatever PID did arrive.
+	notifierPID := notifier.PgConn().PID()
+	if _, err := notifier.Exec(ctx, `NOTIFY wire_demo, 'hello from the wire'`); err != nil {
 		return fmt.Errorf("notify: %w", err)
 	}
 
-	waitCtx, stop := context.WithTimeout(ctx, 3*time.Second)
-	defer stop()
-	n, err := conn.WaitForNotification(waitCtx)
-	if err != nil {
-		return fmt.Errorf("wait for notification: %w", err)
-	}
-	if !strings.Contains(n.Payload, "hello") {
-		return fmt.Errorf("unexpected payload %q", n.Payload)
+	for i, conn := range listeners {
+		waitCtx, stop := context.WithTimeout(ctx, 3*time.Second)
+		n, err := conn.WaitForNotification(waitCtx)
+		stop()
+		if err != nil {
+			return fmt.Errorf("listener %d wait for notification: %w", i+1, err)
+		}
+		if !strings.Contains(n.Payload, "hello") {
+			return fmt.Errorf("listener %d unexpected payload %q", i+1, n.Payload)
+		}
+		// The point of the third connection: the notification names the sender,
+		// not the receiver.
+		if n.PID != notifierPID {
+			return fmt.Errorf("listener %d notification came from PID %d, want the notifier's %d",
+				i+1, n.PID, notifierPID)
+		}
 	}
 	return nil
 }

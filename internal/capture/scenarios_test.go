@@ -219,6 +219,72 @@ var annotationValueExpectations = map[string][]string{
 	},
 }
 
+// findNumberValue returns the value of the first field named name, for the
+// annotations whose values are numbers. Values arrive from JSON, so an integer
+// on the wire is a float64 here.
+func findNumberValue(fields []pgproto.FieldAnnotation, name string) (float64, bool) {
+	for _, f := range fields {
+		if f.Name == name {
+			if n, ok := f.Value.(float64); ok {
+				return n, true
+			}
+		}
+		if n, ok := findNumberValue(f.Children, name); ok {
+			return n, true
+		}
+	}
+	return 0, false
+}
+
+// checkNotificationSender holds the reason the notify example uses three
+// connections instead of one.
+//
+// A session that notifies itself produces a NotificationResponse whose
+// "Notifying Backend PID" is that same session's own BackendKeyData PID, which
+// teaches nothing and invites the reader to conclude the field names the backend
+// being notified. With a separate notifier the field points at another session in
+// the same capture, which is a cross-reference worth following.
+func checkNotificationSender(t *testing.T, capture *SessionCapture) {
+	t.Helper()
+
+	notifications := 0
+	for _, sess := range capture.Sessions {
+		var ownPID float64
+		for i := range sess.Packets {
+			if sess.Packets[i].TypeName == "BackendKeyData" {
+				if pid, ok := findNumberValue(sess.Packets[i].Fields, "Backend PID"); ok {
+					ownPID = pid
+				}
+			}
+		}
+		for i := range sess.Packets {
+			pkt := &sess.Packets[i]
+			if pkt.TypeName != "NotificationResponse" {
+				continue
+			}
+			notifications++
+			from, ok := findNumberValue(pkt.Fields, "Notifying Backend PID")
+			if !ok {
+				t.Errorf("session %d packet %d: NotificationResponse has no Notifying Backend PID",
+					sess.ID, pkt.ID)
+				continue
+			}
+			if from == ownPID {
+				t.Errorf("session %d packet %d: the notification names this session's own backend PID "+
+					"(%.0f), so the field demonstrates nothing. The NOTIFY has to come from a separate "+
+					"connection", sess.ID, pkt.ID, ownPID)
+			}
+		}
+	}
+
+	// One per listener. A single delivery would mean the example stopped showing
+	// that one NOTIFY reaches every listening connection.
+	if notifications != 2 {
+		t.Errorf("found %d NotificationResponse messages, want one per listening session (2)",
+			notifications)
+	}
+}
+
 // collectStringValues walks a field tree collecting every string annotation
 // value, which is what annotationValueExpectations is matched against.
 func collectStringValues(fields []pgproto.FieldAnnotation, into map[string]bool) {
@@ -367,6 +433,9 @@ func TestScenarios(t *testing.T) {
 				if !seenSubtypes[subtype] {
 					t.Errorf("scenario no longer contains a CopyData payload decoded as %q, which is the point of it", subtype)
 				}
+			}
+			if name == "notify" {
+				checkNotificationSender(t, capture)
 			}
 			for _, value := range annotationValueExpectations[name] {
 				if !seenValues[value] {
