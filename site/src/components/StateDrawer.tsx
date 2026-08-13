@@ -3,11 +3,17 @@ import type { Session } from '../types'
 import type { ConnectionState } from '../lib/state'
 import { statusPills } from '../lib/status'
 import { Inline } from '../lib/inline'
+import { SessionTag, type SessionBadge } from './SessionTag'
 
 interface Props {
   state: ConnectionState
   session: Session
   packetNumber: number
+  /**
+   * Which session this state belongs to. Present only when more than one session
+   * is on screen, matching the tag on the status bar and on the packet list row.
+   */
+  badge?: SessionBadge
   onClose: () => void
 }
 
@@ -28,7 +34,7 @@ const HEADLINE_PARAMS = ['user', 'database']
  * the same way. `Parse` and `Bind` are in the list with every field decoded, so a
  * running inventory of them was a second telling too.
  */
-export function StateDrawer({ state, session, packetNumber, onClose }: Props) {
+export function StateDrawer({ state, session, packetNumber, badge, onClose }: Props) {
   const panel = useRef<HTMLDivElement>(null)
   const pills = statusPills(state, session)
 
@@ -55,12 +61,19 @@ export function StateDrawer({ state, session, packetNumber, onClose }: Props) {
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-label="Connection state"
+        aria-label={badge ? `Connection state for session ${badge.id}` : 'Connection state'}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="drawer-head">
           <div>
-            <h2>Connection state</h2>
+            {/* The tag sits inside the heading, not beside it, so the heading
+                names the session it belongs to rather than being a bare
+                "Connection state" that could be any of them. It leads, because
+                it scopes everything after it. */}
+            <h2 className="drawer-title">
+              {badge && <SessionTag badge={badge} />}
+              Connection state
+            </h2>
             <span className="drawer-sub">after message {packetNumber}</span>
           </div>
           <button className="ghost-button" onClick={onClose} aria-label="Close">

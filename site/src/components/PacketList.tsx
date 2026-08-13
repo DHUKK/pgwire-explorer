@@ -1,44 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties } from 'react'
 import type { PacketRecord } from '../types'
 import { docForTypeName } from '../lib/messages'
 import { Inline } from '../lib/inline'
 import { formatMs } from '../lib/hex'
 import { inRanges, type Range } from '../lib/highlight'
 import { rowOffsets, scrollTopToReveal, visibleRowWindow } from '../lib/packetWindow'
-
-/**
- * Which session a merged-view row belongs to, so it is never ambiguous which
- * connection a packet came from.
- *
- * `hue` is decoration on top of the id, not the identifier itself: the badge
- * text (S1, S2, ...) is what actually disambiguates sessions, since colour
- * alone would not work for a colour-blind reader.
- */
-export interface SessionBadge {
-  id: number
-  hue: number
-}
-
-/**
- * A colour for the Nth session that stays distinct as N grows, instead of a
- * fixed-size palette that would start repeating after a handful of sessions.
- *
- * The golden angle (~137.5°) is the standard trick for spacing hues around the
- * wheel so that no small run of consecutive indices lands on similar colours,
- * however many sessions there turn out to be.
- *
- * The offset matters as much as the spacing. Starting at 0 puts the first two
- * sessions on red and green, the one pair the ~8% of men with red/green colour
- * blindness cannot separate, and two sessions is the common case. Starting in
- * the blues gives blue then magenta instead. The badge text (S1, S2, ...) is
- * what actually identifies a session, so hue is only ever a second signal.
- */
-const HUE_START = 205
-
-export function sessionHue(sessionIndex: number): number {
-  return (HUE_START + sessionIndex * 137.508) % 360
-}
+import { SessionTag, type SessionBadge } from './SessionTag'
 
 /** Extra rows kept mounted past each edge of the viewport. */
 const OVERSCAN_ROWS = 8
@@ -334,15 +301,7 @@ export function PacketList({
                   {/* Merged view only: which session this row came from. The
                       text is what disambiguates it; the colour is decoration on
                       top, so a colour-blind reader loses nothing. */}
-                  {badge && (
-                    <span
-                      className="session-badge"
-                      style={{ '--badge-hue': badge.hue } as CSSProperties}
-                      title={`session ${badge.id}`}
-                    >
-                      S{badge.id}
-                    </span>
-                  )}
+                  {badge && <SessionTag badge={badge} />}
                   {/* Direction as a fixed-width glyph in its own column, so every
                       row is exactly the same shape. Colour carries it too, but the
                       arrow means it does not rely on colour alone. */}

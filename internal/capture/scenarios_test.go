@@ -148,6 +148,37 @@ var replicationSubtypeExpectations = map[string][]string{
 	},
 }
 
+// annotationValueExpectations names annotation values a scenario exists to
+// show, for the cases where a message type cannot stand in for one.
+//
+// error-response is the whole of it. Its three ErrorResponse packets are
+// indistinguishable by TypeName, and the point of its second half is that
+// ReadyForQuery reports Failed rather than Idle: a regeneration that lost the
+// BEGIN, or one where the aborted transaction stopped rejecting the statement
+// after it, would still contain every message type the scenario advertises.
+var annotationValueExpectations = map[string][]string{
+	"error-response": {
+		// The extended-protocol failure.
+		"42P01 (undefined_table)",
+		// The failure inside the transaction, then the statement the aborted
+		// transaction refuses to run, then the status that refusal depends on.
+		"23505 (unique_violation)",
+		"25P02 (in_failed_sql_transaction)",
+		"Failed",
+	},
+}
+
+// collectStringValues walks a field tree collecting every string annotation
+// value, which is what annotationValueExpectations is matched against.
+func collectStringValues(fields []pgproto.FieldAnnotation, into map[string]bool) {
+	for _, f := range fields {
+		if s, ok := f.Value.(string); ok {
+			into[s] = true
+		}
+		collectStringValues(f.Children, into)
+	}
+}
+
 // collectSubtypeValues walks a field tree collecting every value of a field
 // named "Subtype", which is how annotateCopyData in internal/pgproto marks
 // which replication submessage a CopyData payload decoded as.
@@ -194,6 +225,7 @@ func TestScenarios(t *testing.T) {
 
 			seen := map[string]bool{}
 			seenSubtypes := map[string]bool{}
+			seenValues := map[string]bool{}
 			secretKeyLen := -1
 			var authType uint32
 			for _, sess := range capture.Sessions {
@@ -258,6 +290,7 @@ func TestScenarios(t *testing.T) {
 
 					checkFieldRanges(t, pkt, pkt.Fields, 0, pkt.Length-1)
 					collectSubtypeValues(pkt.Fields, seenSubtypes)
+					collectStringValues(pkt.Fields, seenValues)
 					if pkt.TypeName == "BackendKeyData" {
 						secretKeyLen = findSecretKeyLength(pkt.Fields)
 					}
@@ -276,6 +309,11 @@ func TestScenarios(t *testing.T) {
 			for _, subtype := range replicationSubtypeExpectations[name] {
 				if !seenSubtypes[subtype] {
 					t.Errorf("scenario no longer contains a CopyData payload decoded as %q, which is the point of it", subtype)
+				}
+			}
+			for _, value := range annotationValueExpectations[name] {
+				if !seenValues[value] {
+					t.Errorf("scenario no longer contains an annotation with the value %q, which is the point of it", value)
 				}
 			}
 			if wantLen, ok := secretKeyLengthExpectations[name]; ok {

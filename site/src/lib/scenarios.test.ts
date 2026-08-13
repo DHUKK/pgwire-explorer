@@ -52,6 +52,8 @@ describe('scenario manifest', () => {
     'extended-query': { 1: [['Parse', 'ReadyForQuery']] },
     'copy-in': { 1: [['Query', 'ReadyForQuery']] },
     'error-response': {
+      // The failed Parse and the ReadyForQuery its Sync produced, then BEGIN
+      // through the ReadyForQuery that reports Idle again after ROLLBACK.
       1: [
         ['Parse', 'ReadyForQuery'],
         ['Query', 'ReadyForQuery'],

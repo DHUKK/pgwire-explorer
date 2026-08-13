@@ -85,13 +85,25 @@ export function Landing({
       <div className="landing-bar">
         <span className="landing-brand">pgwire explorer</span>
         <div className="landing-links">
-          <a className="ghost-button" href={PROTOCOL_DOCS_URL} target="_blank" rel="noreferrer">
+          <a
+            className="ghost-button"
+            href={PROTOCOL_DOCS_URL}
+            target="_blank"
+            rel="noreferrer"
+            title="the protocol spec"
+          >
             <BookIcon />
-            the protocol spec
+            <span className="ghost-button-label">the protocol spec</span>
           </a>
-          <a className="ghost-button" href={REPO_URL} target="_blank" rel="noreferrer">
+          <a
+            className="ghost-button"
+            href={REPO_URL}
+            target="_blank"
+            rel="noreferrer"
+            title="source on GitHub"
+          >
             <GitHubIcon />
-            source on GitHub
+            <span className="ghost-button-label">source on GitHub</span>
           </a>
           <ThemeToggle />
         </div>
@@ -127,6 +139,10 @@ export function Landing({
 
         <section className="landing-section">
           <h2>Start with an example</h2>
+          <p className="section-note">
+            Each example is a full session recording, with the messages it focuses on{' '}
+            <span className="key-mark">highlighted</span>.
+          </p>
 
           {SCENARIO_GROUPS.map((group) => {
             const scenarios = SCENARIOS.filter((s) => s.group === group)

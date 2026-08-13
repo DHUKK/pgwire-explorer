@@ -120,16 +120,21 @@ describe('statusPills', () => {
     }
   })
 
-  it('marks a failed transaction as an error', () => {
-    // Constructed rather than captured: reaching TX=E needs an explicit
-    // transaction block, which none of the scenarios open.
-    const [session] = loadScenario('simple-query')
-    const state = stateAfter(session!, session!.packets.length - 1)
-    state.transactionStatus = 'E'
+  // The error-response scenario opens an explicit transaction and breaks it, so
+  // all three transaction states are reachable from a real recording. It is the
+  // only scenario that reaches TX=E.
+  it('tracks TX through a real transaction, from idle to failed and back', () => {
+    const [session] = loadScenario('error-response')
+    const packets = session!.packets
 
-    const tx = new Map(statusPills(state, session!).map((p) => [p.key, p])).get('tx')!
-    expect(tx.value).toBe('failed')
-    expect(tx.tone).toBe('error')
-    expect(tx.explain).toContain('ROLLBACK')
+    // Asserted as the whole arc rather than at hand-counted positions, so
+    // regenerating the capture cannot quietly move what this checks.
+    const values = packets.map((_, i) => pillsAt(session!, i).get('tx')!.value)
+    const arc = values.filter((v, i) => i === 0 || v !== values[i - 1])
+    expect(arc).toEqual(['unknown', 'idle', 'in transaction', 'failed', 'idle'])
+
+    const broken = pillsAt(session!, values.indexOf('failed')).get('tx')!
+    expect(broken.tone).toBe('error')
+    expect(broken.explain).toContain('ROLLBACK')
   })
 })
