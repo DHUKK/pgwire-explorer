@@ -362,6 +362,26 @@ h3 {
   max-width: 46rem;
 }
 
+/*
+ * The words in prose that name the highlighting, filled with the colour the
+ * highlighting itself uses, so the sentence and the thing it describes are
+ * recognisably one mark.
+ *
+ * --c2s is that colour: .scrub-band draws the bands in it and
+ * .packet-row.key-message tints the rows with it. Mixed a little stronger here
+ * than the 15% those rows use, because a few words have to read as filled where
+ * a whole row only needs a tint. Not the solid --c2s of the band, though: solid
+ * would need its own text colour to stay legible, and it would be the loudest
+ * thing on the page in dark mode, where --c2s is a bright teal.
+ */
+.key-mark {
+  background: color-mix(in srgb, var(--c2s) 28%, transparent);
+  color: var(--text);
+  border-radius: 3px;
+  padding: 0.05em 0.25em;
+}
+
+
 .scenario-group {
   margin-bottom: 1.75rem;
 }
@@ -2098,21 +2118,89 @@ kbd {
   line-height: 1.45;
 }
 
+/*
+ * No line-height override here, deliberately.
+ *
+ * A ghost button's height is its content's line box plus its padding, and every
+ * other one inherits the body's 1.5. This used to set line-height: 1, which made
+ * the toggle several pixels shorter than whatever it stood next to, in the
+ * landing bar and in the explorer header both. The glyphs are safe without it:
+ * they fall outside the shipped latin range and so come from a fallback face,
+ * but an explicit multiple fixes the line box at 1.5 times the font size
+ * whichever face draws the glyph, so the face cannot make the button grow.
+ */
 .theme-toggle {
   min-width: 2rem;
   text-align: center;
-  line-height: 1;
 }
 
+/*
+ * stretch, not center, so the three buttons are always the same height.
+ *
+ * A ghost button's height is otherwise its content's, and these do not hold the
+ * same kind of content: two hold a 14px icon and the toggle holds a line of
+ * text, whose box is 1.5 times 0.85rem, or about 20px. Centring them let the
+ * three disagree, and disagree in opposite directions either side of the
+ * collapse below: with labels showing the toggle was the short one, and with the
+ * labels gone the icon-only links were, because an out-of-flow label leaves the
+ * icon as the only thing setting the height.
+ *
+ * Stretch makes the tallest set the line's height and the rest match it, so this
+ * needs no fixed value to keep in step with the padding or the font size. The
+ * icons stay centred inside the taller box on their own, since .ghost-button
+ * centres its own contents.
+ */
 .landing-links {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 .landing-links a {
   text-decoration: none;
+}
+
+/*
+ * Below this the two labelled links become their icons alone.
+ *
+ * The wordmark and the three controls need about 540px to sit on one line, and
+ * past that the bar wrapped onto two rows, which is a lot of height to spend on
+ * chrome on a phone. 600px rather than 540 leaves margin for a wider label or a
+ * font that measures differently. It is its own breakpoint and not the 700px one
+ * below, because at 700px the labels still fit and are still worth having.
+ *
+ * The label is hidden the way .sr-only hides text, rather than with display:
+ * none, so it stays the link's accessible name. Those declarations are repeated
+ * here because CSS cannot apply another rule's block conditionally, and the
+ * class cannot simply be added in the markup: it has to apply at one width and
+ * not the other. Keep the two in step.
+ *
+ * An absolutely positioned child is not a flex item, so .ghost-button's gap
+ * stops applying once the label is out of flow, and the icon centres on its own
+ * without another rule.
+ */
+@media (max-width: 600px) {
+  .ghost-button-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Square, now there is only a glyph in them. 2rem is the width .theme-toggle
+     already sets for itself, and this selector outranks it, so stating the same
+     value is what makes all three buttons in the bar one size rather than two. */
+  .landing-links .ghost-button {
+    padding: 0.3rem;
+    min-width: 2rem;
+    justify-content: center;
+  }
 }
 
 /* Visually hidden but still announced. */
