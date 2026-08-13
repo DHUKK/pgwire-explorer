@@ -184,11 +184,18 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'notify',
     title: 'LISTEN / NOTIFY',
-    blurb: 'A `LISTEN` registration, a `NOTIFY`, and the resulting `NotificationResponse`.',
+    blurb:
+      'Two connections `LISTEN`, a third sends one `NOTIFY`, and both listeners get a `NotificationResponse` naming the notifier\'s backend PID.',
     teaches: ['Query', 'NotificationResponse', 'CommandComplete'],
     highlight: {
-      // LISTEN, then NOTIFY and the unsolicited NotificationResponse.
-      1: [[19, 25]],
+      // Sessions 1 and 2 are the listeners, identically shaped: the LISTEN, then
+      // the notification arriving after their ReadyForQuery with nothing of
+      // their own outstanding.
+      1: [[19, 22]],
+      2: [[19, 22]],
+      // Session 3 only sends the NOTIFY. Its own backend PID is the one both
+      // notifications quote.
+      3: [[19, 21]],
     },
     group: 'Failure and control',
   },
