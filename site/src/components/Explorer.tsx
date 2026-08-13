@@ -6,7 +6,8 @@ import { stateAfter } from '../lib/state'
 import { rangesForMerged, rangesForSession } from '../lib/highlight'
 import { mergeSessions } from '../lib/merge'
 import { ancestorPaths, fieldAtOffset, formatMs } from '../lib/hex'
-import { PacketList, sessionHue } from './PacketList'
+import { PacketList } from './PacketList'
+import { sessionHue } from './SessionTag'
 import { PacketDetail } from './PacketDetail'
 import { StateBar } from './StateBar'
 import { StateDrawer } from './StateDrawer'
@@ -136,6 +137,20 @@ export function Explorer({ loaded, onClose }: Props) {
     () =>
       merged ? rows.map((r) => ({ id: r.sessionId, hue: sessionHue(r.sessionIndex) })) : undefined,
     [merged, rows],
+  )
+
+  /**
+   * The tag on the status bar and the drawer: which session the connection state
+   * being shown actually belongs to.
+   *
+   * Taken from the selected row rather than from the session selection, because
+   * that is what the state is replayed against. It is deliberately the same id
+   * and the same hue as that row's own badge in the list, so the mark on the bar
+   * and the mark on the row are visibly the same session.
+   */
+  const activeBadge = useMemo(
+    () => (merged && row ? { id: row.sessionId, hue: sessionHue(row.sessionIndex) } : undefined),
+    [merged, row],
   )
 
   // Derived connection state as of the selected packet, replayed against the
@@ -358,7 +373,12 @@ export function Explorer({ loaded, onClose }: Props) {
         ranges={ranges}
       />
 
-      <StateBar state={state} session={activeSession} onOpen={() => setStateOpen(true)} />
+      <StateBar
+        state={state}
+        session={activeSession}
+        badge={activeBadge}
+        onOpen={() => setStateOpen(true)}
+      />
 
       <div className="explorer-body">
         <PacketList
@@ -396,6 +416,7 @@ export function Explorer({ loaded, onClose }: Props) {
           state={state}
           session={activeSession}
           packetNumber={packet?.id ?? 0}
+          badge={activeBadge}
           onClose={() => setStateOpen(false)}
         />
       )}

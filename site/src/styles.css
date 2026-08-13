@@ -103,7 +103,7 @@
   --warn: #a8620a;
 
   /* Merged-view session badges. Each session gets its own hue (see sessionHue
-     in PacketList.tsx), set per-badge as --badge-hue, so the palette scales to
+     in SessionTag.tsx), set per-badge as --badge-hue, so the palette scales to
      any number of sessions instead of repeating after a fixed count. Only the
      saturation and lightness are theme tokens. Decoration only: the badge's
      text (S1, S2, ...) is what actually tells sessions apart. */
@@ -1359,12 +1359,16 @@ kbd {
   border-left-color: var(--s2c);
 }
 
+/* The direction arrow. Deliberately no line-height of its own: it used to carry
+   1.35, which raised its baseline by cutting the half-leading above it, and left
+   the arrow sitting about a pixel higher than the message number and the session
+   tag beside it. At the inherited 1.5 all three land together. Nothing depended
+   on the tighter line box, since a row's height comes from its two-line body. */
 .packet-dir {
   flex: none;
   width: 1rem;
   text-align: center;
   font-size: 0.8rem;
-  line-height: 1.35;
 }
 
 .packet-row.c2s .packet-dir {
@@ -1385,12 +1389,13 @@ kbd {
   padding-top: 0.1rem;
 }
 
-/* Merged view only. The letter+number is the actual identifier; the colour on
-   top is decoration, so this still works for a colour-blind reader with the
-   colour alone removed. `--badge-hue` is set inline per row (see sessionHue in
-   PacketList.tsx), one per session, spaced by the golden angle so the colour
-   stays distinct how many sessions there ever are, rather than cycling a fixed
-   palette. */
+/* Merged view only, on a packet-list row and on the status bar and drawer that
+   describe that row's connection. The letter+number is the actual identifier.
+   The colour on top is decoration, so this still works for a colour-blind reader
+   with the colour alone removed. `--badge-hue` is set inline per tag (see
+   sessionHue in SessionTag.tsx), one per session, spaced by the golden angle so
+   the colour stays distinct how many sessions there ever are, rather than
+   cycling a fixed palette. */
 .session-badge {
   flex: none;
   font-family: var(--mono);
@@ -1401,6 +1406,21 @@ kbd {
   border-radius: 3px;
   border: 1px solid hsl(var(--badge-hue) var(--badge-sat) var(--badge-light));
   color: hsl(var(--badge-hue) var(--badge-sat) var(--badge-light));
+}
+
+/* A packet row is align-items: flex-start, because its body is two lines and the
+   row has to hang from the top of the first one. Every item in it therefore sits
+   at the row's top edge and needs its own offset to bring its text down onto the
+   line, which is what `.packet-index`'s padding-top does. This is the tag's.
+
+   margin, not padding: the tag is a bordered box, so padding would grow the box
+   and move the border rather than moving the whole thing down.
+
+   The number comes from the metrics. At 0.65rem JetBrains Mono with line-height
+   1.4 inside a 1px border, the tag's baseline starts about 2px above where the
+   message number and the arrow either side of it land. */
+.packet-row .session-badge {
+  margin-top: 0.125rem;
 }
 
 .packet-body {
@@ -2021,6 +2041,18 @@ kbd {
 
 .drawer-head h2 {
   font-size: 0.95rem;
+}
+
+/* The heading carries the session tag when more than one session is on screen,
+   so it is a flex row rather than plain text. center, not baseline: the tag is a
+   bordered box, and aligning its text baseline to the heading's leaves the box
+   hanging above the heading's optical centre, because the box has no vertical
+   padding to balance the descender space below the baseline. Centring the box on
+   the heading's line box is what actually looks aligned. */
+.drawer-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .drawer-sub {
