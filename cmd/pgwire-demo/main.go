@@ -10,6 +10,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"errors"
@@ -76,7 +77,7 @@ func run(ctx context.Context, dsn, setupDSN, mode string) error {
 	case "extended":
 		return extended(ctx, conn)
 	case "copy":
-		return copyIn(ctx, conn)
+		return copyFlow(ctx, conn)
 	case "cancel":
 		return cancel(ctx, conn)
 	case "error":
@@ -117,9 +118,21 @@ func extended(ctx context.Context, conn *pgx.Conn) error {
 	return nil
 }
 
-// copyIn exercises CopyInResponse / CopyData / CopyDone, the sub-protocol that
-// takes over the connection until the copy finishes.
-func copyIn(ctx context.Context, conn *pgx.Conn) error {
+// copyFlow runs a copy in both directions, which is two sub-protocols and not
+// one. The protocol docs put it plainly: "Copy-in and copy-out operations each
+// switch the connection into a distinct sub-protocol, which lasts until the
+// operation is completed." Copy-in is entered by COPY FROM STDIN and answered
+// with CopyInResponse, copy-out by COPY TO STDOUT and answered with
+// CopyOutResponse. When either finishes, the connection reverts to whichever
+// command-processing mode it was in before.
+//
+// The two directions deliberately use different formats. pgx's CopyFrom sends
+// binary, so the copy-in payload is length-prefixed and opaque. The copy-out
+// asks for the default text format, so its CopyData payloads are the rows as
+// readable tab-separated lines. Both are the same message type carrying very
+// different bytes, and the format is declared in the CopyInResponse and
+// CopyOutResponse that open each direction.
+func copyFlow(ctx context.Context, conn *pgx.Conn) error {
 	if _, err := conn.Exec(ctx, `CREATE TEMP TABLE copy_demo (id int, label text)`); err != nil {
 		return fmt.Errorf("create temp table: %w", err)
 	}
@@ -133,9 +146,21 @@ func copyIn(ctx context.Context, conn *pgx.Conn) error {
 		return fmt.Errorf("copied %d rows, want %d", n, len(rows))
 	}
 
-	// Read it back so the capture also shows the resulting DataRows.
-	var count int
-	return conn.QueryRow(ctx, `SELECT count(*) FROM copy_demo`).Scan(&count)
+	// Straight back out again, which is the other half of the sub-protocol and
+	// replaces what used to be an extended-protocol SELECT count(*). A read-back
+	// through Parse and Bind showed nothing this example exists to show.
+	var out bytes.Buffer
+	tag, err := conn.PgConn().CopyTo(ctx, &out, `COPY copy_demo TO STDOUT`)
+	if err != nil {
+		return fmt.Errorf("copy to: %w", err)
+	}
+	if got := tag.String(); got != fmt.Sprintf("COPY %d", len(rows)) {
+		return fmt.Errorf("copy out tag = %q, want COPY %d", got, len(rows))
+	}
+	if lines := strings.Count(strings.TrimSuffix(out.String(), "\n"), "\n") + 1; lines != len(rows) {
+		return fmt.Errorf("copy out returned %d lines, want %d", lines, len(rows))
+	}
+	return nil
 }
 
 // cancel starts a slow query and cancels it. The CancelRequest travels on a

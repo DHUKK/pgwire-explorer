@@ -110,7 +110,7 @@ describe('statusPills', () => {
   // COPY is a mode the CopyInResponse and CopyDone in the message list already
   // mark. An error's lasting effect shows up as TX going to E.
   it('never adds a fourth pill, whatever the session does', () => {
-    for (const id of ['error-response', 'copy-in']) {
+    for (const id of ['error-response', 'copy']) {
       for (const session of loadScenario(id)) {
         for (let i = 0; i < session.packets.length; i++) {
           const keys = statusPills(stateAfter(session, i), session).map((p) => p.key)

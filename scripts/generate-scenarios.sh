@@ -35,7 +35,7 @@ cd "$(dirname "$0")/.."
 OUT=site/public/scenarios
 mkdir -p "$OUT"
 
-ALL=(scram-auth trust-auth simple-query extended-query copy-in error-response
+ALL=(scram-auth trust-auth simple-query extended-query copy error-response
   notify cancel-request protocol-32-downgrade replication-physical
   replication-logical cleartext-auth md5-auth)
 WANTED=("$@")
@@ -274,8 +274,11 @@ capture --expect-client-failure simple-query psql_at_proxy \
 # --- 4. extended query protocol --------------------------------------------
 capture extended-query demo_at_proxy extended
 
-# --- 5. COPY ----------------------------------------------------------------
-capture copy-in demo_at_proxy copy
+# --- 5. COPY, both directions -----------------------------------------------
+# Copy-in and copy-out are two distinct sub-protocols, in the protocol docs'
+# own words, so the example shows both. The formats differ on purpose: pgx's
+# CopyFrom sends binary, the COPY TO STDOUT comes back as text.
+capture copy demo_at_proxy copy
 
 # --- 6. errors --------------------------------------------------------------
 capture error-response demo_at_proxy error

@@ -51,8 +51,10 @@ var scenarioExpectations = map[string][]string{
 		"Parse", "Bind", "Describe", "Execute", "Sync",
 		"ParseComplete", "ParameterDescription", "BindComplete", "RowDescription", "DataRow",
 	},
-	"copy-in": {
-		"CopyInResponse", "CopyData", "CopyDone", "CommandComplete",
+	// Both directions, so both response messages. CopyOutResponse is what makes
+	// this example about the sub-protocol rather than about bulk loading.
+	"copy": {
+		"CopyInResponse", "CopyOutResponse", "CopyData", "CopyDone", "CommandComplete",
 	},
 	"error-response": {
 		"ErrorResponse", "Sync", "ReadyForQuery",

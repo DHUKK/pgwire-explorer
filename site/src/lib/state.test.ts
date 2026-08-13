@@ -131,7 +131,7 @@ describe('stateAfter, over real captures', () => {
   // capture until you check the timestamps, and because it means nothing may
   // assume CopyData only follows CopyInResponse.
   it('tolerates CopyData arriving before CopyInResponse (client pipelining)', () => {
-    const [session] = loadScenario('copy-in')
+    const [session] = loadScenario('copy')
     const packets = session!.packets
 
     const copyData = packets.findIndex((p) => p.type_name === 'CopyData')
