@@ -4,7 +4,7 @@ import { docForTypeName, CATEGORY_LABELS } from '../lib/messages'
 import { docsUrlForTypeName } from '../lib/docs'
 import { BookIcon } from './icons'
 import { Inline } from '../lib/inline'
-import { flattenFields, isEmptyRange } from '../lib/hex'
+import { ancestorPaths, fieldAtOffset, fieldAtPath, flattenFields, isEmptyRange } from '../lib/hex'
 import { HexDump } from './HexDump'
 
 interface Props {
@@ -25,6 +25,7 @@ export function PacketDetail({
   onToggleCollapsed,
 }: Props) {
   const [hoveredPath, setHoveredPath] = useState<string | null>(null)
+  const [hoveredByte, setHoveredByte] = useState<number | null>(null)
   const doc = docForTypeName(packet.type_name)
   const specUrl = docsUrlForTypeName(packet.type_name)
   const rows = useMemo(
@@ -32,14 +33,42 @@ export function PacketDetail({
     [packet.fields, collapsed],
   )
 
-  // Hover wins over selection for highlighting, so sweeping the mouse down the
-  // tree sweeps the highlight through the dump without destroying the selection.
-  const activePath = hoveredPath ?? selectedFieldPath
-  const activeRange = useMemo(() => {
-    const row = rows.find((r) => r.path === activePath)
-    if (!row || isEmptyRange(row.field)) return null
-    return row.field.bytes
-  }, [rows, activePath])
+  // The field under the pointer in the dump. Every byte belongs to exactly one
+  // innermost field, which is what makes hovering one able to answer "what is
+  // this?" without a click.
+  const hoveredByteField = useMemo(
+    () => (hoveredByte === null ? null : fieldAtOffset(packet.fields ?? [], hoveredByte)),
+    [packet.fields, hoveredByte],
+  )
+
+  // Hover wins over selection for highlighting, so sweeping the mouse through
+  // either pane sweeps the highlight without destroying the pinned field. The
+  // two hovers cannot both be live, since leaving either pane clears its own.
+  const activePath = hoveredPath ?? hoveredByteField?.path ?? selectedFieldPath
+
+  // Resolved against the tree, not against `rows`. A path outlives the row that
+  // produced it: collapsing an ancestor takes the row off screen, and the bytes
+  // of the field it named should stay highlighted rather than silently stop.
+  const activeField = useMemo(
+    () => (activePath === null ? null : fieldAtPath(packet.fields ?? [], activePath)),
+    [packet.fields, activePath],
+  )
+  const activeRange = activeField && !isEmptyRange(activeField) ? activeField.bytes : null
+
+  // Which row to mark. Usually the active field's own, but when that field is
+  // collapsed out of sight this is the deepest ancestor still on screen, so
+  // hovering a byte inside a collapsed subtree marks the row that contains it
+  // instead of marking nothing at all.
+  const rowPaths = useMemo(() => new Set(rows.map((r) => r.path)), [rows])
+  const activeRowPath = useMemo(() => {
+    if (activePath === null) return null
+    if (rowPaths.has(activePath)) return activePath
+    const ancestors = ancestorPaths(activePath)
+    for (let i = ancestors.length - 1; i >= 0; i--) {
+      if (rowPaths.has(ancestors[i]!)) return ancestors[i]!
+    }
+    return null
+  }, [activePath, rowPaths])
 
   return (
     <div className="panel detail-panel">
@@ -113,7 +142,7 @@ export function PacketDetail({
               {rows.map((row) => {
                 const { field, depth, path, hasChildren } = row
                 const empty = isEmptyRange(field)
-                const isActive = path === activePath
+                const isActive = path === activeRowPath
                 return (
                   <li key={path}>
                     <div
@@ -158,13 +187,25 @@ export function PacketDetail({
         <section className="hex-block">
           <h3>
             Raw bytes
+            {/* Naming the hovered byte's field is the whole point of hovering
+                one. This line used to read "hover a field above" for as long as
+                the pointer was anywhere in the dump, which was exactly when it
+                had something to say. */}
             <span className="hint">
-              {activeRange
-                ? `highlighting ${activeRange[0]}-${activeRange[1]}`
-                : 'hover a field above'}
+              {hoveredByteField
+                ? `byte ${hoveredByte} is ${hoveredByteField.field.name}`
+                : activeRange
+                  ? `highlighting ${activeRange[0]}-${activeRange[1]}`
+                  : 'hover a field above, or a byte below'}
             </span>
           </h3>
-          <HexDump hex={packet.raw_hex} highlight={activeRange} onSelectByte={onSelectByte} />
+          <HexDump
+            hex={packet.raw_hex}
+            highlight={activeRange}
+            onSelectByte={onSelectByte}
+            onHoverByte={setHoveredByte}
+            reveal={hoveredByte === null}
+          />
         </section>
       </div>
     </div>

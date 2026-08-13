@@ -61,7 +61,7 @@ export function StateDrawer({ state, session, packetNumber, onClose }: Props) {
         <header className="drawer-head">
           <div>
             <h2>Connection state</h2>
-            <span className="drawer-sub">after packet {packetNumber}</span>
+            <span className="drawer-sub">after message {packetNumber}</span>
           </div>
           <button className="ghost-button" onClick={onClose} aria-label="Close">
             ✕

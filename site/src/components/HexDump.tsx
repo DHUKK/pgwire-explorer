@@ -28,16 +28,33 @@ interface Props {
   /** Inclusive [start, end] range to highlight, or null. */
   highlight: [number, number] | null
   onSelectByte: (offset: number) => void
+  /**
+   * The byte under the pointer, or null once the pointer leaves the dump.
+   *
+   * Hovering used to do nothing at all here: a byte only answered "what is
+   * this?" once it had been clicked, so the two-way link was one-way on hover.
+   */
+  onHoverByte: (offset: number | null) => void
+  /**
+   * Whether to scroll a highlight outside the mounted window into view.
+   *
+   * False while the highlight is itself the result of hovering a byte, which
+   * would otherwise fight the pointer: the hovered byte is on screen by
+   * definition, but the field containing it can begin many rows above, and
+   * scrolling to reveal that would slide a different byte under the cursor,
+   * highlight that byte's field, and scroll again.
+   */
+  reveal: boolean
 }
 
 /**
  * A classic hex dump: offset, hex columns, ASCII gutter. The bytes of the active
  * field are highlighted in both halves.
  *
- * Every byte is clickable, which is the other half of the two-way link with the
- * field tree: the annotations guarantee that each byte belongs to exactly one
- * innermost field, so any byte you click has a well-defined answer to "what is
- * this?".
+ * Every byte is hoverable and clickable, which is the other half of the two-way
+ * link with the field tree: the annotations guarantee that each byte belongs to
+ * exactly one innermost field, so any byte has a well-defined answer to "what is
+ * this?". Hovering names that field and lights its row, clicking pins it.
  *
  * A captured `CopyData` can be hundreds of kilobytes (a raw `COPY` stream, or a
  * chunk of physical replication WAL), so this only ever mounts the rows near
@@ -50,7 +67,7 @@ interface Props {
  * before highlighting them, so nothing is ever hidden, just not all mounted at
  * once.
  */
-export function HexDump({ hex, highlight, onSelectByte }: Props) {
+export function HexDump({ hex, highlight, onSelectByte, onHoverByte, reveal }: Props) {
   const byteLength = hex.length / 2
   const rowCount = rowCountFor(byteLength, BYTES_PER_ROW)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -75,7 +92,11 @@ export function HexDump({ hex, highlight, onSelectByte }: Props) {
   // was previously selected.
   useEffect(() => {
     const el = scrollRef.current
-    if (el) el.scrollTop = 0
+    // Instant, overriding `.hex-dump`'s smooth scroll-behavior. Gliding is right
+    // for moving within one packet's bytes. Gliding through the old scroll
+    // position of a packet that is no longer on screen is not: this is a reset,
+    // not a movement, and there is nothing on the way for the reader to see.
+    if (el) el.scrollTo({ top: 0, behavior: 'instant' })
     setScrollTop(0)
   }, [hex])
 
@@ -83,16 +104,20 @@ export function HexDump({ hex, highlight, onSelectByte }: Props) {
   // outside the currently rendered window, so bring them into view instead of
   // silently failing to highlight them.
   useEffect(() => {
-    if (!highlight) return
+    if (!highlight || !reveal) return
     const el = scrollRef.current
     if (!el) return
     const row = rowForOffset(highlight[0], BYTES_PER_ROW)
     const next = scrollTopToReveal(row, ROW_HEIGHT, el.scrollTop, el.clientHeight)
     if (next !== el.scrollTop) {
+      // `.hex-dump` sets scroll-behavior: smooth, so this glides. The state
+      // below is set to the value asked for rather than read back off the
+      // element, so which rows are mounted never depends on where an
+      // in-progress animation has got to.
       el.scrollTop = next
       setScrollTop(next)
     }
-  }, [highlight])
+  }, [highlight, reveal])
 
   const { start, end } = visibleRowWindow(
     rowCount,
@@ -136,6 +161,7 @@ export function HexDump({ hex, highlight, onSelectByte }: Props) {
       className="hex-dump"
       ref={scrollRef}
       onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+      onMouseLeave={() => onHoverByte(null)}
     >
       <div className="hex-dump-sizer" style={{ height: rowCount * ROW_HEIGHT }}>
         {rows.map((rowStart) => (
@@ -158,6 +184,7 @@ export function HexDump({ hex, highlight, onSelectByte }: Props) {
                     key={i}
                     className={highlightClass('hex-byte', offset)}
                     onClick={() => onSelectByte(offset)}
+                    onMouseEnter={() => onHoverByte(offset)}
                     title={`byte ${offset} is 0x${byteToHex(byte)} (${byte})`}
                   >
                     {byteToHex(byte)}
@@ -182,6 +209,7 @@ export function HexDump({ hex, highlight, onSelectByte }: Props) {
                     key={i}
                     className={highlightClass('ascii-char', offset)}
                     onClick={() => onSelectByte(offset)}
+                    onMouseEnter={() => onHoverByte(offset)}
                     title={`byte ${offset}`}
                   >
                     {byteToPrintable(byte)}
