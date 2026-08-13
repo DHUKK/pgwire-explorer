@@ -14,7 +14,13 @@
 # its own port and removes it at the end. It does NOT touch any Postgres you
 # already run, in Docker or otherwise.
 #
-# Usage: scripts/generate-scenarios.sh
+# Usage: scripts/generate-scenarios.sh [name ...]
+# With no arguments it regenerates every example. Named examples regenerate only
+# those, leaving the other files on disk untouched, which matters because every
+# recording is slightly different: fresh SCRAM salts, a new backend PID, a
+# different packet count. Regenerating all eleven to change one moves the packet
+# IDs the highlight ranges in site/src/lib/scenarios.ts are written in.
+#
 # Override the Postgres image with PG_IMAGE=postgres:17 scripts/generate-scenarios.sh
 #
 # The protocol-32-downgrade scenario asks PG_IMAGE (postgres:16 by default) for
@@ -28,6 +34,22 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 OUT=site/public/scenarios
 mkdir -p "$OUT"
+
+ALL=(scram-auth simple-query extended-query copy-in error-response notify
+  cancel-request protocol-32-downgrade replication-physical replication-logical
+  md5-auth)
+WANTED=("$@")
+# Expanded only when non-empty: under set -u, bash 3.2 (what macOS ships) treats
+# "${WANTED[@]}" on an empty array as an unbound variable.
+if [[ ${#WANTED[@]} -gt 0 ]]; then
+  for want in "${WANTED[@]}"; do
+    # A typo would otherwise be a silent no-op that looks like a successful run.
+    [[ " ${ALL[*]} " == *" $want "* ]] || {
+      echo "error: unknown example '$want'. Known: ${ALL[*]}" >&2
+      exit 1
+    }
+  done
+fi
 
 PG_IMAGE="${PG_IMAGE:-postgres:16}"
 
@@ -88,12 +110,24 @@ docker exec "$CONTAINER" pg_isready -U postgres >/dev/null 2>&1 || {
 docker exec "$CONTAINER" bash -c "echo 'host replication all all scram-sha-256' >> /var/lib/postgresql/data/pg_hba.conf"
 docker exec "$CONTAINER" psql -U postgres -c "SELECT pg_reload_conf();" >/dev/null
 
+# wanted <name> is true when this run should record <name>. No arguments means
+# every example.
+wanted() {
+  [[ ${#WANTED[@]} -eq 0 ]] && return 0
+  local name="$1" w
+  for w in "${WANTED[@]}"; do
+    [[ "$w" == "$name" ]] && return 0
+  done
+  return 1
+}
+
 # capture <output-name> <command...>
 # Starts the proxy, runs the command against it, stops the proxy so the capture
 # is flushed. Proxies to the throwaway container for
 # the duration of that one call.
 capture() {
   local name="$1"; shift
+  wanted "$name" || { echo "  skipping $name"; return 0; }
   echo "  recording $name"
   "$BUILD/pgwire-capture" \
     --listen "127.0.0.1:$PROXY_PORT" \
@@ -214,6 +248,7 @@ capture protocol-32-downgrade demo_at_proxy_32 protocol32
 # reload. Restarting now, before either replication capture, keeps this
 # script's one restart in one place instead of bracketing just the logical
 # capture.
+if wanted replication-physical || wanted replication-logical; then
 echo "  switching to wal_level=logical (needs a restart)"
 docker exec "$CONTAINER" psql -U postgres -c "ALTER SYSTEM SET wal_level='logical';" >/dev/null
 docker restart "$CONTAINER" >/dev/null
@@ -228,6 +263,7 @@ docker exec "$CONTAINER" pg_isready -U postgres >/dev/null 2>&1 || {
   docker logs "$CONTAINER" >&2 || true
   exit 1
 }
+fi
 
 capture replication-physical demo_at_proxy replication-physical
 capture replication-logical demo_at_proxy replication-logical
@@ -236,11 +272,13 @@ capture replication-logical demo_at_proxy replication-logical
 # Needs the server reconfigured, so it goes last. password_encryption and
 # pg_hba.conf both take effect on a reload, no restart needed, and the
 # ALTER USER rehashes the stored secret under the new encryption.
+if wanted md5-auth; then
 echo "  switching to md5"
 docker exec "$CONTAINER" bash -c "sed -i 's/scram-sha-256/md5/g' /var/lib/postgresql/data/pg_hba.conf"
 docker exec "$CONTAINER" psql -U postgres -c "ALTER SYSTEM SET password_encryption='md5';" >/dev/null
 docker exec "$CONTAINER" psql -U postgres -c "SELECT pg_reload_conf();" >/dev/null
 docker exec "$CONTAINER" psql -U postgres -c "ALTER USER postgres PASSWORD '$PASSWORD';" >/dev/null
+fi
 
 capture md5-auth psql_at_proxy -c "SELECT 'authenticated' AS status;"
 

@@ -162,9 +162,17 @@ func cancel(ctx context.Context, conn *pgx.Conn) error {
 	return fmt.Errorf("unexpected error: %w", err)
 }
 
-// errorFlow shows ErrorResponse in the extended protocol, where a failed
-// statement poisons the connection until Sync: everything between the error and
-// the next Sync is discarded by the server.
+// errorFlow shows ErrorResponse once per protocol, because the two protocols
+// recover from a failure differently.
+//
+// First the extended protocol, where a failed statement poisons the batch:
+// everything between the error and the next Sync is discarded by the server,
+// which is why the Describe sent here never gets a reply of its own.
+//
+// Then the simple protocol inside an explicit transaction, which is where an
+// error has a lasting effect. Once the INSERT fails the transaction is aborted:
+// ReadyForQuery reports Failed, the next statement is rejected with 25P02
+// without being run, and only ROLLBACK gets back to Idle.
 func errorFlow(ctx context.Context, conn *pgx.Conn) error {
 	_, err := conn.Query(ctx, `SELECT * FROM table_that_does_not_exist`)
 	if err == nil {
@@ -175,14 +183,21 @@ func errorFlow(ctx context.Context, conn *pgx.Conn) error {
 		return fmt.Errorf("expected undefined_table (42P01), got: %w", err)
 	}
 
-	// A constraint violation too: a different, richer ErrorResponse with a
-	// detail field and a constraint name.
+	// Seeded before BEGIN, so the ROLLBACK below does not take away the row the
+	// unique violation has to collide with.
 	if _, err := conn.Exec(ctx, `CREATE TEMP TABLE uniq_demo (id int PRIMARY KEY)`); err != nil {
 		return fmt.Errorf("create temp table: %w", err)
 	}
 	if _, err := conn.Exec(ctx, `INSERT INTO uniq_demo VALUES (1)`); err != nil {
-		return fmt.Errorf("first insert: %w", err)
+		return fmt.Errorf("seed insert: %w", err)
 	}
+
+	if _, err := conn.Exec(ctx, `BEGIN`); err != nil {
+		return fmt.Errorf("begin: %w", err)
+	}
+
+	// A richer ErrorResponse than the first: a detail field, a schema, a table
+	// and the constraint name.
 	_, err = conn.Exec(ctx, `INSERT INTO uniq_demo VALUES (1)`)
 	if err == nil {
 		return errors.New("expected a unique violation")
@@ -191,9 +206,20 @@ func errorFlow(ctx context.Context, conn *pgx.Conn) error {
 		return fmt.Errorf("expected unique_violation (23505), got: %w", err)
 	}
 
-	// The connection is still usable after Sync, which is the lesson.
-	var ok int
-	return conn.QueryRow(ctx, `SELECT 1`).Scan(&ok)
+	// Never run. The transaction is already aborted, so the server rejects this
+	// on arrival rather than executing it.
+	_, err = conn.Exec(ctx, `SELECT 1`)
+	if err == nil {
+		return errors.New("expected the aborted transaction to reject the next statement")
+	}
+	if !errors.As(err, &pgErr) || pgErr.Code != "25P02" {
+		return fmt.Errorf("expected in_failed_sql_transaction (25P02), got: %w", err)
+	}
+
+	if _, err := conn.Exec(ctx, `ROLLBACK`); err != nil {
+		return fmt.Errorf("rollback: %w", err)
+	}
+	return nil
 }
 
 // notify exercises NotificationResponse, the only message a server sends

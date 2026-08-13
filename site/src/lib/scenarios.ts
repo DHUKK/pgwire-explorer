@@ -114,14 +114,19 @@ export const SCENARIOS: Scenario[] = [
   },
   {
     id: 'error-response',
-    title: 'Errors, and what Sync is for',
-    blurb: 'An extended protocol failure recovered by `Sync`, and a unique constraint violation from the simple protocol.',
+    title: 'Errors',
+    blurb:
+      'A failed `Parse` that the server discards the rest of the batch after, then a failure inside a transaction that leaves `ReadyForQuery` reporting `Failed` until `ROLLBACK`.',
     teaches: ['ErrorResponse', 'Sync', 'ReadyForQuery'],
     highlight: {
-      // The extended-protocol failure, then the unique violation.
+      // The extended-protocol failure, where Describe never gets a reply,
+      // then the whole transaction from BEGIN to ROLLBACK. The CREATE TEMP
+      // TABLE and first INSERT between them are setup, deliberately outside
+      // the transaction so the ROLLBACK leaves the row the second INSERT
+      // collides with.
       1: [
         [24, 28],
-        [35, 37],
+        [35, 46],
       ],
     },
     group: 'Failure and control',
