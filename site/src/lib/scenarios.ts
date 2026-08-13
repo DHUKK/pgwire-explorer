@@ -130,14 +130,20 @@ export const SCENARIOS: Scenario[] = [
     group: 'Queries',
   },
   {
-    id: 'copy-in',
-    title: 'COPY: the bulk-loading sub-protocol',
-    blurb: 'A `COPY FROM STDIN` bulk load, from `CopyInResponse` to `CommandComplete`.',
-    teaches: ['CopyInResponse', 'CopyData', 'CopyDone'],
+    id: 'copy',
+    title: 'COPY: the bulk-transfer sub-protocol',
+    blurb:
+      'A binary `COPY FROM STDIN` and then a text `COPY TO STDOUT`, which are two distinct sub-protocols the connection switches into and back out of.',
+    teaches: ['CopyInResponse', 'CopyOutResponse', 'CopyData', 'CopyDone'],
     highlight: {
-      // The COPY episode only. Excludes the CREATE TABLE before it and the
-      // read-back after, both of which also end in CommandComplete.
-      1: [[29, 34]],
+      // Both directions, back to back. Excludes the CREATE TABLE before them
+      // and the Parse/Describe pgx does to learn the column types it needs for
+      // binary encoding, neither of which this capture exists to show.
+      //
+      // One range rather than two: the copy-out starts on the message after the
+      // copy-in's ReadyForQuery, and adjacent ranges are merged into a single
+      // band anyway.
+      1: [[29, 42]],
     },
     group: 'Bulk data',
   },
