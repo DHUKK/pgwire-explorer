@@ -1,20 +1,20 @@
 {
   "version": "2.0",
-  "recorded_at": "2026-08-12T14:20:22.227087+01:00",
+  "recorded_at": "2026-08-13T11:43:57.155926+01:00",
   "sessions": [
     {
       "id": 1,
-      "client_addr": "127.0.0.1:54774",
+      "client_addr": "127.0.0.1:54551",
       "server_addr": "127.0.0.1:55432",
-      "started_at": "2026-08-12T14:20:23.232382+01:00",
-      "ended_at": "2026-08-12T14:20:24.744845+01:00",
+      "started_at": "2026-08-13T11:43:58.168172+01:00",
+      "ended_at": "2026-08-13T11:43:59.685958+01:00",
       "ssl_requested": true,
       "ssl_accepted": false,
       "packets": [
         {
           "id": 1,
           "direction": "C2S",
-          "timestamp_ms": 0.015,
+          "timestamp_ms": 0.018,
           "stream_offset": 0,
           "length": 8,
           "raw_hex": "0000000804d2162f",
@@ -41,7 +41,7 @@
         {
           "id": 2,
           "direction": "S2C",
-          "timestamp_ms": 0.032,
+          "timestamp_ms": 0.038,
           "stream_offset": 0,
           "length": 1,
           "raw_hex": "4e",
@@ -61,7 +61,7 @@
         {
           "id": 3,
           "direction": "C2S",
-          "timestamp_ms": 0.114,
+          "timestamp_ms": 0.124,
           "stream_offset": 8,
           "length": 63,
           "raw_hex": "0000003f000300007573657200706f73746772657300646174616261736500706f737467726573006170706c69636174696f6e5f6e616d65007073716c0000",
@@ -180,245 +180,8 @@
         {
           "id": 4,
           "direction": "S2C",
-          "timestamp_ms": 1.623,
+          "timestamp_ms": 13.453,
           "stream_offset": 1,
-          "length": 24,
-          "raw_hex": "52000000170000000a534352414d2d5348412d3235360000",
-          "type_char": "R",
-          "type_name": "AuthenticationSASL",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "R",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 23,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Type (10 = SASL)",
-              "value": 10,
-              "bytes": [
-                5,
-                8
-              ]
-            },
-            {
-              "name": "Auth Mechanisms",
-              "bytes": [
-                9,
-                22
-              ],
-              "children": [
-                {
-                  "name": "Mechanism[0]",
-                  "value": "SCRAM-SHA-256",
-                  "bytes": [
-                    9,
-                    22
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "Terminator",
-              "value": 0,
-              "bytes": [
-                23,
-                23
-              ]
-            }
-          ]
-        },
-        {
-          "id": 5,
-          "direction": "C2S",
-          "timestamp_ms": 2.701,
-          "stream_offset": 71,
-          "length": 55,
-          "raw_hex": "7000000036534352414d2d5348412d32353600000000206e2c2c6e3d2c723d6e306c304e43745336386175414d354f6b695a6866693677",
-          "type_char": "p",
-          "type_name": "SASLInitialResponse",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "p",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 54,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Mechanism",
-              "value": "SCRAM-SHA-256",
-              "bytes": [
-                5,
-                18
-              ]
-            },
-            {
-              "name": "SASL Data Length",
-              "value": 32,
-              "bytes": [
-                19,
-                22
-              ]
-            },
-            {
-              "name": "SASL Data (client-first-message)",
-              "value": "n,,n=,r=n0l0NCtS68auAM5OkiZhfi6w",
-              "bytes": [
-                23,
-                54
-              ]
-            }
-          ]
-        },
-        {
-          "id": 6,
-          "direction": "S2C",
-          "timestamp_ms": 3.682,
-          "stream_offset": 25,
-          "length": 93,
-          "raw_hex": "520000005c0000000b723d6e306c304e43745336386175414d354f6b695a686669367774796d6a5677616a766a3236434e334f313530682f6832712c733d45525174304a63375248746677584d7a5a2b764c65673d3d2c693d34303936",
-          "type_char": "R",
-          "type_name": "AuthenticationSASLContinue",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "R",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 92,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Type (11 = SASLContinue)",
-              "value": 11,
-              "bytes": [
-                5,
-                8
-              ]
-            },
-            {
-              "name": "SASL Data (server-first-message)",
-              "value": "r=n0l0NCtS68auAM5OkiZhfi6wtymjVwajvj26CN3O150h/h2q,s=ERQt0Jc7RHtfwXMzZ+vLeg==,i=4096",
-              "bytes": [
-                9,
-                92
-              ]
-            }
-          ]
-        },
-        {
-          "id": 7,
-          "direction": "C2S",
-          "timestamp_ms": 5.256,
-          "stream_offset": 126,
-          "length": 109,
-          "raw_hex": "700000006c633d626977732c723d6e306c304e43745336386175414d354f6b695a686669367774796d6a5677616a766a3236434e334f313530682f6832712c703d723159584157375362676958335179714c674c395a316e4e6c2b58347a734556766b7662776d2f385375303d",
-          "type_char": "p",
-          "type_name": "SASLResponse",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "p",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 108,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "SASL Data (client-final-message)",
-              "value": "c=biws,r=n0l0NCtS68auAM5OkiZhfi6wtymjVwajvj26CN3O150h/h2q,p=r1YXAW7SbgiX3QyqLgL9Z1nNl+X4zsEVvkvbwm/8Su0=",
-              "bytes": [
-                5,
-                108
-              ]
-            }
-          ]
-        },
-        {
-          "id": 8,
-          "direction": "S2C",
-          "timestamp_ms": 6.38,
-          "stream_offset": 118,
-          "length": 55,
-          "raw_hex": "52000000360000000c763d716f48696c6f74635a55632f702f74454141526b57686f3473594b414a346f4e7958524156355a476b4f6f3d",
-          "type_char": "R",
-          "type_name": "AuthenticationSASLFinal",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "R",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 54,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Type (12 = SASLFinal)",
-              "value": 12,
-              "bytes": [
-                5,
-                8
-              ]
-            },
-            {
-              "name": "SASL Data (server-final-message)",
-              "value": "v=qoHilotcZUc/p/tEAARkWho4sYKAJ4oNyXRAV5ZGkOo=",
-              "bytes": [
-                9,
-                54
-              ]
-            }
-          ]
-        },
-        {
-          "id": 9,
-          "direction": "S2C",
-          "timestamp_ms": 6.391,
-          "stream_offset": 173,
           "length": 9,
           "raw_hex": "520000000800000000",
           "type_char": "R",
@@ -451,10 +214,10 @@
           ]
         },
         {
-          "id": 10,
+          "id": 5,
           "direction": "S2C",
-          "timestamp_ms": 6.402,
-          "stream_offset": 182,
+          "timestamp_ms": 13.491,
+          "stream_offset": 10,
           "length": 24,
           "raw_hex": "5300000017696e5f686f745f7374616e646279006f666600",
           "type_char": "S",
@@ -495,10 +258,10 @@
           ]
         },
         {
-          "id": 11,
+          "id": 6,
           "direction": "S2C",
-          "timestamp_ms": 6.414,
-          "stream_offset": 206,
+          "timestamp_ms": 13.616,
+          "stream_offset": 34,
           "length": 26,
           "raw_hex": "5300000019696e74656765725f6461746574696d6573006f6e00",
           "type_char": "S",
@@ -539,10 +302,10 @@
           ]
         },
         {
-          "id": 12,
+          "id": 7,
           "direction": "S2C",
-          "timestamp_ms": 6.419,
-          "stream_offset": 232,
+          "timestamp_ms": 13.623,
+          "stream_offset": 60,
           "length": 22,
           "raw_hex": "530000001554696d655a6f6e65004574632f55544300",
           "type_char": "S",
@@ -583,10 +346,10 @@
           ]
         },
         {
-          "id": 13,
+          "id": 8,
           "direction": "S2C",
-          "timestamp_ms": 6.427,
-          "stream_offset": 254,
+          "timestamp_ms": 13.632,
+          "stream_offset": 82,
           "length": 28,
           "raw_hex": "530000001b496e74657276616c5374796c6500706f73746772657300",
           "type_char": "S",
@@ -627,10 +390,10 @@
           ]
         },
         {
-          "id": 14,
+          "id": 9,
           "direction": "S2C",
-          "timestamp_ms": 6.436,
-          "stream_offset": 282,
+          "timestamp_ms": 13.64,
+          "stream_offset": 110,
           "length": 21,
           "raw_hex": "530000001469735f737570657275736572006f6e00",
           "type_char": "S",
@@ -671,10 +434,10 @@
           ]
         },
         {
-          "id": 15,
+          "id": 10,
           "direction": "S2C",
-          "timestamp_ms": 6.441,
-          "stream_offset": 303,
+          "timestamp_ms": 13.652,
+          "stream_offset": 131,
           "length": 27,
           "raw_hex": "530000001a6170706c69636174696f6e5f6e616d65007073716c00",
           "type_char": "S",
@@ -715,10 +478,10 @@
           ]
         },
         {
-          "id": 16,
+          "id": 11,
           "direction": "S2C",
-          "timestamp_ms": 6.448,
-          "stream_offset": 330,
+          "timestamp_ms": 13.658,
+          "stream_offset": 158,
           "length": 39,
           "raw_hex": "530000002664656661756c745f7472616e73616374696f6e5f726561645f6f6e6c79006f666600",
           "type_char": "S",
@@ -759,10 +522,10 @@
           ]
         },
         {
-          "id": 17,
+          "id": 12,
           "direction": "S2C",
-          "timestamp_ms": 6.462,
-          "stream_offset": 369,
+          "timestamp_ms": 13.672,
+          "stream_offset": 197,
           "length": 27,
           "raw_hex": "530000001a736372616d5f697465726174696f6e73003430393600",
           "type_char": "S",
@@ -803,10 +566,10 @@
           ]
         },
         {
-          "id": 18,
+          "id": 13,
           "direction": "S2C",
-          "timestamp_ms": 6.467,
-          "stream_offset": 396,
+          "timestamp_ms": 13.679,
+          "stream_offset": 224,
           "length": 24,
           "raw_hex": "5300000017446174655374796c650049534f2c204d445900",
           "type_char": "S",
@@ -847,10 +610,10 @@
           ]
         },
         {
-          "id": 19,
+          "id": 14,
           "direction": "S2C",
-          "timestamp_ms": 6.477,
-          "stream_offset": 420,
+          "timestamp_ms": 13.688,
+          "stream_offset": 248,
           "length": 36,
           "raw_hex": "53000000237374616e646172645f636f6e666f726d696e675f737472696e6773006f6e00",
           "type_char": "S",
@@ -891,10 +654,10 @@
           ]
         },
         {
-          "id": 20,
+          "id": 15,
           "direction": "S2C",
-          "timestamp_ms": 6.486,
-          "stream_offset": 456,
+          "timestamp_ms": 13.695,
+          "stream_offset": 284,
           "length": 36,
           "raw_hex": "530000002373657373696f6e5f617574686f72697a6174696f6e00706f73746772657300",
           "type_char": "S",
@@ -935,10 +698,10 @@
           ]
         },
         {
-          "id": 21,
+          "id": 16,
           "direction": "S2C",
-          "timestamp_ms": 6.494,
-          "stream_offset": 492,
+          "timestamp_ms": 13.706,
+          "stream_offset": 320,
           "length": 26,
           "raw_hex": "5300000019636c69656e745f656e636f64696e67005554463800",
           "type_char": "S",
@@ -979,10 +742,10 @@
           ]
         },
         {
-          "id": 22,
+          "id": 17,
           "direction": "S2C",
-          "timestamp_ms": 6.499,
-          "stream_offset": 518,
+          "timestamp_ms": 13.715,
+          "stream_offset": 346,
           "length": 51,
           "raw_hex": "53000000327365727665725f76657273696f6e0031362e39202844656269616e2031362e392d312e706764673132302b312900",
           "type_char": "S",
@@ -1023,10 +786,10 @@
           ]
         },
         {
-          "id": 23,
+          "id": 18,
           "direction": "S2C",
-          "timestamp_ms": 6.506,
-          "stream_offset": 569,
+          "timestamp_ms": 13.724,
+          "stream_offset": 397,
           "length": 26,
           "raw_hex": "53000000197365727665725f656e636f64696e67005554463800",
           "type_char": "S",
@@ -1067,12 +830,12 @@
           ]
         },
         {
-          "id": 24,
+          "id": 19,
           "direction": "S2C",
-          "timestamp_ms": 6.513,
-          "stream_offset": 595,
+          "timestamp_ms": 13.739,
+          "stream_offset": 423,
           "length": 13,
-          "raw_hex": "4b0000000c0000006fc3dd4a3b",
+          "raw_hex": "4b0000000c00000084237df556",
           "type_char": "K",
           "type_name": "BackendKeyData",
           "fields": [
@@ -1094,7 +857,7 @@
             },
             {
               "name": "Backend PID",
-              "value": 111,
+              "value": 132,
               "bytes": [
                 5,
                 8
@@ -1102,7 +865,7 @@
             },
             {
               "name": "Secret Key",
-              "value": 3286059579,
+              "value": 595457366,
               "bytes": [
                 9,
                 12
@@ -1111,10 +874,10 @@
           ]
         },
         {
-          "id": 25,
+          "id": 20,
           "direction": "S2C",
-          "timestamp_ms": 6.519,
-          "stream_offset": 608,
+          "timestamp_ms": 13.748,
+          "stream_offset": 436,
           "length": 6,
           "raw_hex": "5a0000000549",
           "type_char": "Z",
@@ -1147,10 +910,10 @@
           ]
         },
         {
-          "id": 26,
+          "id": 21,
           "direction": "C2S",
-          "timestamp_ms": 6.77,
-          "stream_offset": 235,
+          "timestamp_ms": 13.968,
+          "stream_offset": 71,
           "length": 26,
           "raw_hex": "510000001953454c4543542070675f736c656570283330293b00",
           "type_char": "Q",
@@ -1183,10 +946,10 @@
           ]
         },
         {
-          "id": 27,
+          "id": 22,
           "direction": "S2C",
-          "timestamp_ms": 1506.327,
-          "stream_offset": 614,
+          "timestamp_ms": 1508.829,
+          "stream_offset": 442,
           "length": 34,
           "raw_hex": "5400000021000170675f736c65657000000000000000000008e60004ffffffff0000",
           "type_char": "T",
@@ -1284,10 +1047,10 @@
           ]
         },
         {
-          "id": 28,
+          "id": 23,
           "direction": "S2C",
-          "timestamp_ms": 1506.359,
-          "stream_offset": 648,
+          "timestamp_ms": 1508.876,
+          "stream_offset": 476,
           "length": 105,
           "raw_hex": "4500000068534552524f5200564552524f5200433537303134004d63616e63656c696e672073746174656d656e742064756520746f207573657220726571756573740046706f7374677265732e63004c33343338005250726f63657373496e74657272757074730000",
           "type_char": "E",
@@ -1511,10 +1274,10 @@
           ]
         },
         {
-          "id": 29,
+          "id": 24,
           "direction": "S2C",
-          "timestamp_ms": 1506.382,
-          "stream_offset": 753,
+          "timestamp_ms": 1508.898,
+          "stream_offset": 581,
           "length": 6,
           "raw_hex": "5a0000000549",
           "type_char": "Z",
@@ -1547,10 +1310,10 @@
           ]
         },
         {
-          "id": 30,
+          "id": 25,
           "direction": "C2S",
-          "timestamp_ms": 1508.504,
-          "stream_offset": 261,
+          "timestamp_ms": 1514.684,
+          "stream_offset": 97,
           "length": 5,
           "raw_hex": "5800000004",
           "type_char": "X",
@@ -1578,20 +1341,20 @@
     },
     {
       "id": 2,
-      "client_addr": "127.0.0.1:54776",
+      "client_addr": "127.0.0.1:54555",
       "server_addr": "127.0.0.1:55432",
-      "started_at": "2026-08-12T14:20:24.735577+01:00",
-      "ended_at": "2026-08-12T14:20:24.740585+01:00",
+      "started_at": "2026-08-13T11:43:59.671079+01:00",
+      "ended_at": "2026-08-13T11:43:59.682645+01:00",
       "ssl_requested": false,
       "ssl_accepted": false,
       "packets": [
         {
           "id": 1,
           "direction": "C2S",
-          "timestamp_ms": 0.018,
+          "timestamp_ms": 0.015,
           "stream_offset": 0,
           "length": 16,
-          "raw_hex": "0000001004d2162e0000006fc3dd4a3b",
+          "raw_hex": "0000001004d2162e00000084237df556",
           "type_name": "CancelRequest",
           "fields": [
             {
@@ -1612,7 +1375,7 @@
             },
             {
               "name": "Backend PID",
-              "value": 111,
+              "value": 132,
               "bytes": [
                 8,
                 11
@@ -1620,7 +1383,7 @@
             },
             {
               "name": "Secret Key",
-              "value": 3286059579,
+              "value": 595457366,
               "bytes": [
                 12,
                 15

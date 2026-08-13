@@ -18,7 +18,7 @@
 # With no arguments it regenerates every example. Named examples regenerate only
 # those, leaving the other files on disk untouched, which matters because every
 # recording is slightly different: fresh SCRAM salts, a new backend PID, a
-# different packet count. Regenerating all eleven to change one moves the packet
+# different packet count. Regenerating all thirteen to change one moves the packet
 # IDs the highlight ranges in site/src/lib/scenarios.ts are written in.
 #
 # Override the Postgres image with PG_IMAGE=postgres:17 scripts/generate-scenarios.sh
@@ -35,9 +35,9 @@ cd "$(dirname "$0")/.."
 OUT=site/public/scenarios
 mkdir -p "$OUT"
 
-ALL=(scram-auth simple-query extended-query copy-in error-response notify
-  cancel-request protocol-32-downgrade replication-physical replication-logical
-  md5-auth)
+ALL=(scram-auth trust-auth simple-query extended-query copy-in error-response
+  notify cancel-request protocol-32-downgrade replication-physical
+  replication-logical cleartext-auth md5-auth)
 WANTED=("$@")
 # Expanded only when non-empty: under set -u, bash 3.2 (what macOS ships) treats
 # "${WANTED[@]}" on an empty array as an unbound variable.
@@ -76,13 +76,12 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# --- throwaway containers ---------------------------------------------------
-# A connection through the published port arrives at the container from
-# Docker's bridge gateway, not literally as 127.0.0.1, so it is the "host all
-# all all scram-sha-256" line in pg_hba.conf that matches, not the trust'ed
-# loopback lines the image also ships. Pulls the image on first run, which can
-# take a minute. Both containers are started back to back so their image
-# pulls overlap instead of running one after the other.
+# --- throwaway container ----------------------------------------------------
+# A connection through the published port arrives at the container from Docker's
+# bridge gateway, not literally as 127.0.0.1, so it is matched by the "host all
+# all all" line rather than by any loopback line. set_auth below owns that line,
+# which is why every example's auth method is decided here and not by the image.
+# Pulls the image on first run, which can take a minute.
 echo "starting $PG_IMAGE"
 docker run -d --rm --name "$CONTAINER" \
   -e POSTGRES_PASSWORD="$PASSWORD" \
@@ -102,13 +101,31 @@ docker exec "$CONTAINER" pg_isready -U postgres >/dev/null 2>&1 || {
   exit 1
 }
 
-# The replication examples need a real replication connection, which pg_hba's
-# generic "all" database match does not cover: a connection carrying
-# replication=true/database is matched against the special "replication"
-# pseudo-database, not "all", so a dedicated line is added rather than relying
-# on the "host all all all scram-sha-256" line the image already wrote.
-docker exec "$CONTAINER" bash -c "echo 'host replication all all scram-sha-256' >> /var/lib/postgresql/data/pg_hba.conf"
-docker exec "$CONTAINER" psql -U postgres -c "SELECT pg_reload_conf();" >/dev/null
+# set_auth <method> rewrites pg_hba.conf so every connection through the proxy
+# authenticates with <method>, and reloads. No restart: pg_hba.conf takes effect
+# on a reload, which is why the auth method can be changed between captures.
+#
+# The whole file is rewritten rather than sed'ed over the image's own, so what
+# authenticates a connection is stated here instead of depending on which of the
+# image's lines happens to match. Two lines are needed, not one: a connection
+# carrying replication=true/database is matched against the special "replication"
+# pseudo-database and not against "all", so the replication examples would
+# otherwise fall through.
+#
+# The local line stays trust throughout, because this script's own admin work
+# runs as `docker exec psql` over the unix socket and must keep working whatever
+# the host method is set to.
+set_auth() {
+  local method="$1"
+  echo "  auth method: $method"
+  docker exec -i "$CONTAINER" bash -c 'cat > /var/lib/postgresql/data/pg_hba.conf' <<HBA
+# Written by scripts/generate-scenarios.sh. Throwaway container, never a real one.
+local   all         all            trust
+host    all         all  all       $method
+host    replication all  all       $method
+HBA
+  docker exec "$CONTAINER" psql -U postgres -c "SELECT pg_reload_conf();" >/dev/null
+}
 
 # wanted <name> is true when this run should record <name>. No arguments means
 # every example.
@@ -125,7 +142,18 @@ wanted() {
 # Starts the proxy, runs the command against it, stops the proxy so the capture
 # is flushed. Proxies to the throwaway container for
 # the duration of that one call.
+# --expect-client-failure allows a nonzero client exit, for an example whose
+# subject IS a failure. psql exits nonzero when its last statement errored, even
+# under ON_ERROR_STOP=0, so a capture ending on a deliberate error would
+# otherwise abort the whole run. Opted into per capture rather than ignored
+# globally, so a client that breaks for a reason nobody intended still stops the
+# script instead of silently writing half an example.
 capture() {
+  local expect_client_failure=0
+  if [[ "$1" == "--expect-client-failure" ]]; then
+    expect_client_failure=1
+    shift
+  fi
   local name="$1"; shift
   wanted "$name" || { echo "  skipping $name"; return 0; }
   echo "  recording $name"
@@ -137,9 +165,11 @@ capture() {
   sleep 1
 
   "$@" >"$WORK/client-$name.log" 2>&1 || {
-    echo "error: client failed for $name. Output:" >&2
-    cat "$WORK/client-$name.log" >&2
-    exit 1
+    if [[ $expect_client_failure -eq 0 ]]; then
+      echo "error: client failed for $name. Output:" >&2
+      cat "$WORK/client-$name.log" >&2
+      exit 1
+    fi
   }
 
   sleep 0.5
@@ -204,44 +234,66 @@ cancel_client() {
 
 echo "generating examples into $OUT"
 
+# The auth method is set per group below and the groups are ordered by it, so
+# each switch happens once. Only the three authentication examples are recorded
+# under a method of their own. Everything else is recorded under trust, which
+# reduces its startup preamble to StartupMessage and AuthenticationOk: a capture
+# about COPY or replication should not open with five messages of SASL, and the
+# highlight ranges in site/src/lib/scenarios.ts exist to mark what differs
+# between captures rather than what they all share.
+
 # --- 1. SCRAM-SHA-256 authentication ---------------------------------------
+set_auth scram-sha-256
 capture scram-auth psql_at_proxy -c "SELECT 'authenticated' AS status;"
 
-# --- 2. simple query protocol ----------------------------------------------
-# The failing statement is deliberate: in the simple protocol an ErrorResponse
-# is followed straight away by ReadyForQuery, so the connection is usable
-# again immediately. Compare with the error-response example, where the
-# extended protocol makes the server discard everything until Sync.
-capture simple-query psql_at_proxy \
-  -c "SELECT 1 AS n, 'hello'::text AS greeting;" \
-  -c "CREATE TEMP TABLE demo (id int, label text);" \
-  -c "INSERT INTO demo VALUES (1,'first'), (2, NULL);" \
-  -c "SELECT id, label FROM demo ORDER BY id;" \
-  -c "SELECT * FROM no_such_table;" \
-  -c "DO \$\$ BEGIN RAISE NOTICE 'a notice travels as its own message'; END \$\$;"
+# --- 2. trust: no authentication exchange at all ---------------------------
+# AuthenticationOk straight after StartupMessage, with nothing in between. This
+# is also the preamble every example below it now has, which is the point: it is
+# the shortest handshake the protocol allows.
+set_auth trust
+capture trust-auth psql_at_proxy -c "SELECT 'authenticated' AS status;"
 
-# --- 3. extended query protocol --------------------------------------------
+# --- 3. simple query protocol ----------------------------------------------
+# Two queries and no more, which is what the example claims to be: one full
+# successful cycle and one failed one.
+#
+# The failing statement is deliberate. In the simple protocol an ErrorResponse
+# is followed straight away by ReadyForQuery, so the connection is usable again
+# immediately. Compare with the error-response example, where the extended
+# protocol makes the server discard everything until Sync.
+#
+# The rows come from a VALUES list rather than a temp table so that one query
+# produces them, with no CREATE and INSERT cycles in front of it that the
+# example does not exist to show. The NULL is worth keeping: it is the only NULL
+# DataRow column in any capture, and NULL on the wire is a length of -1 with no
+# value bytes at all, which is a different thing from a value of length zero.
+capture --expect-client-failure simple-query psql_at_proxy \
+  -c "SELECT id, label FROM (VALUES (1, 'first'), (2, NULL)) AS t (id, label) ORDER BY id;" \
+  -c "SELECT * FROM no_such_table;"
+
+# --- 4. extended query protocol --------------------------------------------
 capture extended-query demo_at_proxy extended
 
-# --- 4. COPY ----------------------------------------------------------------
+# --- 5. COPY ----------------------------------------------------------------
 capture copy-in demo_at_proxy copy
 
-# --- 5. errors --------------------------------------------------------------
+# --- 6. errors --------------------------------------------------------------
 capture error-response demo_at_proxy error
 
-# --- 6. LISTEN/NOTIFY: an unprompted server message -------------------------
+# --- 7. LISTEN/NOTIFY: an unprompted server message -------------------------
 capture notify demo_at_proxy notify
 
-# --- 7. query cancellation (two connections) --------------------------------
+# --- 8. query cancellation (two connections) --------------------------------
 capture cancel-request cancel_client
 
-# --- 8. protocol version downgrade + unsupported option (both triggers) ----
-# Recorded here, against the main container's scram-sha-256 auth, and
-# deliberately before the switch to md5 below: a scenario about version
-# negotiation showing deprecated md5 authentication would be a distraction.
+# --- 9. protocol version downgrade + unsupported option (both triggers) ----
+# Recorded under trust, like everything else in this group and deliberately
+# before the switch to cleartext and md5 below: a scenario about version
+# negotiation showing a deprecated authentication method would be a
+# distraction from the NegotiateProtocolVersion reply it exists to show.
 capture protocol-32-downgrade demo_at_proxy_32 protocol32
 
-# --- 9 & 10. streaming replication -----------------------------------------
+# --- 10 & 11. streaming replication -----------------------------------------
 # Physical replication only needs the default wal_level (replica), but logical
 # replication needs wal_level=logical, which is NOT the image's default and,
 # unlike the auth settings above, only takes effect after a restart, not a
@@ -268,18 +320,27 @@ fi
 capture replication-physical demo_at_proxy replication-physical
 capture replication-logical demo_at_proxy replication-logical
 
-# --- 11. MD5 authentication (legacy) ----------------------------------------
-# Needs the server reconfigured, so it goes last. password_encryption and
-# pg_hba.conf both take effect on a reload, no restart needed, and the
-# ALTER USER rehashes the stored secret under the new encryption.
-if wanted md5-auth; then
-echo "  switching to md5"
-docker exec "$CONTAINER" bash -c "sed -i 's/scram-sha-256/md5/g' /var/lib/postgresql/data/pg_hba.conf"
+# --- 12. cleartext password authentication ----------------------------------
+# The password crosses the wire in the PasswordMessage with no hashing at all,
+# which is the entire argument for the two methods above. Safe to commit only
+# because PASSWORD is this script's throwaway, is already in plaintext a few
+# lines up, and the container it belongs to is removed on exit. Never record
+# this one against a server whose password you care about.
+#
+# No ALTER USER needed: the server compares the cleartext it receives against
+# whatever it already has stored, so the secret can stay SCRAM-encrypted.
+set_auth password
+capture cleartext-auth psql_at_proxy -c "SELECT 'authenticated' AS status;"
+
+# --- 13. MD5 authentication (legacy) ----------------------------------------
+# Goes last because it is the one method that needs the stored secret changed,
+# not just pg_hba: password_encryption governs how ALTER USER hashes it, and md5
+# authentication cannot verify against a SCRAM verifier. Both take effect on a
+# reload, so the container is never restarted for this.
 docker exec "$CONTAINER" psql -U postgres -c "ALTER SYSTEM SET password_encryption='md5';" >/dev/null
 docker exec "$CONTAINER" psql -U postgres -c "SELECT pg_reload_conf();" >/dev/null
 docker exec "$CONTAINER" psql -U postgres -c "ALTER USER postgres PASSWORD '$PASSWORD';" >/dev/null
-fi
-
+set_auth md5
 capture md5-auth psql_at_proxy -c "SELECT 'authenticated' AS status;"
 
 echo

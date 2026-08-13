@@ -48,6 +48,9 @@ describe('scenario manifest', () => {
   const expectedBoundaries: Record<string, Record<number, Array<[string, string]>>> = {
     'scram-auth': { 1: [['AuthenticationSASL', 'AuthenticationOk']] },
     'md5-auth': { 1: [['AuthenticationMD5Password', 'AuthenticationOk']] },
+    'cleartext-auth': { 1: [['AuthenticationCleartextPassword', 'AuthenticationOk']] },
+    // Nothing between the two, which is the whole point of the example.
+    'trust-auth': { 1: [['StartupMessage', 'AuthenticationOk']] },
     'simple-query': { 1: [['Query', 'ReadyForQuery']] },
     'extended-query': { 1: [['Parse', 'ReadyForQuery']] },
     'copy-in': { 1: [['Query', 'ReadyForQuery']] },

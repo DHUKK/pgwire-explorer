@@ -1,23 +1,23 @@
 {
   "version": "2.0",
-  "recorded_at": "2026-08-12T14:20:30.109071+01:00",
+  "recorded_at": "2026-08-13T11:44:05.205643+01:00",
   "sessions": [
     {
       "id": 1,
-      "client_addr": "127.0.0.1:54797",
+      "client_addr": "127.0.0.1:54577",
       "server_addr": "127.0.0.1:55432",
-      "started_at": "2026-08-12T14:20:31.14309+01:00",
-      "ended_at": "2026-08-12T14:20:31.917127+01:00",
+      "started_at": "2026-08-13T11:44:06.248738+01:00",
+      "ended_at": "2026-08-13T11:44:07.027941+01:00",
       "ssl_requested": false,
       "ssl_accepted": false,
       "packets": [
         {
           "id": 1,
           "direction": "C2S",
-          "timestamp_ms": 0.037,
+          "timestamp_ms": 0.038,
           "stream_offset": 0,
           "length": 62,
-          "raw_hex": "0000003e00030000646174616261736500706f737467726573007265706c69636174696f6e006461746162617365007573657200706f7374677265730000",
+          "raw_hex": "0000003e000300007265706c69636174696f6e006461746162617365007573657200706f73746772657300646174616261736500706f7374677265730000",
           "type_name": "StartupMessage",
           "fields": [
             {
@@ -44,51 +44,26 @@
               ],
               "children": [
                 {
-                  "name": "database = postgres",
-                  "bytes": [
-                    8,
-                    25
-                  ],
-                  "children": [
-                    {
-                      "name": "Key",
-                      "value": "database",
-                      "bytes": [
-                        8,
-                        16
-                      ]
-                    },
-                    {
-                      "name": "Value",
-                      "value": "postgres",
-                      "bytes": [
-                        17,
-                        25
-                      ]
-                    }
-                  ]
-                },
-                {
                   "name": "replication = database",
                   "bytes": [
-                    26,
-                    46
+                    8,
+                    28
                   ],
                   "children": [
                     {
                       "name": "Key",
                       "value": "replication",
                       "bytes": [
-                        26,
-                        37
+                        8,
+                        19
                       ]
                     },
                     {
                       "name": "Value",
                       "value": "database",
                       "bytes": [
-                        38,
-                        46
+                        20,
+                        28
                       ]
                     }
                   ]
@@ -96,15 +71,40 @@
                 {
                   "name": "user = postgres",
                   "bytes": [
-                    47,
-                    60
+                    29,
+                    42
                   ],
                   "children": [
                     {
                       "name": "Key",
                       "value": "user",
                       "bytes": [
-                        47,
+                        29,
+                        33
+                      ]
+                    },
+                    {
+                      "name": "Value",
+                      "value": "postgres",
+                      "bytes": [
+                        34,
+                        42
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "database = postgres",
+                  "bytes": [
+                    43,
+                    60
+                  ],
+                  "children": [
+                    {
+                      "name": "Key",
+                      "value": "database",
+                      "bytes": [
+                        43,
                         51
                       ]
                     },
@@ -133,245 +133,8 @@
         {
           "id": 2,
           "direction": "S2C",
-          "timestamp_ms": 2.179,
+          "timestamp_ms": 3.613,
           "stream_offset": 0,
-          "length": 24,
-          "raw_hex": "52000000170000000a534352414d2d5348412d3235360000",
-          "type_char": "R",
-          "type_name": "AuthenticationSASL",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "R",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 23,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Type (10 = SASL)",
-              "value": 10,
-              "bytes": [
-                5,
-                8
-              ]
-            },
-            {
-              "name": "Auth Mechanisms",
-              "bytes": [
-                9,
-                22
-              ],
-              "children": [
-                {
-                  "name": "Mechanism[0]",
-                  "value": "SCRAM-SHA-256",
-                  "bytes": [
-                    9,
-                    22
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "Terminator",
-              "value": 0,
-              "bytes": [
-                23,
-                23
-              ]
-            }
-          ]
-        },
-        {
-          "id": 3,
-          "direction": "C2S",
-          "timestamp_ms": 2.287,
-          "stream_offset": 62,
-          "length": 55,
-          "raw_hex": "7000000036534352414d2d5348412d32353600000000206e2c2c6e3d2c723d75775a44646e52772f59473944506873654a784c2f562b6a",
-          "type_char": "p",
-          "type_name": "SASLInitialResponse",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "p",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 54,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Mechanism",
-              "value": "SCRAM-SHA-256",
-              "bytes": [
-                5,
-                18
-              ]
-            },
-            {
-              "name": "SASL Data Length",
-              "value": 32,
-              "bytes": [
-                19,
-                22
-              ]
-            },
-            {
-              "name": "SASL Data (client-first-message)",
-              "value": "n,,n=,r=uwZDdnRw/YG9DPhseJxL/V+j",
-              "bytes": [
-                23,
-                54
-              ]
-            }
-          ]
-        },
-        {
-          "id": 4,
-          "direction": "S2C",
-          "timestamp_ms": 2.62,
-          "stream_offset": 24,
-          "length": 93,
-          "raw_hex": "520000005c0000000b723d75775a44646e52772f59473944506873654a784c2f562b6a6c68462f795137635457485676584d44564573464d3974512c733d45525174304a63375248746677584d7a5a2b764c65673d3d2c693d34303936",
-          "type_char": "R",
-          "type_name": "AuthenticationSASLContinue",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "R",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 92,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Type (11 = SASLContinue)",
-              "value": 11,
-              "bytes": [
-                5,
-                8
-              ]
-            },
-            {
-              "name": "SASL Data (server-first-message)",
-              "value": "r=uwZDdnRw/YG9DPhseJxL/V+jlhF/yQ7cTWHVvXMDVEsFM9tQ,s=ERQt0Jc7RHtfwXMzZ+vLeg==,i=4096",
-              "bytes": [
-                9,
-                92
-              ]
-            }
-          ]
-        },
-        {
-          "id": 5,
-          "direction": "C2S",
-          "timestamp_ms": 3.379,
-          "stream_offset": 117,
-          "length": 109,
-          "raw_hex": "700000006c633d626977732c723d75775a44646e52772f59473944506873654a784c2f562b6a6c68462f795137635457485676584d44564573464d3974512c703d5231774c614f4a544a79667436535a2f346b64576b6f743767774c70514641784e6a446c427936532f32513d",
-          "type_char": "p",
-          "type_name": "SASLResponse",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "p",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 108,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "SASL Data (client-final-message)",
-              "value": "c=biws,r=uwZDdnRw/YG9DPhseJxL/V+jlhF/yQ7cTWHVvXMDVEsFM9tQ,p=R1wLaOJTJyft6SZ/4kdWkot7gwLpQFAxNjDlBy6S/2Q=",
-              "bytes": [
-                5,
-                108
-              ]
-            }
-          ]
-        },
-        {
-          "id": 6,
-          "direction": "S2C",
-          "timestamp_ms": 4.858,
-          "stream_offset": 117,
-          "length": 55,
-          "raw_hex": "52000000360000000c763d61517a594270472f616d596a7a464c365a535959334370316a4f725a41726b7949534d452f59694f3959773d",
-          "type_char": "R",
-          "type_name": "AuthenticationSASLFinal",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "R",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 54,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Type (12 = SASLFinal)",
-              "value": 12,
-              "bytes": [
-                5,
-                8
-              ]
-            },
-            {
-              "name": "SASL Data (server-final-message)",
-              "value": "v=aQzYBpG/amYjzFL6ZSYY3Cp1jOrZArkyISME/YiO9Yw=",
-              "bytes": [
-                9,
-                54
-              ]
-            }
-          ]
-        },
-        {
-          "id": 7,
-          "direction": "S2C",
-          "timestamp_ms": 4.87,
-          "stream_offset": 172,
           "length": 9,
           "raw_hex": "520000000800000000",
           "type_char": "R",
@@ -404,10 +167,10 @@
           ]
         },
         {
-          "id": 8,
+          "id": 3,
           "direction": "S2C",
-          "timestamp_ms": 4.882,
-          "stream_offset": 181,
+          "timestamp_ms": 3.656,
+          "stream_offset": 9,
           "length": 24,
           "raw_hex": "5300000017696e5f686f745f7374616e646279006f666600",
           "type_char": "S",
@@ -448,10 +211,10 @@
           ]
         },
         {
-          "id": 9,
+          "id": 4,
           "direction": "S2C",
-          "timestamp_ms": 4.891,
-          "stream_offset": 205,
+          "timestamp_ms": 3.675,
+          "stream_offset": 33,
           "length": 26,
           "raw_hex": "5300000019696e74656765725f6461746574696d6573006f6e00",
           "type_char": "S",
@@ -492,10 +255,10 @@
           ]
         },
         {
-          "id": 10,
+          "id": 5,
           "direction": "S2C",
-          "timestamp_ms": 4.904,
-          "stream_offset": 231,
+          "timestamp_ms": 3.685,
+          "stream_offset": 59,
           "length": 22,
           "raw_hex": "530000001554696d655a6f6e65004574632f55544300",
           "type_char": "S",
@@ -536,10 +299,10 @@
           ]
         },
         {
-          "id": 11,
+          "id": 6,
           "direction": "S2C",
-          "timestamp_ms": 4.914,
-          "stream_offset": 253,
+          "timestamp_ms": 3.695,
+          "stream_offset": 81,
           "length": 28,
           "raw_hex": "530000001b496e74657276616c5374796c6500706f73746772657300",
           "type_char": "S",
@@ -580,10 +343,10 @@
           ]
         },
         {
-          "id": 12,
+          "id": 7,
           "direction": "S2C",
-          "timestamp_ms": 4.924,
-          "stream_offset": 281,
+          "timestamp_ms": 3.705,
+          "stream_offset": 109,
           "length": 21,
           "raw_hex": "530000001469735f737570657275736572006f6e00",
           "type_char": "S",
@@ -624,10 +387,10 @@
           ]
         },
         {
-          "id": 13,
+          "id": 8,
           "direction": "S2C",
-          "timestamp_ms": 4.932,
-          "stream_offset": 302,
+          "timestamp_ms": 3.715,
+          "stream_offset": 130,
           "length": 23,
           "raw_hex": "53000000166170706c69636174696f6e5f6e616d650000",
           "type_char": "S",
@@ -668,10 +431,10 @@
           ]
         },
         {
-          "id": 14,
+          "id": 9,
           "direction": "S2C",
-          "timestamp_ms": 4.939,
-          "stream_offset": 325,
+          "timestamp_ms": 3.724,
+          "stream_offset": 153,
           "length": 39,
           "raw_hex": "530000002664656661756c745f7472616e73616374696f6e5f726561645f6f6e6c79006f666600",
           "type_char": "S",
@@ -712,10 +475,10 @@
           ]
         },
         {
-          "id": 15,
+          "id": 10,
           "direction": "S2C",
-          "timestamp_ms": 4.951,
-          "stream_offset": 364,
+          "timestamp_ms": 3.736,
+          "stream_offset": 192,
           "length": 27,
           "raw_hex": "530000001a736372616d5f697465726174696f6e73003430393600",
           "type_char": "S",
@@ -756,10 +519,10 @@
           ]
         },
         {
-          "id": 16,
+          "id": 11,
           "direction": "S2C",
-          "timestamp_ms": 4.96,
-          "stream_offset": 391,
+          "timestamp_ms": 3.742,
+          "stream_offset": 219,
           "length": 24,
           "raw_hex": "5300000017446174655374796c650049534f2c204d445900",
           "type_char": "S",
@@ -800,10 +563,10 @@
           ]
         },
         {
-          "id": 17,
+          "id": 12,
           "direction": "S2C",
-          "timestamp_ms": 4.966,
-          "stream_offset": 415,
+          "timestamp_ms": 3.751,
+          "stream_offset": 243,
           "length": 36,
           "raw_hex": "53000000237374616e646172645f636f6e666f726d696e675f737472696e6773006f6e00",
           "type_char": "S",
@@ -844,10 +607,10 @@
           ]
         },
         {
-          "id": 18,
+          "id": 13,
           "direction": "S2C",
-          "timestamp_ms": 4.98,
-          "stream_offset": 451,
+          "timestamp_ms": 3.762,
+          "stream_offset": 279,
           "length": 36,
           "raw_hex": "530000002373657373696f6e5f617574686f72697a6174696f6e00706f73746772657300",
           "type_char": "S",
@@ -888,10 +651,10 @@
           ]
         },
         {
-          "id": 19,
+          "id": 14,
           "direction": "S2C",
-          "timestamp_ms": 4.991,
-          "stream_offset": 487,
+          "timestamp_ms": 3.771,
+          "stream_offset": 315,
           "length": 26,
           "raw_hex": "5300000019636c69656e745f656e636f64696e67005554463800",
           "type_char": "S",
@@ -932,10 +695,10 @@
           ]
         },
         {
-          "id": 20,
+          "id": 15,
           "direction": "S2C",
-          "timestamp_ms": 4.999,
-          "stream_offset": 513,
+          "timestamp_ms": 3.778,
+          "stream_offset": 341,
           "length": 51,
           "raw_hex": "53000000327365727665725f76657273696f6e0031362e39202844656269616e2031362e392d312e706764673132302b312900",
           "type_char": "S",
@@ -976,10 +739,10 @@
           ]
         },
         {
-          "id": 21,
+          "id": 16,
           "direction": "S2C",
-          "timestamp_ms": 5.005,
-          "stream_offset": 564,
+          "timestamp_ms": 3.788,
+          "stream_offset": 392,
           "length": 26,
           "raw_hex": "53000000197365727665725f656e636f64696e67005554463800",
           "type_char": "S",
@@ -1020,12 +783,12 @@
           ]
         },
         {
-          "id": 22,
+          "id": 17,
           "direction": "S2C",
-          "timestamp_ms": 5.013,
-          "stream_offset": 590,
+          "timestamp_ms": 3.799,
+          "stream_offset": 418,
           "length": 13,
-          "raw_hex": "4b0000000c00000033840a519a",
+          "raw_hex": "4b0000000c0000003239664233",
           "type_char": "K",
           "type_name": "BackendKeyData",
           "fields": [
@@ -1047,7 +810,7 @@
             },
             {
               "name": "Backend PID",
-              "value": 51,
+              "value": 50,
               "bytes": [
                 5,
                 8
@@ -1055,7 +818,7 @@
             },
             {
               "name": "Secret Key",
-              "value": 2215268762,
+              "value": 963002931,
               "bytes": [
                 9,
                 12
@@ -1064,10 +827,10 @@
           ]
         },
         {
-          "id": 23,
+          "id": 18,
           "direction": "S2C",
-          "timestamp_ms": 5.02,
-          "stream_offset": 603,
+          "timestamp_ms": 3.809,
+          "stream_offset": 431,
           "length": 6,
           "raw_hex": "5a0000000549",
           "type_char": "Z",
@@ -1100,12 +863,12 @@
           ]
         },
         {
-          "id": 24,
+          "id": 19,
           "direction": "C2S",
-          "timestamp_ms": 5.208,
-          "stream_offset": 226,
+          "timestamp_ms": 3.992,
+          "stream_offset": 62,
           "length": 86,
-          "raw_hex": "51000000554352454154455f5245504c49434154494f4e5f534c4f54207067776972655f64656d6f5f6c6f676963616c5f31373836353430383331313438323136303030204c4f474943414c2070676f757470757400",
+          "raw_hex": "51000000554352454154455f5245504c49434154494f4e5f534c4f54207067776972655f64656d6f5f6c6f676963616c5f31373836363137383436323532363733303030204c4f474943414c2070676f757470757400",
           "type_char": "Q",
           "type_name": "Query",
           "fields": [
@@ -1127,7 +890,7 @@
             },
             {
               "name": "SQL Query String",
-              "value": "CREATE_REPLICATION_SLOT pgwire_demo_logical_1786540831148216000 LOGICAL pgoutput",
+              "value": "CREATE_REPLICATION_SLOT pgwire_demo_logical_1786617846252673000 LOGICAL pgoutput",
               "bytes": [
                 5,
                 85
@@ -1136,10 +899,10 @@
           ]
         },
         {
-          "id": 25,
+          "id": 20,
           "direction": "S2C",
-          "timestamp_ms": 11.549,
-          "stream_offset": 609,
+          "timestamp_ms": 13.37,
+          "stream_offset": 437,
           "length": 134,
           "raw_hex": "54000000850004736c6f745f6e616d650000000000000000000019ffffffffffff0000636f6e73697374656e745f706f696e740000000000000000000019ffffffffffff0000736e617073686f745f6e616d650000000000000000000019ffffffffffff00006f75747075745f706c7567696e0000000000000000000019ffffffffffff0000",
           "type_char": "T",
@@ -1432,12 +1195,12 @@
           ]
         },
         {
-          "id": 26,
+          "id": 21,
           "direction": "S2C",
-          "timestamp_ms": 11.577,
-          "stream_offset": 743,
+          "timestamp_ms": 13.398,
+          "stream_offset": 571,
           "length": 98,
-          "raw_hex": "44000000610004000000277067776972655f64656d6f5f6c6f676963616c5f3137383635343038333131343832313630303000000009302f313535324136380000001330303030303030332d30303030303030462d310000000870676f7574707574",
+          "raw_hex": "44000000610004000000277067776972655f64656d6f5f6c6f676963616c5f3137383636313738343632353236373330303000000009302f313535324136380000001330303030303030332d30303030303030462d310000000870676f7574707574",
           "type_char": "D",
           "type_name": "DataRow",
           "fields": [
@@ -1482,7 +1245,7 @@
                 },
                 {
                   "name": "Column[0]",
-                  "value": "pgwire_demo_logical_1786540831148216000",
+                  "value": "pgwire_demo_logical_1786617846252673000",
                   "bytes": [
                     11,
                     49
@@ -1568,10 +1331,10 @@
           ]
         },
         {
-          "id": 27,
+          "id": 22,
           "direction": "S2C",
-          "timestamp_ms": 11.594,
-          "stream_offset": 841,
+          "timestamp_ms": 13.414,
+          "stream_offset": 669,
           "length": 29,
           "raw_hex": "430000001c4352454154455f5245504c49434154494f4e5f534c4f5400",
           "type_char": "C",
@@ -1604,10 +1367,10 @@
           ]
         },
         {
-          "id": 28,
+          "id": 23,
           "direction": "S2C",
-          "timestamp_ms": 11.608,
-          "stream_offset": 870,
+          "timestamp_ms": 13.43,
+          "stream_offset": 698,
           "length": 6,
           "raw_hex": "5a0000000549",
           "type_char": "Z",
@@ -1640,12 +1403,12 @@
           ]
         },
         {
-          "id": 29,
+          "id": 24,
           "direction": "C2S",
-          "timestamp_ms": 11.676,
-          "stream_offset": 312,
+          "timestamp_ms": 13.528,
+          "stream_offset": 148,
           "length": 143,
-          "raw_hex": "510000008e53544152545f5245504c49434154494f4e20534c4f54207067776972655f64656d6f5f6c6f676963616c5f31373836353430383331313438323136303030204c4f474943414c20302f31353532413638202870726f746f5f76657273696f6e202731272c207075626c69636174696f6e5f6e616d657320277067776972655f64656d6f5f707562272900",
+          "raw_hex": "510000008e53544152545f5245504c49434154494f4e20534c4f54207067776972655f64656d6f5f6c6f676963616c5f31373836363137383436323532363733303030204c4f474943414c20302f31353532413638202870726f746f5f76657273696f6e202731272c207075626c69636174696f6e5f6e616d657320277067776972655f64656d6f5f707562272900",
           "type_char": "Q",
           "type_name": "Query",
           "fields": [
@@ -1667,7 +1430,7 @@
             },
             {
               "name": "SQL Query String",
-              "value": "START_REPLICATION SLOT pgwire_demo_logical_1786540831148216000 LOGICAL 0/1552A68 (proto_version '1', publication_names 'pgwire_demo_pub')",
+              "value": "START_REPLICATION SLOT pgwire_demo_logical_1786617846252673000 LOGICAL 0/1552A68 (proto_version '1', publication_names 'pgwire_demo_pub')",
               "bytes": [
                 5,
                 142
@@ -1676,10 +1439,10 @@
           ]
         },
         {
-          "id": 30,
+          "id": 25,
           "direction": "S2C",
-          "timestamp_ms": 12.376,
-          "stream_offset": 876,
+          "timestamp_ms": 15.137,
+          "stream_offset": 704,
           "length": 8,
           "raw_hex": "5700000007000000",
           "type_char": "W",
@@ -1720,12 +1483,12 @@
           ]
         },
         {
-          "id": 31,
+          "id": 26,
           "direction": "S2C",
-          "timestamp_ms": 12.391,
-          "stream_offset": 884,
+          "timestamp_ms": 15.154,
+          "stream_offset": 712,
           "length": 23,
-          "raw_hex": "64000000166b0000000001552a680002fbd8386642b800",
+          "raw_hex": "64000000166b0000000001552a680002fbea26db8cac00",
           "type_char": "d",
           "type_name": "CopyData",
           "fields": [
@@ -1770,7 +1533,7 @@
                 },
                 {
                   "name": "Server Clock",
-                  "value": "2026-08-12T13:20:31.154872Z",
+                  "value": "2026-08-13T10:44:06.262956Z",
                   "bytes": [
                     14,
                     21
@@ -1789,12 +1552,12 @@
           ]
         },
         {
-          "id": 32,
+          "id": 27,
           "direction": "S2C",
-          "timestamp_ms": 18.782,
-          "stream_offset": 907,
+          "timestamp_ms": 18.641,
+          "stream_offset": 735,
           "length": 23,
-          "raw_hex": "64000000166b0000000001552a680002fbd838665b5a00",
+          "raw_hex": "64000000166b0000000001552a680002fbea26db9a2500",
           "type_char": "d",
           "type_name": "CopyData",
           "fields": [
@@ -1839,7 +1602,7 @@
                 },
                 {
                   "name": "Server Clock",
-                  "value": "2026-08-12T13:20:31.161178Z",
+                  "value": "2026-08-13T10:44:06.266405Z",
                   "bytes": [
                     14,
                     21
@@ -1858,12 +1621,12 @@
           ]
         },
         {
-          "id": 33,
+          "id": 28,
           "direction": "S2C",
-          "timestamp_ms": 19.071,
-          "stream_offset": 930,
+          "timestamp_ms": 19.485,
+          "stream_offset": 758,
           "length": 51,
-          "raw_hex": "6400000032770000000001552a680000000001552a680002fbd838665cf0420000000001552b680002fbd838665a56000002ec",
+          "raw_hex": "6400000032770000000001552a680000000001552a680002fbea26db9d85420000000001552b680002fbea26db9958000002ec",
           "type_char": "d",
           "type_name": "CopyData",
           "fields": [
@@ -1916,7 +1679,7 @@
                 },
                 {
                   "name": "Server Clock",
-                  "value": "2026-08-12T13:20:31.161584Z",
+                  "value": "2026-08-13T10:44:06.267269Z",
                   "bytes": [
                     22,
                     29
@@ -1924,7 +1687,7 @@
                 },
                 {
                   "name": "WAL Data",
-                  "value": "420000000001552b680002fbd838665a56000002ec",
+                  "value": "420000000001552b680002fbea26db9958000002ec",
                   "bytes": [
                     30,
                     50
@@ -1935,12 +1698,12 @@
           ]
         },
         {
-          "id": 34,
+          "id": 29,
           "direction": "S2C",
-          "timestamp_ms": 19.187,
-          "stream_offset": 981,
+          "timestamp_ms": 19.595,
+          "stream_offset": 809,
           "length": 88,
-          "raw_hex": "640000005777000000000000000000000000000000000002fbd838665d5052000040167075626c6963007265706c69636174696f6e5f64656d6f006400020169640000000017ffffffff006e6f74650000000019ffffffff",
+          "raw_hex": "640000005777000000000000000000000000000000000002fbea26db9dc752000040167075626c6963007265706c69636174696f6e5f64656d6f006400020169640000000017ffffffff006e6f74650000000019ffffffff",
           "type_char": "d",
           "type_name": "CopyData",
           "fields": [
@@ -1993,7 +1756,7 @@
                 },
                 {
                   "name": "Server Clock",
-                  "value": "2026-08-12T13:20:31.16168Z",
+                  "value": "2026-08-13T10:44:06.267335Z",
                   "bytes": [
                     22,
                     29
@@ -2012,12 +1775,12 @@
           ]
         },
         {
-          "id": 35,
+          "id": 30,
           "direction": "S2C",
-          "timestamp_ms": 19.265,
-          "stream_offset": 1069,
+          "timestamp_ms": 19.972,
+          "stream_offset": 897,
           "length": 79,
-          "raw_hex": "640000004e770000000001552a680000000001552a680002fbd838665d8949000040164e0002740000000131740000001e68656c6c6f2066726f6d206c6f676963616c207265706c69636174696f6e",
+          "raw_hex": "640000004e770000000001552a680000000001552a680002fbea26db9f6d49000040164e0002740000000131740000001e68656c6c6f2066726f6d206c6f676963616c207265706c69636174696f6e",
           "type_char": "d",
           "type_name": "CopyData",
           "fields": [
@@ -2070,7 +1833,7 @@
                 },
                 {
                   "name": "Server Clock",
-                  "value": "2026-08-12T13:20:31.161737Z",
+                  "value": "2026-08-13T10:44:06.267757Z",
                   "bytes": [
                     22,
                     29
@@ -2089,12 +1852,12 @@
           ]
         },
         {
-          "id": 36,
+          "id": 31,
           "direction": "S2C",
-          "timestamp_ms": 19.284,
-          "stream_offset": 1148,
+          "timestamp_ms": 19.986,
+          "stream_offset": 976,
           "length": 56,
-          "raw_hex": "6400000037770000000001552b980000000001552b980002fbd838665da343000000000001552b680000000001552b980002fbd838665a56",
+          "raw_hex": "6400000037770000000001552b980000000001552b980002fbea26db9f7e43000000000001552b680000000001552b980002fbea26db9958",
           "type_char": "d",
           "type_name": "CopyData",
           "fields": [
@@ -2147,7 +1910,7 @@
                 },
                 {
                   "name": "Server Clock",
-                  "value": "2026-08-12T13:20:31.161763Z",
+                  "value": "2026-08-13T10:44:06.267774Z",
                   "bytes": [
                     22,
                     29
@@ -2155,7 +1918,7 @@
                 },
                 {
                   "name": "WAL Data",
-                  "value": "43000000000001552b680000000001552b980002fbd838665a56",
+                  "value": "43000000000001552b680000000001552b980002fbea26db9958",
                   "bytes": [
                     30,
                     55
@@ -2166,12 +1929,12 @@
           ]
         },
         {
-          "id": 37,
+          "id": 32,
           "direction": "S2C",
-          "timestamp_ms": 19.32,
-          "stream_offset": 1204,
+          "timestamp_ms": 19.998,
+          "stream_offset": 1032,
           "length": 23,
-          "raw_hex": "64000000166b0000000001552b980002fbd838665db900",
+          "raw_hex": "64000000166b0000000001552b980002fbea26db9f8800",
           "type_char": "d",
           "type_name": "CopyData",
           "fields": [
@@ -2216,7 +1979,7 @@
                 },
                 {
                   "name": "Server Clock",
-                  "value": "2026-08-12T13:20:31.161785Z",
+                  "value": "2026-08-13T10:44:06.267784Z",
                   "bytes": [
                     14,
                     21
@@ -2235,12 +1998,12 @@
           ]
         },
         {
-          "id": 38,
+          "id": 33,
           "direction": "C2S",
-          "timestamp_ms": 769.968,
-          "stream_offset": 455,
+          "timestamp_ms": 769.532,
+          "stream_offset": 291,
           "length": 39,
-          "raw_hex": "6400000026720000000001552b980000000001552b980000000001552b980002fbd83871d3d400",
+          "raw_hex": "6400000026720000000001552b980000000001552b980000000001552b980002fbea26e7124400",
           "type_char": "d",
           "type_name": "CopyData",
           "fields": [
@@ -2301,7 +2064,7 @@
                 },
                 {
                   "name": "Client Clock",
-                  "value": "2026-08-12T13:20:31.912916Z",
+                  "value": "2026-08-13T10:44:07.018052Z",
                   "bytes": [
                     30,
                     37
@@ -2320,10 +2083,10 @@
           ]
         },
         {
-          "id": 39,
+          "id": 34,
           "direction": "C2S",
-          "timestamp_ms": 770.068,
-          "stream_offset": 494,
+          "timestamp_ms": 769.6,
+          "stream_offset": 330,
           "length": 5,
           "raw_hex": "6300000004",
           "type_char": "c",
@@ -2348,10 +2111,10 @@
           ]
         },
         {
-          "id": 40,
+          "id": 35,
           "direction": "S2C",
-          "timestamp_ms": 770.954,
-          "stream_offset": 1227,
+          "timestamp_ms": 771.12,
+          "stream_offset": 1055,
           "length": 5,
           "raw_hex": "6300000004",
           "type_char": "c",
@@ -2376,10 +2139,10 @@
           ]
         },
         {
-          "id": 41,
+          "id": 36,
           "direction": "S2C",
-          "timestamp_ms": 770.99,
-          "stream_offset": 1232,
+          "timestamp_ms": 771.596,
+          "stream_offset": 1060,
           "length": 12,
           "raw_hex": "430000000b434f5059203000",
           "type_char": "C",
@@ -2412,10 +2175,10 @@
           ]
         },
         {
-          "id": 42,
+          "id": 37,
           "direction": "S2C",
-          "timestamp_ms": 771.017,
-          "stream_offset": 1244,
+          "timestamp_ms": 771.614,
+          "stream_offset": 1072,
           "length": 23,
           "raw_hex": "430000001653544152545f5245504c49434154494f4e00",
           "type_char": "C",
@@ -2448,10 +2211,10 @@
           ]
         },
         {
-          "id": 43,
+          "id": 38,
           "direction": "S2C",
-          "timestamp_ms": 771.041,
-          "stream_offset": 1267,
+          "timestamp_ms": 771.629,
+          "stream_offset": 1095,
           "length": 6,
           "raw_hex": "5a0000000549",
           "type_char": "Z",
@@ -2484,10 +2247,10 @@
           ]
         },
         {
-          "id": 44,
+          "id": 39,
           "direction": "C2S",
-          "timestamp_ms": 771.11,
-          "stream_offset": 499,
+          "timestamp_ms": 771.752,
+          "stream_offset": 335,
           "length": 5,
           "raw_hex": "5800000004",
           "type_char": "X",
@@ -2515,17 +2278,17 @@
     },
     {
       "id": 2,
-      "client_addr": "127.0.0.1:54799",
+      "client_addr": "127.0.0.1:54579",
       "server_addr": "127.0.0.1:55432",
-      "started_at": "2026-08-12T14:20:31.155888+01:00",
-      "ended_at": "2026-08-12T14:20:31.163578+01:00",
+      "started_at": "2026-08-13T11:44:06.264292+01:00",
+      "ended_at": "2026-08-13T11:44:06.268866+01:00",
       "ssl_requested": false,
       "ssl_accepted": false,
       "packets": [
         {
           "id": 1,
           "direction": "C2S",
-          "timestamp_ms": 0.058,
+          "timestamp_ms": 0.013,
           "stream_offset": 0,
           "length": 41,
           "raw_hex": "00000029000300007573657200706f73746772657300646174616261736500706f7374677265730000",
@@ -2619,245 +2382,8 @@
         {
           "id": 2,
           "direction": "S2C",
-          "timestamp_ms": 1.92,
+          "timestamp_ms": 1.77,
           "stream_offset": 0,
-          "length": 24,
-          "raw_hex": "52000000170000000a534352414d2d5348412d3235360000",
-          "type_char": "R",
-          "type_name": "AuthenticationSASL",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "R",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 23,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Type (10 = SASL)",
-              "value": 10,
-              "bytes": [
-                5,
-                8
-              ]
-            },
-            {
-              "name": "Auth Mechanisms",
-              "bytes": [
-                9,
-                22
-              ],
-              "children": [
-                {
-                  "name": "Mechanism[0]",
-                  "value": "SCRAM-SHA-256",
-                  "bytes": [
-                    9,
-                    22
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "Terminator",
-              "value": 0,
-              "bytes": [
-                23,
-                23
-              ]
-            }
-          ]
-        },
-        {
-          "id": 3,
-          "direction": "C2S",
-          "timestamp_ms": 2.023,
-          "stream_offset": 41,
-          "length": 55,
-          "raw_hex": "7000000036534352414d2d5348412d32353600000000206e2c2c6e3d2c723d627a314158725a6e33624676547172563564585930565349",
-          "type_char": "p",
-          "type_name": "SASLInitialResponse",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "p",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 54,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Mechanism",
-              "value": "SCRAM-SHA-256",
-              "bytes": [
-                5,
-                18
-              ]
-            },
-            {
-              "name": "SASL Data Length",
-              "value": 32,
-              "bytes": [
-                19,
-                22
-              ]
-            },
-            {
-              "name": "SASL Data (client-first-message)",
-              "value": "n,,n=,r=bz1AXrZn3bFvTqrV5dXY0VSI",
-              "bytes": [
-                23,
-                54
-              ]
-            }
-          ]
-        },
-        {
-          "id": 4,
-          "direction": "S2C",
-          "timestamp_ms": 2.396,
-          "stream_offset": 24,
-          "length": 93,
-          "raw_hex": "520000005c0000000b723d627a314158725a6e33624676547172563564585930565349386e734d3875424b396e7269784579666e6f5349754966432c733d45525174304a63375248746677584d7a5a2b764c65673d3d2c693d34303936",
-          "type_char": "R",
-          "type_name": "AuthenticationSASLContinue",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "R",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 92,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Type (11 = SASLContinue)",
-              "value": 11,
-              "bytes": [
-                5,
-                8
-              ]
-            },
-            {
-              "name": "SASL Data (server-first-message)",
-              "value": "r=bz1AXrZn3bFvTqrV5dXY0VSI8nsM8uBK9nrixEyfnoSIuIfC,s=ERQt0Jc7RHtfwXMzZ+vLeg==,i=4096",
-              "bytes": [
-                9,
-                92
-              ]
-            }
-          ]
-        },
-        {
-          "id": 5,
-          "direction": "C2S",
-          "timestamp_ms": 3.156,
-          "stream_offset": 96,
-          "length": 109,
-          "raw_hex": "700000006c633d626977732c723d627a314158725a6e33624676547172563564585930565349386e734d3875424b396e7269784579666e6f5349754966432c703d2b423241646a795962657441766337373964432f755664616f685a663571364a647574677577486e5753383d",
-          "type_char": "p",
-          "type_name": "SASLResponse",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "p",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 108,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "SASL Data (client-final-message)",
-              "value": "c=biws,r=bz1AXrZn3bFvTqrV5dXY0VSI8nsM8uBK9nrixEyfnoSIuIfC,p=+B2AdjyYbetAvc779dC/uVdaohZf5q6JdutguwHnWS8=",
-              "bytes": [
-                5,
-                108
-              ]
-            }
-          ]
-        },
-        {
-          "id": 6,
-          "direction": "S2C",
-          "timestamp_ms": 4.422,
-          "stream_offset": 117,
-          "length": 55,
-          "raw_hex": "52000000360000000c763d31306462473031704131474341756c54492f524b7a4556304f495a745a796b6465716431326563355866493d",
-          "type_char": "R",
-          "type_name": "AuthenticationSASLFinal",
-          "fields": [
-            {
-              "name": "Type Identifier",
-              "value": "R",
-              "bytes": [
-                0,
-                0
-              ]
-            },
-            {
-              "name": "Message Length",
-              "value": 54,
-              "bytes": [
-                1,
-                4
-              ]
-            },
-            {
-              "name": "Auth Type (12 = SASLFinal)",
-              "value": 12,
-              "bytes": [
-                5,
-                8
-              ]
-            },
-            {
-              "name": "SASL Data (server-final-message)",
-              "value": "v=10dbG01pA1GCAulTI/RKzEV0OIZtZykdeqd12ec5XfI=",
-              "bytes": [
-                9,
-                54
-              ]
-            }
-          ]
-        },
-        {
-          "id": 7,
-          "direction": "S2C",
-          "timestamp_ms": 4.439,
-          "stream_offset": 172,
           "length": 9,
           "raw_hex": "520000000800000000",
           "type_char": "R",
@@ -2890,10 +2416,10 @@
           ]
         },
         {
-          "id": 8,
+          "id": 3,
           "direction": "S2C",
-          "timestamp_ms": 4.451,
-          "stream_offset": 181,
+          "timestamp_ms": 1.781,
+          "stream_offset": 9,
           "length": 24,
           "raw_hex": "5300000017696e5f686f745f7374616e646279006f666600",
           "type_char": "S",
@@ -2934,10 +2460,10 @@
           ]
         },
         {
-          "id": 9,
+          "id": 4,
           "direction": "S2C",
-          "timestamp_ms": 4.461,
-          "stream_offset": 205,
+          "timestamp_ms": 1.791,
+          "stream_offset": 33,
           "length": 26,
           "raw_hex": "5300000019696e74656765725f6461746574696d6573006f6e00",
           "type_char": "S",
@@ -2978,10 +2504,10 @@
           ]
         },
         {
-          "id": 10,
+          "id": 5,
           "direction": "S2C",
-          "timestamp_ms": 4.477,
-          "stream_offset": 231,
+          "timestamp_ms": 1.8,
+          "stream_offset": 59,
           "length": 22,
           "raw_hex": "530000001554696d655a6f6e65004574632f55544300",
           "type_char": "S",
@@ -3022,10 +2548,10 @@
           ]
         },
         {
-          "id": 11,
+          "id": 6,
           "direction": "S2C",
-          "timestamp_ms": 4.488,
-          "stream_offset": 253,
+          "timestamp_ms": 1.813,
+          "stream_offset": 81,
           "length": 28,
           "raw_hex": "530000001b496e74657276616c5374796c6500706f73746772657300",
           "type_char": "S",
@@ -3066,10 +2592,10 @@
           ]
         },
         {
-          "id": 12,
+          "id": 7,
           "direction": "S2C",
-          "timestamp_ms": 4.495,
-          "stream_offset": 281,
+          "timestamp_ms": 1.82,
+          "stream_offset": 109,
           "length": 21,
           "raw_hex": "530000001469735f737570657275736572006f6e00",
           "type_char": "S",
@@ -3110,10 +2636,10 @@
           ]
         },
         {
-          "id": 13,
+          "id": 8,
           "direction": "S2C",
-          "timestamp_ms": 4.509,
-          "stream_offset": 302,
+          "timestamp_ms": 1.835,
+          "stream_offset": 130,
           "length": 23,
           "raw_hex": "53000000166170706c69636174696f6e5f6e616d650000",
           "type_char": "S",
@@ -3154,10 +2680,10 @@
           ]
         },
         {
-          "id": 14,
+          "id": 9,
           "direction": "S2C",
-          "timestamp_ms": 4.522,
-          "stream_offset": 325,
+          "timestamp_ms": 1.843,
+          "stream_offset": 153,
           "length": 39,
           "raw_hex": "530000002664656661756c745f7472616e73616374696f6e5f726561645f6f6e6c79006f666600",
           "type_char": "S",
@@ -3198,10 +2724,10 @@
           ]
         },
         {
-          "id": 15,
+          "id": 10,
           "direction": "S2C",
-          "timestamp_ms": 4.53,
-          "stream_offset": 364,
+          "timestamp_ms": 1.85,
+          "stream_offset": 192,
           "length": 27,
           "raw_hex": "530000001a736372616d5f697465726174696f6e73003430393600",
           "type_char": "S",
@@ -3242,10 +2768,10 @@
           ]
         },
         {
-          "id": 16,
+          "id": 11,
           "direction": "S2C",
-          "timestamp_ms": 4.542,
-          "stream_offset": 391,
+          "timestamp_ms": 1.862,
+          "stream_offset": 219,
           "length": 24,
           "raw_hex": "5300000017446174655374796c650049534f2c204d445900",
           "type_char": "S",
@@ -3286,10 +2812,10 @@
           ]
         },
         {
-          "id": 17,
+          "id": 12,
           "direction": "S2C",
-          "timestamp_ms": 4.55,
-          "stream_offset": 415,
+          "timestamp_ms": 1.871,
+          "stream_offset": 243,
           "length": 36,
           "raw_hex": "53000000237374616e646172645f636f6e666f726d696e675f737472696e6773006f6e00",
           "type_char": "S",
@@ -3330,10 +2856,10 @@
           ]
         },
         {
-          "id": 18,
+          "id": 13,
           "direction": "S2C",
-          "timestamp_ms": 4.559,
-          "stream_offset": 451,
+          "timestamp_ms": 1.88,
+          "stream_offset": 279,
           "length": 36,
           "raw_hex": "530000002373657373696f6e5f617574686f72697a6174696f6e00706f73746772657300",
           "type_char": "S",
@@ -3374,10 +2900,10 @@
           ]
         },
         {
-          "id": 19,
+          "id": 14,
           "direction": "S2C",
-          "timestamp_ms": 4.568,
-          "stream_offset": 487,
+          "timestamp_ms": 1.887,
+          "stream_offset": 315,
           "length": 26,
           "raw_hex": "5300000019636c69656e745f656e636f64696e67005554463800",
           "type_char": "S",
@@ -3418,10 +2944,10 @@
           ]
         },
         {
-          "id": 20,
+          "id": 15,
           "direction": "S2C",
-          "timestamp_ms": 4.578,
-          "stream_offset": 513,
+          "timestamp_ms": 1.899,
+          "stream_offset": 341,
           "length": 51,
           "raw_hex": "53000000327365727665725f76657273696f6e0031362e39202844656269616e2031362e392d312e706764673132302b312900",
           "type_char": "S",
@@ -3462,10 +2988,10 @@
           ]
         },
         {
-          "id": 21,
+          "id": 16,
           "direction": "S2C",
-          "timestamp_ms": 4.587,
-          "stream_offset": 564,
+          "timestamp_ms": 1.909,
+          "stream_offset": 392,
           "length": 26,
           "raw_hex": "53000000197365727665725f656e636f64696e67005554463800",
           "type_char": "S",
@@ -3506,12 +3032,12 @@
           ]
         },
         {
-          "id": 22,
+          "id": 17,
           "direction": "S2C",
-          "timestamp_ms": 4.598,
-          "stream_offset": 590,
+          "timestamp_ms": 1.915,
+          "stream_offset": 418,
           "length": 13,
-          "raw_hex": "4b0000000c00000034983a167a",
+          "raw_hex": "4b0000000c00000033eb14966a",
           "type_char": "K",
           "type_name": "BackendKeyData",
           "fields": [
@@ -3533,7 +3059,7 @@
             },
             {
               "name": "Backend PID",
-              "value": 52,
+              "value": 51,
               "bytes": [
                 5,
                 8
@@ -3541,7 +3067,7 @@
             },
             {
               "name": "Secret Key",
-              "value": 2553943674,
+              "value": 3943994986,
               "bytes": [
                 9,
                 12
@@ -3550,10 +3076,10 @@
           ]
         },
         {
-          "id": 23,
+          "id": 18,
           "direction": "S2C",
-          "timestamp_ms": 4.609,
-          "stream_offset": 603,
+          "timestamp_ms": 1.925,
+          "stream_offset": 431,
           "length": 6,
           "raw_hex": "5a0000000549",
           "type_char": "Z",
@@ -3586,10 +3112,10 @@
           ]
         },
         {
-          "id": 24,
+          "id": 19,
           "direction": "C2S",
-          "timestamp_ms": 4.792,
-          "stream_offset": 205,
+          "timestamp_ms": 2.122,
+          "stream_offset": 41,
           "length": 90,
           "raw_hex": "5100000059494e5345525420494e544f207265706c69636174696f6e5f64656d6f202869642c206e6f7465292056414c5545532028312c202768656c6c6f2066726f6d206c6f676963616c207265706c69636174696f6e272900",
           "type_char": "Q",
@@ -3622,10 +3148,10 @@
           ]
         },
         {
-          "id": 25,
+          "id": 20,
           "direction": "S2C",
-          "timestamp_ms": 5.868,
-          "stream_offset": 609,
+          "timestamp_ms": 3.048,
+          "stream_offset": 437,
           "length": 16,
           "raw_hex": "430000000f494e534552542030203100",
           "type_char": "C",
@@ -3658,10 +3184,10 @@
           ]
         },
         {
-          "id": 26,
+          "id": 21,
           "direction": "S2C",
-          "timestamp_ms": 5.878,
-          "stream_offset": 625,
+          "timestamp_ms": 3.057,
+          "stream_offset": 453,
           "length": 6,
           "raw_hex": "5a0000000549",
           "type_char": "Z",
@@ -3694,10 +3220,10 @@
           ]
         },
         {
-          "id": 27,
+          "id": 22,
           "direction": "C2S",
-          "timestamp_ms": 5.978,
-          "stream_offset": 295,
+          "timestamp_ms": 3.174,
+          "stream_offset": 131,
           "length": 5,
           "raw_hex": "5800000004",
           "type_char": "X",
