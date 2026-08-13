@@ -149,10 +149,37 @@ export function PacketList({
   // `packet-category` has to wrap in and so changes the real row height.
   const hasBadges = sessionBadges !== undefined
 
+  // Whether the shipped faces have settled, so the probe below can measure
+  // again once they have.
+  //
+  // The site ships its own sans and mono (see the @font-face rules at the top
+  // of styles.css), both font-display: swap, so the first paint can use the
+  // fallback and the real face can arrive after this component has already
+  // measured. Row heights are mostly immune, because every line-height in the
+  // stylesheet is a unitless multiple and so depends on font-size rather than
+  // on the face's own metrics. `.time-gap` is the exception: its text wraps,
+  // and a face even slightly wider can flip a gap label from one line to two.
+  // That would leave the offset table short by a line's height on every gap
+  // row, which is the same overlap the probe exists to prevent.
+  const [fontsSettled, setFontsSettled] = useState(
+    () => typeof document === 'undefined' || document.fonts?.status === 'loaded',
+  )
+  useEffect(() => {
+    if (fontsSettled || typeof document === 'undefined' || !document.fonts) return
+    let live = true
+    document.fonts.ready.then(() => {
+      if (live) setFontsSettled(true)
+    })
+    return () => {
+      live = false
+    }
+  }, [fontsSettled])
+
   // Measure the two real row shapes off-screen, again whenever hasBadges
   // flips: toggling sessions in and out of the merged view can turn the
   // badge on or off without unmounting PacketList, and the probe's own
   // markup changes along with it, so the last measurement no longer applies.
+  // And again once the fonts settle, for the reason just above.
   useLayoutEffect(() => {
     const rowEl = probeRowRef.current
     const gapRowEl = probeGapRowRef.current
@@ -162,7 +189,7 @@ export function PacketList({
     if (rowHeight > 0) {
       setRowMetrics({ rowHeight, gapExtraHeight: Math.max(0, gapExtraHeight) })
     }
-  }, [hasBadges])
+  }, [hasBadges, fontsSettled])
 
   // Measure the actual scroll container, the same as HexDump: a ResizeObserver
   // keeps it right across window resizes and the responsive breakpoint that

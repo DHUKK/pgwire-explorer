@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { decodeHexRange, hexToBytes } from './hex'
+import type { FieldAnnotation } from '../types'
+import { decodeHexRange, fieldAtOffset, fieldAtPath, hexToBytes } from './hex'
 
 describe('hexToBytes', () => {
   it('decodes a whole string', () => {
@@ -58,5 +59,57 @@ describe('decodeHexRange', () => {
     for (let start = 0; start < whole.length; start++) {
       expect([...decodeHexRange(hex, start, 3)]).toEqual(whole.slice(start, start + 3))
     }
+  })
+})
+
+describe('fieldAtPath', () => {
+  // A RowDescription in miniature: a message with a nested column, which is the
+  // shape that makes paths worth having in the first place.
+  const fields: FieldAnnotation[] = [
+    { name: 'Type', value: 'T', bytes: [0, 0] },
+    { name: 'Length', value: 5, bytes: [1, 4] },
+    {
+      name: 'Column[0]: id',
+      bytes: [5, 12],
+      children: [
+        { name: 'Name', value: 'id', bytes: [5, 7] },
+        { name: 'Type OID', value: 23, bytes: [8, 12] },
+      ],
+    },
+  ]
+
+  it('resolves a top-level path', () => {
+    expect(fieldAtPath(fields, '0')?.name).toBe('Type')
+    expect(fieldAtPath(fields, '2')?.name).toBe('Column[0]: id')
+  })
+
+  it('resolves a nested path', () => {
+    expect(fieldAtPath(fields, '2.1')?.name).toBe('Type OID')
+  })
+
+  // The whole reason this exists rather than looking a path up in the flattened
+  // rows: the path outlives the row. Collapsing the column takes its children
+  // off screen, and the bytes of the selected child must stay highlighted.
+  it('resolves a path whose row would be collapsed away', () => {
+    const flattenedWithColumnCollapsed = ['0', '1', '2']
+    expect(flattenedWithColumnCollapsed).not.toContain('2.0')
+    expect(fieldAtPath(fields, '2.0')?.name).toBe('Name')
+  })
+
+  it('agrees with fieldAtOffset on the path it returns', () => {
+    for (let offset = 0; offset <= 12; offset++) {
+      const hit = fieldAtOffset(fields, offset)
+      expect(hit, `no field covers byte ${offset}`).not.toBeNull()
+      expect(fieldAtPath(fields, hit!.path)).toBe(hit!.field)
+    }
+  })
+
+  it('returns null for a path that does not resolve', () => {
+    expect(fieldAtPath(fields, '')).toBeNull()
+    expect(fieldAtPath(fields, '9')).toBeNull()
+    expect(fieldAtPath(fields, '0.0')).toBeNull() // Type has no children
+    expect(fieldAtPath(fields, '2.9')).toBeNull()
+    expect(fieldAtPath(fields, 'x')).toBeNull()
+    expect(fieldAtPath(fields, '-1')).toBeNull()
   })
 })

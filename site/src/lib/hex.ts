@@ -130,6 +130,31 @@ export function fieldAtOffset(
   return null
 }
 
+/**
+ * The field a path names, or null if the path does not resolve.
+ *
+ * `fieldAtOffset` hands back a field together with its path, but selection is
+ * held as a path on its own, and a path outlives the row that produced it:
+ * collapsing an ancestor drops the row from the flattened list without clearing
+ * the selection. Resolving against the tree rather than against the visible
+ * rows is what keeps a field's bytes highlighted while its own row is collapsed
+ * out of sight.
+ */
+export function fieldAtPath(fields: FieldAnnotation[], path: string): FieldAnnotation | null {
+  if (path === '') return null
+
+  let current: FieldAnnotation | undefined
+  let level = fields
+  for (const part of path.split('.')) {
+    const index = Number(part)
+    if (!Number.isInteger(index) || index < 0) return null
+    current = level[index]
+    if (!current) return null
+    level = current.children ?? []
+  }
+  return current ?? null
+}
+
 /** Every ancestor path of `path`, so the tree can expand to reveal it. */
 export function ancestorPaths(path: string): string[] {
   const parts = path.split('.')

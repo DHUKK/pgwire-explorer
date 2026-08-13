@@ -119,6 +119,34 @@ describe('scenario manifest', () => {
     }
   })
 
+  // The card advertises these message types by name, so a capture that stopped
+  // containing one would have the landing page promising something the message
+  // list does not deliver. Regenerating the scenarios is what could cause that,
+  // which is the same reason the highlight boundaries are checked above.
+  it('names only message types its capture actually contains', () => {
+    for (const scenario of SCENARIOS) {
+      expect(scenario.teaches.length, `${scenario.id} names no message types`).toBeGreaterThan(0)
+
+      const capture = validateCapture(
+        JSON.parse(readFileSync(join(SCENARIO_DIR, `${scenario.id}.json`), 'utf8')),
+      )
+      const present = new Set(
+        capture.sessions.flatMap((s) => s.packets.map((p) => p.type_name)),
+      )
+      const absent = scenario.teaches.filter((name) => !present.has(name))
+      expect(absent, `${scenario.id} names message types its capture does not contain`).toEqual([])
+    }
+  })
+
+  // Four chips is where the card stops being scannable, which is the only
+  // reason this list is short rather than exhaustive.
+  it('names at most four message types per scenario', () => {
+    for (const scenario of SCENARIOS) {
+      expect(scenario.teaches.length, `${scenario.id} names too many message types`)
+        .toBeLessThanOrEqual(4)
+    }
+  })
+
   it('resolves by id', () => {
     expect(scenarioById('scram-auth')?.title).toContain('SCRAM')
     expect(scenarioById('nope')).toBeUndefined()

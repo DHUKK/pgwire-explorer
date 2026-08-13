@@ -145,7 +145,7 @@ function apply(state: ConnectionState, packet: PacketRecord): void {
       state.authMethod = 'SCRAM-SHA-256 (SASL)'
       break
     case 'AuthenticationMD5Password':
-      state.authMethod = 'md5 (deprecated)'
+      state.authMethod = 'md5'
       break
     case 'AuthenticationCleartextPassword':
       state.authMethod = 'password (cleartext)'

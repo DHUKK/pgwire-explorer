@@ -12,6 +12,20 @@
  * viewBox is theirs too: Material Symbols draw from 0 to -960 on the y axis, so
  * it looks wrong next to a 0 to 16 icon but is correct as authored.
  */
+/**
+ * A waste bin, for deleting a saved capture.
+ *
+ * `delete` from the same Material Symbols set as the book below, so the two
+ * marks share a weight and an optical size, and the same 0 to -960 viewBox.
+ */
+export function TrashIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg viewBox="0 -960 960 960" width={size} height={size} fill="currentColor" aria-hidden="true">
+      <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+    </svg>
+  )
+}
+
 export function BookIcon({ size = 14 }: { size?: number }) {
   return (
     <svg

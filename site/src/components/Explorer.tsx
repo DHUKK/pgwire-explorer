@@ -285,9 +285,8 @@ export function Explorer({ loaded, onClose }: Props) {
           <h1>{loaded.name}</h1>
           <span className="explorer-meta">
             {capture.sessions.length} session{capture.sessions.length === 1 ? '' : 's'} ·{' '}
-            {merged
-              ? `${rows.length} packets merged · ${formatMs(mergedSpanMs(rows))}`
-              : `${packets.length} packets in this one · ${formatMs(sessionDurationMs(activeSession))}`}
+            {rows.length} message{rows.length === 1 ? '' : 's'} ·{' '}
+            {merged ? formatMs(mergedSpanMs(rows)) : formatMs(sessionDurationMs(activeSession))}
           </span>
         </div>
 
@@ -342,7 +341,7 @@ export function Explorer({ loaded, onClose }: Props) {
                 >
                   <span className="session-chip-id">session {s.id}</span>
                   <span className="session-chip-meta">
-                    {s.client_addr.split(':').pop()} · {s.packets.length} pkts
+                    {s.client_addr.split(':').pop()} · {s.packets.length} msgs
                   </span>
                 </button>
               </span>
@@ -382,7 +381,13 @@ export function Explorer({ loaded, onClose }: Props) {
             onToggleCollapsed={toggleCollapsed}
           />
         ) : (
-          <div className="panel empty">This session has no packets.</div>
+          <div className="panel empty">
+            <strong>Nothing to show</strong>
+            <span>
+              This session has no packets. It was opened and closed without either side sending
+              anything.
+            </span>
+          </div>
         )}
       </div>
 
