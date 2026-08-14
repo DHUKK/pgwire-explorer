@@ -84,6 +84,23 @@ var scenarioExpectations = map[string][]string{
 		"StartupMessage", "NegotiateProtocolVersion",
 		"AuthenticationOk", "BackendKeyData", "ReadyForQuery", "Terminate",
 	},
+	// An idempotent DROP TABLE IF EXISTS on a table that is not there: a real,
+	// common migration idiom, and the only DDL that reports a NOTICE instead of
+	// erring.
+	"notice": {
+		"Query", "NoticeResponse", "CommandComplete", "ReadyForQuery",
+	},
+	// The simple protocol's other special case: a Query message with no command
+	// in it at all.
+	"empty-query": {
+		"Query", "EmptyQueryResponse", "ReadyForQuery",
+	},
+	// A COPY FROM STDIN abandoned partway through. Not a wire-level trick: pgx
+	// sends CopyFail as soon as the row source it is copying from returns an
+	// error.
+	"copy-fail": {
+		"CopyInResponse", "CopyFail", "ErrorResponse",
+	},
 }
 
 // undecodableScenarios exist to show a message this decoder cannot name, so a
@@ -220,6 +237,8 @@ var annotationValueExpectations = map[string][]string{
 	// throwaway password in scripts/generate-scenarios.sh, in a capture of a
 	// container that no longer exists.
 	"cleartext-auth": {"wire_demo_password"},
+	// The NOTICE is the point of this scenario's one DROP TABLE IF EXISTS.
+	"notice": {`table "wire_demo_missing_table" does not exist, skipping`},
 	// The severity and the code are the point, and so is the server naming the
 	// offending byte back: 33 is the '!' the frame was sent with.
 	"protocol-violation": {
