@@ -112,7 +112,6 @@ export default function App() {
       if (!response.ok) {
         throw new CaptureError(
           `Could not load the "${scenario.title}" example (HTTP ${response.status}).`,
-          'The capture files live in site/public/scenarios. Regenerate them with scripts/generate-scenarios.sh.',
         )
       }
       const capture = validateCapture(await response.json())
@@ -215,11 +214,12 @@ export default function App() {
     try {
       capture = parseCapture(await file.text())
     } catch (err) {
-      setError(
-        err instanceof CaptureError
-          ? err
-          : new CaptureError(`Could not read that file: ${(err as Error).message}`),
-      )
+      // Whatever went wrong, a reader who dropped in a real capture cannot fix
+      // it: the file was written by a tool, not typed by hand. The specific
+      // reason (an exact JSON path, most of the time) is logged for whoever
+      // can actually act on it rather than shown here.
+      console.error('Could not load capture from file:', err)
+      setError(new CaptureError('Invalid capture file.'))
       return
     }
 

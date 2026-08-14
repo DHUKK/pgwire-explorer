@@ -728,14 +728,8 @@ kbd {
   border: 1px solid var(--error);
   border-radius: var(--radius);
   padding: 0.85rem 1rem;
-  margin-top: 2rem;
+  margin-top: 1rem;
   color: var(--text);
-}
-
-.alert p {
-  margin: 0.4rem 0 0;
-  color: var(--text-soft);
-  font-size: 0.9rem;
 }
 
 /* =================================================================== explorer */

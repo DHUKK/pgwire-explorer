@@ -9,19 +9,19 @@ import {
 /**
  * Parsing a capture is the one place untrusted input enters the app: a user
  * drops in a file that may be the wrong JSON entirely, a hand-edited capture, or
- * a capture from a newer recorder.
+ * a capture from a newer recorder. Validation is strict, so everything
+ * downstream may assume the structure is sound and stay free of defensive
+ * checks.
  *
- * So validation is strict and the errors are written for someone who is about to
- * wonder whether the tool is broken or their file is. Everything downstream may
- * assume the structure is sound, which is what lets the rendering code stay free
- * of defensive checks.
+ * These messages quote the exact JSON path that failed, which is useful for
+ * debugging but not something an uploader can act on: a capture is written by
+ * a tool, not typed by hand. App.tsx's file-upload path logs the real
+ * CaptureError to the console and shows the reader one generic message
+ * instead. loadScenario shows this message directly, because a shipped
+ * scenario failing validation is a build bug worth surfacing precisely.
  */
 export class CaptureError extends Error {
-  constructor(
-    message: string,
-    /** What to try instead, shown as a second line in the UI. */
-    readonly hint?: string,
-  ) {
+  constructor(message: string) {
     super(message)
     this.name = 'CaptureError'
   }
@@ -37,10 +37,7 @@ export function parseCapture(text: string): SessionCapture {
   try {
     raw = JSON.parse(text)
   } catch (err) {
-    throw new CaptureError(
-      `That file is not valid JSON: ${(err as Error).message}`,
-      'A capture is written by pgwire-capture --out <file>. If the proxy is still running, stop it with Ctrl+C so it writes the file.',
-    )
+    throw new CaptureError(`That file is not valid JSON: ${(err as Error).message}`)
   }
   return validateCapture(raw)
 }
@@ -56,7 +53,6 @@ export function validateCapture(raw: unknown): SessionCapture {
     // other JSON file entirely.
     throw new CaptureError(
       'This JSON does not look like a pgwire capture: it has no "version" and "sessions" fields.',
-      'Record one with: go run ./cmd/pgwire-capture --listen 127.0.0.1:5433 --upstream 127.0.0.1:5432 --out cap.json',
     )
   }
 
@@ -69,9 +65,6 @@ export function validateCapture(raw: unknown): SessionCapture {
   if (major !== supportedMajor) {
     throw new CaptureError(
       `This capture is schema version ${version}. This build reads ${SUPPORTED_SCHEMA}.`,
-      major !== undefined && supportedMajor !== undefined && major > supportedMajor
-        ? 'The capture is newer than the site. Rebuild the site from the same commit as the recorder.'
-        : 'Re-record the capture with the current pgwire-capture.',
     )
   }
 
@@ -81,7 +74,6 @@ export function validateCapture(raw: unknown): SessionCapture {
   if (raw.sessions.length === 0) {
     throw new CaptureError(
       'This capture contains no sessions: nothing connected through the proxy.',
-      'Point a client at the proxy port (--listen), not at Postgres directly, then stop the proxy with Ctrl+C.',
     )
   }
 

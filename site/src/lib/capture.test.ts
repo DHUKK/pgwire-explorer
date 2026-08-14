@@ -47,26 +47,14 @@ describe('parseCapture', () => {
     expect(() => parseCapture('   ')).toThrow(CaptureError)
   })
 
-  it('rejects invalid JSON with a hint about the proxy', () => {
-    try {
-      parseCapture('{ not json')
-      expect.unreachable()
-    } catch (err) {
-      expect(err).toBeInstanceOf(CaptureError)
-      expect((err as CaptureError).hint).toContain('pgwire-capture')
-    }
+  it('rejects invalid JSON', () => {
+    expect(() => parseCapture('{ not json')).toThrow(CaptureError)
   })
 
   // The likeliest user error is dropping in some other JSON file, so that case
   // gets a message that says what a capture is rather than a parser complaint.
   it('rejects unrelated JSON with an explanation', () => {
-    try {
-      parseCapture('{"hello": "world"}')
-      expect.unreachable()
-    } catch (err) {
-      expect((err as CaptureError).message).toContain('does not look like a pgwire capture')
-      expect((err as CaptureError).hint).toContain('pgwire-capture')
-    }
+    expect(() => parseCapture('{"hello": "world"}')).toThrow(/does not look like a pgwire capture/)
   })
 
   it('rejects a capture with no sessions', () => {
@@ -83,28 +71,14 @@ describe('schema version', () => {
     expect(validateCapture(capture).version).toBe('2.7')
   })
 
-  it('rejects a newer major version and says which way to fix it', () => {
+  it('rejects a newer major version', () => {
     const capture = { ...validCapture(), version: '3.0' }
-    try {
-      validateCapture(capture)
-      expect.unreachable()
-    } catch (err) {
-      expect((err as CaptureError).message).toContain('3.0')
-      expect((err as CaptureError).hint).toContain('newer than the site')
-    }
+    expect(() => validateCapture(capture)).toThrow(/3\.0/)
   })
 
-  it('rejects an older major version and says to re-record', () => {
+  it('rejects an older major version', () => {
     const capture = { ...validCapture(), version: '1.0' }
-    try {
-      validateCapture(capture)
-      expect.unreachable()
-    } catch (err) {
-      expect((err as CaptureError).message).toContain('1.0')
-      // The advice differs by direction: an old capture needs re-recording, a
-      // new one needs a newer site.
-      expect((err as CaptureError).hint).toContain('Re-record')
-    }
+    expect(() => validateCapture(capture)).toThrow(/1\.0/)
   })
 })
 
