@@ -289,6 +289,15 @@ function MessageRow({
               className="mi-star"
               aria-label={`${message.name} is not read by the recorder, see the note below`}
               title="Not read by the recorder. See the note below the table"
+              onClick={(e) => {
+                // A plain hash link here would go through the app's own
+                // hash-based router, which treats "unsupported" as an
+                // unrecognised route and leaves the message index rather than
+                // scrolling to the footnote. Scrolling by hand keeps the
+                // click from ever touching location.hash.
+                e.preventDefault()
+                document.getElementById('unsupported')?.scrollIntoView({ block: 'start' })
+              }}
             >
               *
             </a>
