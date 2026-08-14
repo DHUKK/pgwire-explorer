@@ -51,13 +51,31 @@ export function Explorer({ loaded, onClose }: Props) {
   // Session selection is a property of the capture on screen, not of the
   // Explorer instance, so it has to reset here rather than carry the previous
   // capture's session ids into one that only coincidentally reuses them.
+  //
+  // A route that named one message opens on it, with only its session shown, so
+  // the row index is that packet's position in its own session and nothing else
+  // is in the way. A focus naming a session or a packet the capture does not have
+  // is ignored: the capture still opens, at the top.
+  const focus = loaded.focus
   useEffect(() => {
-    setSelectedSessionIds(new Set(capture.sessions.map((s) => s.id)))
-    setRowIndex(0)
+    const focused = focus
+      ? capture.sessions.find((s) => s.id === focus.sessionId)
+      : undefined
+    const focusedIndex = focused
+      ? focused.packets.findIndex((p) => p.id === focus!.packetId)
+      : -1
+
+    if (focused && focusedIndex >= 0) {
+      setSelectedSessionIds(new Set([focused.id]))
+      setRowIndex(focusedIndex)
+    } else {
+      setSelectedSessionIds(new Set(capture.sessions.map((s) => s.id)))
+      setRowIndex(0)
+    }
     setSelectedFieldPath(null)
     setCollapsed(new Set())
     setStateOpen(false)
-  }, [capture])
+  }, [capture, focus])
 
   const scenario = loaded.scenarioId ? scenarioById(loaded.scenarioId) : undefined
 
@@ -293,7 +311,8 @@ export function Explorer({ loaded, onClose }: Props) {
     <div className="explorer">
       <header className="explorer-header">
         <button className="ghost-button" onClick={onClose} title="Back to the session list">
-          ← back
+          <span aria-hidden="true">&larr;</span>
+          <span className="ghost-button-label">back</span>
         </button>
 
         <div className="explorer-title">

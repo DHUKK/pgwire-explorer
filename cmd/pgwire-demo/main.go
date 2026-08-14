@@ -35,7 +35,8 @@ func main() {
 		"connection string for scaffolding that must not be recorded, pointed directly at Postgres, "+
 			"bypassing the proxy. Only the replication modes use this.")
 	mode := flag.String("mode", "extended",
-		"what to exercise: extended, copy, cancel, error, notify, protocol32, replication-physical, replication-logical")
+		"what to exercise: extended, copy, cancel, error, notify, protocol32, protocol-violation, "+
+			"replication-physical, replication-logical")
 	flag.Parse()
 
 	ctx := context.Background()
@@ -62,6 +63,8 @@ func run(ctx context.Context, dsn, setupDSN, mode string) error {
 		return replicationLogical(ctx, dsn, setupDSN)
 	case "notify":
 		return notify(ctx, dsn)
+	case "protocol-violation":
+		return protocolViolation(ctx, dsn)
 	}
 
 	cfg, err := pgx.ParseConfig(dsn)
@@ -165,6 +168,62 @@ func copyFlow(ctx context.Context, conn *pgx.Conn) error {
 		return fmt.Errorf("copy out returned %d lines, want %d", lines, len(rows))
 	}
 	return nil
+}
+
+// protocolViolation sends a frame the server cannot possibly understand, to
+// record what a connection looks like when it desynchronises.
+//
+// The client is the only side we can make misbehave on demand, so the bogus
+// frame is ours: a type byte no frontend message uses, with a length covering
+// only itself. Everything about the server's reaction is real.
+//
+// It is a well-formed frame carrying an impossible type, which is the important
+// distinction. Framing does not depend on decoding, so the proxy relays it and
+// the recorder stores it happily. Only interpretation fails, which is what makes
+// this a capture of an unrecognised message rather than a broken stream.
+func protocolViolation(ctx context.Context, dsn string) error {
+	hj, err := hijackConn(ctx, dsn, "")
+	if err != nil {
+		return fmt.Errorf("hijack: %w", err)
+	}
+	defer hj.Conn.Close()
+
+	// A bogus type byte and a body of arbitrary bytes. '!' is not a frontend
+	// message type and never has been.
+	//
+	// The length is honest even though nothing else is: it counts itself plus the
+	// body, so the frame is well formed and the only impossible thing about it is
+	// what it claims to be. A lie here would leave the recorder's framer reading
+	// the declared number of bytes and desynchronising, which is a different
+	// failure and not one a capture can represent.
+	//
+	// The body is fixed rather than actually random. The capture is committed, and
+	// TestScenarios re-decodes every packet and compares the result against the
+	// stored annotation, so a payload that changed per run would be stale on
+	// arrival. The high bytes make it render as hex, which is what arbitrary data
+	// looks like in the dump, and the readable prefix shows it was deliberate.
+	body := []byte{'j', 'u', 'n', 'k', 0xde, 0xad, 0xbe, 0xef, 0x00, 0x7f, 0xff, 0x10}
+	frame := []byte{'!', 0, 0, 0, 0}
+	binary.BigEndian.PutUint32(frame[1:5], uint32(4+len(body)))
+	if _, err := hj.Conn.Write(append(frame, body...)); err != nil {
+		return fmt.Errorf("write bogus frame: %w", err)
+	}
+
+	// Whatever the server says about it, until it hangs up. Reported rather than
+	// asserted, because what Postgres does here is the thing being recorded.
+	for {
+		msg, err := hj.Frontend.Receive()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "protocol-violation: connection ended: %v\n", err)
+			return nil
+		}
+		switch m := msg.(type) {
+		case *pgproto3.ErrorResponse:
+			fmt.Fprintf(os.Stderr, "protocol-violation: %s %s: %s\n", m.Severity, m.Code, m.Message)
+		default:
+			fmt.Fprintf(os.Stderr, "protocol-violation: %T\n", msg)
+		}
+	}
 }
 
 // cancel starts a slow query and cancels it. The CancelRequest travels on a
@@ -353,15 +412,19 @@ var pgReplicationEpoch = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
 // hijackReplicationConn connects with the given replication startup
 // parameter and hands back the raw connection pgconn used underneath, post
 // handshake.
-func hijackReplicationConn(ctx context.Context, dsn, replication string) (*pgconn.HijackedConn, error) {
+// hijackConn opens a connection, lets pgconn do the startup, then takes the raw
+// socket and framer off it. replication may be empty for an ordinary connection.
+func hijackConn(ctx context.Context, dsn, replication string) (*pgconn.HijackedConn, error) {
 	cfg, err := pgconn.ParseConfig(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("parse dsn: %w", err)
 	}
-	if cfg.RuntimeParams == nil {
-		cfg.RuntimeParams = map[string]string{}
+	if replication != "" {
+		if cfg.RuntimeParams == nil {
+			cfg.RuntimeParams = map[string]string{}
+		}
+		cfg.RuntimeParams["replication"] = replication
 	}
-	cfg.RuntimeParams["replication"] = replication
 
 	pgConn, err := pgconn.ConnectConfig(ctx, cfg)
 	if err != nil {
@@ -555,7 +618,7 @@ func replicationPhysical(ctx context.Context, dsn, setupDSN string) error {
 		return fmt.Errorf("close setup: %w", err)
 	}
 
-	hc, err := hijackReplicationConn(ctx, dsn, "true")
+	hc, err := hijackConn(ctx, dsn, "true")
 	if err != nil {
 		return fmt.Errorf("connect (replication): %w", err)
 	}
@@ -660,7 +723,7 @@ func replicationLogical(ctx context.Context, dsn, setupDSN string) error {
 		return fmt.Errorf("close setup: %w", err)
 	}
 
-	hc, err := hijackReplicationConn(ctx, dsn, "database")
+	hc, err := hijackConn(ctx, dsn, "database")
 	if err != nil {
 		return fmt.Errorf("connect (replication): %w", err)
 	}

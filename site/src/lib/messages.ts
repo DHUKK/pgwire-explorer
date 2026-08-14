@@ -143,12 +143,18 @@ export const MESSAGE_DOCS: Record<string, MessageDoc> = {
   AuthenticationGSS: {
     sender: 'backend',
     category: 'auth',
-    summary: 'Asks for GSSAPI (Kerberos) authentication.',
+    summary: 'Asks for GSSAPI authentication.',
   },
   AuthenticationGSSContinue: {
     sender: 'backend',
     category: 'auth',
     summary: 'A round of GSSAPI token exchange.',
+  },
+  AuthenticationSSPI: {
+    sender: 'backend',
+    category: 'auth',
+    summary: 'Asks for SSPI authentication, which is Windows negotiating Kerberos or NTLM.',
+    detail: 'The client answers with `GSSResponse`, the same message GSSAPI uses.',
   },
   GSSResponse: {
     sender: 'frontend',

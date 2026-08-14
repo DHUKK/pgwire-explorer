@@ -57,7 +57,9 @@ export function ThemeToggle() {
 
   return (
     <button className="ghost-button theme-toggle" onClick={cycle} title={`${title}. Click to change.`}>
-      <span aria-hidden="true">{icon}</span>
+      <span className="theme-toggle-icon" aria-hidden="true">
+        {icon}
+      </span>
       <span className="sr-only">{title}</span>
     </button>
   )

@@ -10,29 +10,65 @@ import {
   saveCapture,
   type SavedCaptureMeta,
 } from './lib/savedCaptures'
-import type { LoadedCapture } from './types'
+import { MessageIndex } from './components/MessageIndex'
+import type { LoadedCapture, PacketFocus } from './types'
 
 /**
- * Two screens: pick a session, then explore it.
+ * Three screens: pick a session, explore it, or read the message index.
  *
  * The hash is the single source of truth, so a capture can be linked to and the
  * browser's back and forward buttons work. Navigation is done by assigning to
  * `location.hash`, which pushes a history entry, rather than by `replaceState`,
  * which does not and left back leaving the site entirely.
  *
- * Two kinds of route. A bare scenario id is one of the shipped examples. A
- * `local/` prefix names a capture saved in this browser, which is why the two
- * cannot collide: a saved file called `notify.json` never shadows the `notify`
- * example. A `local/` link only resolves in the browser holding that capture,
- * since the file itself is never uploaded anywhere. It is still worth a URL,
- * because reloading the page is what a reader does after re-recording.
+ * The routes:
+ *
+ *   (empty)                the landing page
+ *   messages               the protocol message index
+ *   <scenario>             a shipped example
+ *   <scenario>/<s>/<p>     that example, opened on session <s>, packet <p>
+ *   local/<name>           a capture saved in this browser
+ *
+ * A bare scenario id and a `local/` name cannot collide, which is why the prefix
+ * is there: a saved file called `notify.json` never shadows the `notify` example.
+ * A `local/` link only resolves in the browser holding that capture, since the
+ * file itself is never uploaded anywhere. It is still worth a URL, because
+ * reloading the page is what a reader does after re-recording.
+ *
+ * The two trailing segments are the smallest change that lets the index link to
+ * one message. They are ids rather than a position in the list, because position
+ * depends on which sessions are selected and ids do not, and they are optional so
+ * every link that already exists keeps working. The cost is that they do not
+ * track the selection: stepping through the list does not rewrite the URL, so a
+ * focused link is an entry point and not a permanent address for wherever the
+ * reader has since arrived.
  */
 const LOCAL_PREFIX = 'local/'
+
+/** The message index, which is reference data rather than a capture. */
+const MESSAGES_ROUTE = 'messages'
+
+/**
+ * The `<session>/<packet>` part of a route, or undefined when it is absent or
+ * malformed. A bad focus opens the capture at the top rather than failing: the
+ * scenario id is the part that has to be right.
+ */
+function parseFocus(session?: string, packet?: string): PacketFocus | undefined {
+  if (session === undefined || packet === undefined) return undefined
+  if (!/^\d+$/.test(session) || !/^\d+$/.test(packet)) return undefined
+  const sessionId = Number(session)
+  const packetId = Number(packet)
+  if (sessionId < 1 || packetId < 1) return undefined
+  return { sessionId, packetId }
+}
 
 export default function App() {
   const [loaded, setLoaded] = useState<LoadedCapture | null>(null)
   const [error, setError] = useState<CaptureError | null>(null)
   const [loadingId, setLoadingId] = useState<string | null>(null)
+  // The message index is a screen rather than a capture, so it needs its own flag
+  // instead of being another shape of `loaded`.
+  const [showIndex, setShowIndex] = useState(false)
   const [savedCaptures, setSavedCaptures] = useState<SavedCaptureMeta[]>([])
   // A brief note when saving or loading a saved capture did not go as expected.
   // Rendered outside both Landing and Explorer so it can appear regardless of
@@ -62,7 +98,7 @@ export default function App() {
     void refreshSavedCaptures()
   }, [refreshSavedCaptures])
 
-  const loadScenario = useCallback(async (id: string) => {
+  const loadScenario = useCallback(async (id: string, focus?: PacketFocus) => {
     const scenario = scenarioById(id)
     if (!scenario) {
       setError(new CaptureError(`There is no example called "${id}".`))
@@ -80,7 +116,7 @@ export default function App() {
         )
       }
       const capture = validateCapture(await response.json())
-      setLoaded({ capture, name: scenario.title, source: 'scenario', scenarioId: id })
+      setLoaded({ capture, name: scenario.title, source: 'scenario', scenarioId: id, focus })
     } catch (err) {
       setError(
         err instanceof CaptureError
@@ -127,6 +163,14 @@ export default function App() {
   useEffect(() => {
     const sync = () => {
       const route = window.location.hash.replace(/^#/, '')
+      if (route === MESSAGES_ROUTE) {
+        openLocalName.current = null
+        setLoaded(null)
+        setError(null)
+        setShowIndex(true)
+        return
+      }
+      setShowIndex(false)
       if (route === '') {
         openLocalName.current = null
         setLoaded(null)
@@ -140,9 +184,12 @@ export default function App() {
         void loadSaved(name)
         return
       }
-      if (scenarioById(route)) {
+      // A scenario, optionally with the message to open on. Anything else is
+      // left alone, which leaves whatever is already on screen where it is.
+      const [id, session, packet] = route.split('/')
+      if (id !== undefined && scenarioById(id)) {
         openLocalName.current = null
-        void loadScenario(route)
+        void loadScenario(id, parseFocus(session, packet))
       }
     }
     sync()
@@ -150,9 +197,13 @@ export default function App() {
     return () => window.removeEventListener('hashchange', sync)
   }, [loadScenario, loadSaved])
 
-  /** Navigate to a scenario. The hashchange listener does the loading. */
-  const openScenario = useCallback((id: string) => {
-    window.location.hash = id
+  /**
+   * Navigate to any route. The hashchange listener does the loading, so every
+   * screen change goes through the same path whether it came from a click, a
+   * pasted link or the back button.
+   */
+  const openRoute = useCallback((route: string) => {
+    window.location.hash = route
   }, [])
 
   /** The route for a capture saved in this browser. */
@@ -226,15 +277,18 @@ export default function App() {
     <>
       {loaded ? (
         <Explorer loaded={loaded} onClose={close} />
+      ) : showIndex ? (
+        <MessageIndex onClose={close} onOpenExample={openRoute} />
       ) : (
         <Landing
           error={error}
           loadingId={loadingId}
-          onPickScenario={openScenario}
+          onPickScenario={openRoute}
           onPickFile={loadFile}
           savedCaptures={savedCaptures}
           onOpenSaved={openSaved}
           onDeleteSaved={deleteSaved}
+          onOpenMessageIndex={() => openRoute(MESSAGES_ROUTE)}
         />
       )}
 

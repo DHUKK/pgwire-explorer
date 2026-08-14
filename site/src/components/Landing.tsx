@@ -4,7 +4,8 @@ import { SCENARIOS, SCENARIO_GROUPS } from '../lib/scenarios'
 import { formatFileSize, formatSavedAt, type SavedCaptureMeta } from '../lib/savedCaptures'
 import { Inline } from '../lib/inline'
 import { PROTOCOL_DOCS_URL } from '../lib/docs'
-import { BookIcon, TrashIcon } from './icons'
+import { BookIcon, GitHubIcon, ListIcon, TrashIcon } from './icons'
+import { PROTOCOL_MESSAGES, VERSIONS } from '../lib/protocolIndex'
 import { ThemeToggle } from './ThemeToggle'
 
 interface Props {
@@ -15,22 +16,15 @@ interface Props {
   savedCaptures: SavedCaptureMeta[]
   onOpenSaved: (name: string) => void
   onDeleteSaved: (name: string) => void
+  /** Open the index of every message in the protocol. */
+  onOpenMessageIndex: () => void
 }
 
-const REPO_URL = 'https://github.com/DHUKK/pgwire-explorer'
+export const REPO_URL = 'https://github.com/DHUKK/pgwire-explorer'
 
 // The proxy defaults to listening on 5433 and forwarding to 5432, so the common
 // case needs no flags beyond the output file.
 const RECORD_COMMAND = 'go run ./cmd/pgwire-capture --out cap.json'
-
-/** The GitHub mark. `currentColor` so it follows the button's text colour in both themes. */
-function GitHubIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">
-      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
-    </svg>
-  )
-}
 
 export function Landing({
   error,
@@ -40,6 +34,7 @@ export function Landing({
   savedCaptures,
   onOpenSaved,
   onDeleteSaved,
+  onOpenMessageIndex,
 }: Props) {
   const [dragging, setDragging] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -137,11 +132,35 @@ export function Landing({
           </div>
         )}
 
+        {/* Its own block rather than a link in the bar above, where it sat between
+            the spec link and the theme switch and read as part of the furniture.
+            Here it is the second thing on the page, which is what it is. */}
+        <button type="button" className="landing-index-link" onClick={onOpenMessageIndex}>
+          <span className="landing-index-icon" aria-hidden="true">
+            <ListIcon size={18} />
+          </span>
+          <span className="landing-index-text">
+            <span className="landing-index-title">
+              Discover the protocol messages
+              <span className="landing-index-arrow" aria-hidden="true">
+                {' '}
+                &rarr;
+              </span>
+            </span >
+            <span className="landing-index-sub">
+              {PROTOCOL_MESSAGES.length}, from protocol{' '}
+              <code className="inline-code">3.0</code> and <code className="inline-code">3.2</code>{' '}
+              and PostgreSQL <code className="inline-code">{VERSIONS[0]}</code> through{' '}
+              <code className="inline-code">{VERSIONS[VERSIONS.length - 1]}</code>
+            </span>
+          </span>
+        </button>
+
         <section className="landing-section">
           <h2>Start with an example</h2>
           <p className="section-note">
             Each example is a full session recording, with the messages it focuses on{' '}
-            <span className="key-mark">highlighted</span>.
+            <span className="key-mark">highlighted</span>
           </p>
 
           {SCENARIO_GROUPS.map((group) => {

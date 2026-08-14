@@ -572,3 +572,69 @@ func TestProtocolVersionsAreDecoded(t *testing.T) {
 		})
 	}
 }
+
+// TestAuthSSPI covers the one Authentication message pgproto3 refuses, so
+// TestAnnotateInvariants above cannot reach it.
+//
+// Hand-written bytes, which every other case here deliberately avoids. There is
+// no pgproto3 struct to round-trip through, which is the whole reason annotate.go
+// handles this one itself. The layout is fully specified as nine bytes, the tag,
+// Int32(8) and the code, so writing it out is exact rather than a guess.
+func TestAuthSSPI(t *testing.T) {
+	raw := []byte{'R', 0, 0, 0, 8, 0, 0, 0, 9}
+	d := Decode(ServerToClient, raw, 0)
+
+	if d.TypeName != "AuthenticationSSPI" {
+		t.Fatalf("TypeName = %q, want AuthenticationSSPI", d.TypeName)
+	}
+	if d.TypeChar != "R" {
+		t.Errorf("TypeChar = %q, want R", d.TypeChar)
+	}
+	// The session has to remember it, or the tag 'p' reply below cannot be
+	// resolved at all.
+	if !d.AuthTypeKnown || d.AuthType != 9 {
+		t.Errorf("AuthType = %d (known %v), want 9 (known true)", d.AuthType, d.AuthTypeKnown)
+	}
+	checkInvariants(t, "AuthenticationSSPI", d.Fields, len(raw))
+}
+
+// TestAuthSSPIRejectsOtherCodes pins the two codes deliberately left undecoded,
+// so removing them from the guard cannot pass unnoticed. Both still render as
+// Unknown, which is what TestProtocolCoverage records and why.
+func TestAuthSSPIRejectsOtherCodes(t *testing.T) {
+	for _, tc := range []struct {
+		code uint32
+		name string
+	}{
+		{code: 2, name: "KerberosV5"},
+		{code: 6, name: "SCMCredential"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			raw := []byte{'R', 0, 0, 0, 8, 0, 0, 0, byte(tc.code)}
+			if d := Decode(ServerToClient, raw, 0); d.TypeName != "Unknown" {
+				t.Errorf("TypeName = %q, want Unknown", d.TypeName)
+			}
+		})
+	}
+}
+
+// TestSSPITokenDecodesAsGSSResponse pins the translation Decode makes when
+// resolving the overloaded tag 'p' after an SSPI request.
+//
+// pgproto3 has no case for auth type 9 there, so without it the token falls
+// through to PasswordMessage and a binary blob is read as a C string called
+// "Password". The protocol carries SSPI data in GSSResponse. The token here holds
+// a NUL and a high byte, which is exactly what a C-string read would mangle.
+func TestSSPITokenDecodesAsGSSResponse(t *testing.T) {
+	token := []byte{'N', 'T', 'L', 'M', 'S', 'S', 'P', 0x00, 0x01, 0xff}
+	raw := append([]byte{'p', 0, 0, 0, byte(4 + len(token))}, token...)
+
+	d := Decode(ClientToServer, raw, 9)
+	if d.TypeName != "GSSResponse" {
+		t.Fatalf("TypeName = %q, want GSSResponse", d.TypeName)
+	}
+	if got := find(t, d.Fields, "GSS Data").Value; got != hex.EncodeToString(token) {
+		t.Errorf("GSS Data = %v, want %s", got, hex.EncodeToString(token))
+	}
+	checkInvariants(t, "GSSResponse", d.Fields, len(raw))
+}

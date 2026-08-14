@@ -72,6 +72,7 @@ describe('scenario manifest', () => {
       ],
       2: [['CancelRequest', 'CancelRequest']],
     },
+    'protocol-violation': { 1: [['Unknown', 'ErrorResponse']] },
     'notify': {
       // The listeners end on the notification itself, which is the message that
       // arrives with nothing of theirs in flight. The notifier's own range ends

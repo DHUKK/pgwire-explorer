@@ -182,6 +182,22 @@ export const SCENARIOS: Scenario[] = [
     group: 'Failure and control',
   },
   {
+    id: 'protocol-violation',
+    title: 'An unrecognized message',
+    blurb:
+      'A client sends a frame whose type byte belongs to no message, and the server answers with a `FATAL` `08P01` that names the byte before hanging up.',
+    teaches: ['Unknown', 'ErrorResponse'],
+    highlight: {
+      // The bogus frame and the reply. The frame is well formed and its type is
+      // impossible, so the recorder stores it happily and only the decoder
+      // fails, which is why it reads as Unknown rather than as a broken stream.
+      // The capture ends on the error: FATAL means the connection is over, so
+      // there is no ReadyForQuery and no Terminate.
+      1: [[19, 20]],
+    },
+    group: 'Failure and control',
+  },
+  {
     id: 'notify',
     title: 'LISTEN / NOTIFY',
     blurb:

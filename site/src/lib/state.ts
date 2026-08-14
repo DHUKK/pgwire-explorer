@@ -182,6 +182,14 @@ function apply(state: ConnectionState, packet: PacketRecord): void {
     case 'AuthenticationGSS':
       state.authMethod = 'GSSAPI'
       break
+    // Windows negotiating Kerberos or NTLM. The docs recommend SSPI on Windows and
+    // GSSAPI elsewhere, so this is a separate method rather than an older spelling
+    // of the one above. Named here for the same reason as the rest: without it an
+    // SSPI handshake would reach AuthenticationOk with no method recorded, and the
+    // pill would report that nothing had been asked for.
+    case 'AuthenticationSSPI':
+      state.authMethod = 'SSPI'
+      break
     case 'AuthenticationOk':
       // Accepted without ever asking for anything. Deliberately not called
       // "trust", because trust, peer and ident are byte for byte identical here:

@@ -13,9 +13,13 @@
  * message types this site documents, 49 match that pattern exactly, and the
  * three that do not are handled below.
  *
- * `/docs/current/` on purpose. It tracks whatever Postgres is newest, which is
+ * `/docs/current/` by default. It tracks whatever Postgres is newest, which is
  * right for a tool that decodes protocol 3.0 and 3.2 alike, at the cost of an
  * anchor that could one day be renamed upstream.
+ *
+ * A caller can ask for an older release instead, which the message index needs:
+ * three of the messages it lists were removed from the docs years ago, so linking
+ * them to `current` lands the reader on a page that no longer mentions them.
  */
 
 const DOCS = 'https://www.postgresql.org/docs/current'
@@ -41,16 +45,35 @@ const FLOW_SECTIONS: Record<string, string> = {
 }
 
 /**
+ * The oldest release whose message-formats page gives each message its own
+ * anchor. Checked against the pages themselves: 15, 16, 17 and 18 have them, and
+ * 14 and everything before it has none at all. So a link to an older release has
+ * to be to the page rather than into it, or the reader lands on an anchor that
+ * does not exist and sees the top of the page with no idea why.
+ */
+const FIRST_ANCHORED_RELEASE = 15
+
+/**
  * Where to read about a message type, or undefined when there is nowhere to send
  * the reader.
+ *
+ * `release` names a documentation version such as "8.3", and defaults to the
+ * current one. Pass it for a message the current docs no longer describe.
  *
  * `Unknown` is the only type with no destination, and it is ours rather than the
  * protocol's: it means the decoder could not identify the frame, so there is no
  * spec entry to link to.
  */
-export function docsUrlForTypeName(typeName: string): string | undefined {
+export function docsUrlForTypeName(typeName: string, release?: string): string | undefined {
   if (typeName === '' || typeName === 'Unknown') return undefined
+
+  const base = release === undefined ? DOCS : `https://www.postgresql.org/docs/${release}`
   const flow = FLOW_SECTIONS[typeName]
-  if (flow) return flow
-  return `${DOCS}/protocol-message-formats.html#PROTOCOL-MESSAGE-FORMATS-${typeName.toUpperCase()}`
+  if (flow) return release === undefined ? flow : flow.replace(DOCS, base)
+
+  const page = `${base}/protocol-message-formats.html`
+  // parseFloat orders these correctly across the whole range, because 10 is
+  // greater than 9.6 as a number even though it sorts before it as a string.
+  const anchored = release === undefined || parseFloat(release) >= FIRST_ANCHORED_RELEASE
+  return anchored ? `${page}#PROTOCOL-MESSAGE-FORMATS-${typeName.toUpperCase()}` : page
 }
