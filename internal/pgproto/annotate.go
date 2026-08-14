@@ -501,12 +501,12 @@ func annotateFields(msg pgproto3.Message, raw []byte) []FieldAnnotation {
 		lenField, pos = fInt32(raw, pos, "SASL Data Length")
 		fields = append(fields, lenField)
 		if pos <= len(raw)-1 {
-			fields = append(fields, fRawBytes(raw, pos, len(raw)-1, "SASL Data (client-first-message)"))
+			fields = append(fields, fRawBytes(raw, pos, len(raw)-1, "SASL Data (initial response)"))
 		}
 		pos = len(raw)
 
 	case *pgproto3.SASLResponse:
-		fields = append(fields, fRawBytes(raw, pos, len(raw)-1, "SASL Data (client-final-message)"))
+		fields = append(fields, fRawBytes(raw, pos, len(raw)-1, "SASL Data"))
 		pos = len(raw)
 
 	case *pgproto3.GSSResponse:
@@ -606,7 +606,7 @@ func annotateFields(msg pgproto3.Message, raw []byte) []FieldAnnotation {
 		f, pos = fUint32(raw, pos, "Auth Type (11 = SASLContinue)")
 		fields = append(fields, f)
 		if pos <= len(raw)-1 {
-			fields = append(fields, fRawBytes(raw, pos, len(raw)-1, "SASL Data (server-first-message)"))
+			fields = append(fields, fRawBytes(raw, pos, len(raw)-1, "SASL Data"))
 		}
 		pos = len(raw)
 
@@ -614,7 +614,7 @@ func annotateFields(msg pgproto3.Message, raw []byte) []FieldAnnotation {
 		f, pos = fUint32(raw, pos, "Auth Type (12 = SASLFinal)")
 		fields = append(fields, f)
 		if pos <= len(raw)-1 {
-			fields = append(fields, fRawBytes(raw, pos, len(raw)-1, "SASL Data (server-final-message)"))
+			fields = append(fields, fRawBytes(raw, pos, len(raw)-1, "SASL Data (outcome)"))
 		}
 		pos = len(raw)
 

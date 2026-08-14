@@ -141,9 +141,29 @@ function apply(state: ConnectionState, packet: PacketRecord): void {
     // --- authentication -----------------------------------------------------
     // Only the method is recorded. Which messages were exchanged is the packet
     // list's job.
+    //
+    // Every method below except SASL is named by its own message type: an
+    // AuthenticationMD5Password can only mean md5. SASL is the exception, because
+    // the mechanism is negotiated over two messages, so it is the one method that
+    // has to be read off the wire. This used to report SCRAM-SHA-256 for any SASL
+    // exchange, which was a confident lie about anything else, and PostgreSQL 18
+    // added OAUTHBEARER.
+    //
+    // The server's offer is deliberately not read. It lists what the server will
+    // accept, which is not the same as what is being used, and reporting a list
+    // the client has not answered yet would be claiming to know something the
+    // wire has not said.
     case 'AuthenticationSASL':
-      state.authMethod = 'SCRAM-SHA-256 (SASL)'
+      state.authMethod = 'SASL'
       break
+
+    // The client's pick, which is the mechanism actually in use, and the first
+    // point at which it is known.
+    case 'SASLInitialResponse': {
+      const chosen = valueOf(findField(fields, 'Auth Mechanism'))
+      if (chosen !== '') state.authMethod = `SASL (${chosen})`
+      break
+    }
     case 'AuthenticationMD5Password':
       state.authMethod = 'md5'
       break

@@ -46,9 +46,13 @@ describe('statusPills', () => {
     const firstAuth = packets.findIndex((p) => p.type_name === 'AuthenticationSASL')
     const inProgress = pillsAt(session!, firstAuth).get('auth')!
     expect(inProgress.value).toContain('in progress')
-    // The method is already known at this point, so it is worth showing.
-    expect(inProgress.value).toContain('SCRAM-SHA-256')
     expect(inProgress.tone).toBe('busy')
+    // Only that it is SASL. The server has offered a list and the client has not
+    // answered yet, so naming a mechanism here would be a guess.
+    expect(inProgress.value).toBe('SASL, in progress')
+
+    const pick = packets.findIndex((p) => p.type_name === 'SASLInitialResponse')
+    expect(pillsAt(session!, pick).get('auth')!.value).toBe('SASL (SCRAM-SHA-256), in progress')
 
     const ok = packets.findIndex((p) => p.type_name === 'AuthenticationOk')
     const after = pillsAt(session!, ok).get('auth')!
