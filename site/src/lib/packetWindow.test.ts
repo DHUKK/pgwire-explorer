@@ -70,6 +70,14 @@ describe('visibleRowWindow', () => {
     expect(visibleRowWindow([0], 0, 400, 4)).toEqual({ start: 0, end: -1 })
   })
 
+  it('shifts the window earlier by the scroll container\'s own top padding', () => {
+    // 10px of inset at scrollTop 1000 matches 0px of inset at scrollTop 990.
+    const offsets = rowOffsets(new Array(1000).fill(false), 20, 8)
+    expect(visibleRowWindow(offsets, 1000, 200, 4, 10)).toEqual(
+      visibleRowWindow(offsets, 990, 200, 4, 0),
+    )
+  })
+
   it('still finds a partially visible last row when an earlier gap marker pushed it down', () => {
     // Row 0 carries a gap marker (28px tall instead of 20px), so every row
     // after it starts 8px later than pure rowHeight arithmetic would predict.
@@ -87,17 +95,17 @@ describe('scrollTopToReveal', () => {
     expect(scrollTopToReveal(offsets, 5, 0, 400)).toBe(0)
   })
 
-  it('scrolls up to reveal a row above the viewport', () => {
+  it('scrolls up to reveal a row above the viewport, centering it', () => {
+    // Content (200px) is shorter than the viewport (400px), so the only
+    // sane centered position clamps to 0.
     const offsets = rowOffsets(new Array(10).fill(false), 20, 8)
-    expect(scrollTopToReveal(offsets, 2, 1000, 400)).toBe(40)
+    expect(scrollTopToReveal(offsets, 2, 1000, 400)).toBe(0)
   })
 
-  it('scrolls down to reveal a row below the viewport', () => {
+  it('scrolls down to reveal a row below the viewport, centering it', () => {
+    // Row 100 spans 2000..2020, midpoint 2010, centered at 2010 - 200 = 1810.
     const offsets = rowOffsets(new Array(200).fill(false), 20, 8)
-    // Row 100 spans 2000..2020. A 400px viewport at scrollTop 1000 shows up to
-    // 1400, so it must move down to put the row's bottom at the viewport's
-    // bottom.
-    expect(scrollTopToReveal(offsets, 100, 1000, 400)).toBe(1620)
+    expect(scrollTopToReveal(offsets, 100, 1000, 400)).toBe(1810)
   })
 
   it('reveals the first row by scrolling to the top', () => {
@@ -106,18 +114,27 @@ describe('scrollTopToReveal', () => {
   })
 
   it('accounts for a gap marker as part of the target row itself', () => {
-    // Row 5 carries the gap marker, which makes row 5's own slot 28px tall
-    // instead of 20, not row 5's start position: rows 0..4 at 20px each still
-    // put row 5's top at 100, but its bottom is 128, not 120.
+    // Row 5's gap marker makes its own slot 28px tall: top 100, bottom 128,
+    // midpoint 114, centered at 114 - 25 = 89.
     const gaps = [false, false, false, false, false, true, false, false]
     const offsets = rowOffsets(gaps, 20, 8)
-    // A 50px viewport at scrollTop 0 shows up to 50, so revealing row 5's
-    // bottom (128) means scrolling down to 128 - 50 = 78.
-    expect(scrollTopToReveal(offsets, 5, 0, 50)).toBe(78)
+    expect(scrollTopToReveal(offsets, 5, 0, 50)).toBe(89)
   })
 
   it('clamps a row index past the end to the last real row', () => {
     const offsets = rowOffsets(new Array(5).fill(false), 20, 8)
     expect(scrollTopToReveal(offsets, 99, 0, 40)).toBe(scrollTopToReveal(offsets, 4, 0, 40))
+  })
+
+  it('accounts for the scroll container\'s own top padding', () => {
+    // With a 10px inset, row 100 sits at 2010..2030, midpoint 2020, centered
+    // at 1820, not the 1810 a zero inset would give.
+    const offsets = rowOffsets(new Array(200).fill(false), 20, 8)
+    expect(scrollTopToReveal(offsets, 100, 1000, 400, 10)).toBe(1820)
+  })
+
+  it('with no inset given, matches the inset-of-zero case', () => {
+    const offsets = rowOffsets(new Array(200).fill(false), 20, 8)
+    expect(scrollTopToReveal(offsets, 100, 1000, 400)).toBe(scrollTopToReveal(offsets, 100, 1000, 400, 0))
   })
 })
