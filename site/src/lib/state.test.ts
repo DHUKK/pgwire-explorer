@@ -112,14 +112,17 @@ describe('stateAfter, over real captures', () => {
     expect(state.authenticated).toBe(true)
   })
 
-  // Trust names itself from AuthenticationOk alone, since there is no earlier
-  // message to name it. Without that the pill would read a bare "ok" and leave a
-  // reader unable to tell "no password was asked for" from "the method is not
-  // worth reporting".
-  it('names trust as the method when no credential was ever requested', () => {
+  // Reported from AuthenticationOk alone, since no earlier message named a
+  // method. Without it the pill would read a bare "ok" and leave a reader unable
+  // to tell "nothing was asked for" from "the method is not worth reporting".
+  //
+  // It reports the observation and not the configuration on purpose. This capture
+  // was recorded under trust, but trust, peer and ident all look exactly like
+  // this, so naming trust here would be a guess dressed up as a fact.
+  it('reports that no credential was requested, without naming a method', () => {
     const [session] = loadScenario('trust-auth')
     const state = finalState(session!)
-    expect(state.authMethod).toBe('trust (no password)')
+    expect(state.authMethod).toBe('no credential requested')
     expect(state.authenticated).toBe(true)
 
     // Nothing between the request and the acceptance.

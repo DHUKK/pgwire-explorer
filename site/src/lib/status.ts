@@ -1,5 +1,5 @@
 import type { Session } from '../types'
-import type { ConnectionState } from './state'
+import { NO_CREDENTIAL_REQUESTED, type ConnectionState } from './state'
 
 /**
  * The connection's status as a small fixed set of pills.
@@ -82,12 +82,17 @@ function tlsPill(state: ConnectionState, session: Session): StatusPill {
 
 function authPill(state: ConnectionState): StatusPill {
   if (state.authenticated) {
+    // Nothing was sent, so there is nothing to have accepted. Saying credentials
+    // were accepted would contradict the value beside it.
+    const nothingAsked = state.authMethod === NO_CREDENTIAL_REQUESTED
     return {
       key: 'auth',
       label: 'AUTH',
       value: state.authMethod ?? 'ok',
       tone: 'ok',
-      explain: '`AuthenticationOk` received. Credentials accepted.',
+      explain: nothingAsked
+        ? '`AuthenticationOk` arrived with no credential ever requested. The server was configured to let this connection in, by `trust`, `peer` or `ident`, which look identical on the wire.'
+        : '`AuthenticationOk` received. Credentials accepted.',
     }
   }
   if (state.authMethod !== null) {

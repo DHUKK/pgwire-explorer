@@ -60,6 +60,27 @@ describe('statusPills', () => {
     expect(after.tone).toBe('ok')
   })
 
+  // The pill reports what the wire showed, not what pg_hba said. trust, peer and
+  // ident are indistinguishable here, so the value names none of them, and the
+  // explanation must not claim a credential was accepted when none was sent.
+  it('says nothing was requested, rather than naming trust', () => {
+    const [session] = loadScenario('trust-auth')
+    const auth = pillsAt(session!, session!.packets.length - 1).get('auth')!
+
+    expect(auth.value).toBe('no credential requested')
+    expect(auth.tone).toBe('ok')
+    expect(auth.explain).toContain('peer')
+    expect(auth.explain).not.toContain('Credentials accepted')
+  })
+
+  it('still reports credentials as accepted when one was actually sent', () => {
+    const [session] = loadScenario('md5-auth')
+    const auth = pillsAt(session!, session!.packets.length - 1).get('auth')!
+
+    expect(auth.value).toBe('md5')
+    expect(auth.explain).toContain('Credentials accepted')
+  })
+
   // TLS comes from the negotiation in the packets, not from the capture's ssl_*
   // fields, so it moves through the states the wire actually shows rather than
   // jumping straight to the recorder's summary.
