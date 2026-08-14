@@ -381,6 +381,8 @@ export const MESSAGE_EXAMPLES: Record<string, MessageExample> = {
   DataRow: { scenario: 'simple-query', session: 1, packet: 23 },
   CommandComplete: { scenario: 'simple-query', session: 1, packet: 25 },
   ReadyForQuery: { scenario: 'simple-query', session: 1, packet: 20 },
+  NoticeResponse: { scenario: 'notice', session: 1, packet: 22 },
+  EmptyQueryResponse: { scenario: 'empty-query', session: 1, packet: 22 },
 
   Parse: { scenario: 'extended-query', session: 1, packet: 19 },
   ParseComplete: { scenario: 'extended-query', session: 1, packet: 22 },
@@ -396,6 +398,7 @@ export const MESSAGE_EXAMPLES: Record<string, MessageExample> = {
   CopyBothResponse: { scenario: 'replication-physical', session: 1, packet: 30 },
   CopyData: { scenario: 'copy', session: 1, packet: 30 },
   CopyDone: { scenario: 'copy', session: 1, packet: 31 },
+  CopyFail: { scenario: 'copy-fail', session: 1, packet: 30 },
 
   ErrorResponse: { scenario: 'error-response', session: 1, packet: 22 },
   NotificationResponse: { scenario: 'notify', session: 1, packet: 22 },

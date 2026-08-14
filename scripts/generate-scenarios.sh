@@ -35,9 +35,10 @@ cd "$(dirname "$0")/.."
 OUT=site/public/scenarios
 mkdir -p "$OUT"
 
-ALL=(scram-auth trust-auth simple-query extended-query copy error-response
-  notify cancel-request protocol-violation protocol-32-downgrade
-  replication-physical replication-logical cleartext-auth md5-auth)
+ALL=(scram-auth trust-auth simple-query extended-query copy copy-fail
+  error-response notify cancel-request protocol-violation protocol-32-downgrade
+  replication-physical replication-logical cleartext-auth md5-auth
+  notice empty-query)
 WANTED=("$@")
 # Expanded only when non-empty: under set -u, bash 3.2 (what macOS ships) treats
 # "${WANTED[@]}" on an empty array as an unbound variable.
@@ -271,6 +272,17 @@ capture --expect-client-failure simple-query psql_at_proxy \
   -c "SELECT id, label FROM (VALUES (1, 'first'), (2, NULL)) AS t (id, label) ORDER BY id;" \
   -c "SELECT * FROM no_such_table;"
 
+# --- 3b. NoticeResponse -------------------------------------------------------
+# DROP TABLE IF EXISTS on a table that is not there is a real, common idiom (an
+# idempotent migration script), not a NOTICE manufactured for its own sake, and
+# it is the only DDL that reports one instead of erring.
+capture notice psql_at_proxy -c "DROP TABLE IF EXISTS wire_demo_missing_table;"
+
+# --- 3c. EmptyQueryResponse ---------------------------------------------------
+# The simple protocol's other special case: a Query message with no command in
+# it at all, answered with EmptyQueryResponse instead of CommandComplete.
+capture empty-query psql_at_proxy -c ""
+
 # --- 4. extended query protocol --------------------------------------------
 capture extended-query demo_at_proxy extended
 
@@ -279,6 +291,12 @@ capture extended-query demo_at_proxy extended
 # own words, so the example shows both. The formats differ on purpose: pgx's
 # CopyFrom sends binary, the COPY TO STDOUT comes back as text.
 capture copy demo_at_proxy copy
+
+# --- 5b. CopyFail -------------------------------------------------------------
+# A COPY FROM STDIN abandoned partway through. Not a wire-level trick: pgx
+# sends a real CopyFail as soon as the row source it is copying from returns
+# an error.
+capture copy-fail demo_at_proxy copy-fail
 
 # --- 6. errors --------------------------------------------------------------
 capture error-response demo_at_proxy error

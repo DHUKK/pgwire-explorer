@@ -130,6 +130,19 @@ export const SCENARIOS: Scenario[] = [
     group: 'Queries',
   },
   {
+    id: 'empty-query',
+    title: 'An empty query string',
+    blurb:
+      'A `Query` message with no command in it at all, answered with `EmptyQueryResponse` instead of `CommandComplete`.',
+    teaches: ['Query', 'EmptyQueryResponse'],
+    highlight: {
+      // The one statement, up to the ReadyForQuery that follows it. Excludes
+      // the closing Terminate.
+      1: [[21, 23]],
+    },
+    group: 'Queries',
+  },
+  {
     id: 'copy',
     title: 'COPY: the bulk-transfer sub-protocol',
     blurb:
@@ -144,6 +157,20 @@ export const SCENARIOS: Scenario[] = [
       // copy-in's ReadyForQuery, and adjacent ranges are merged into a single
       // band anyway.
       1: [[29, 42]],
+    },
+    group: 'Bulk data',
+  },
+  {
+    id: 'copy-fail',
+    title: 'Abandoning a COPY',
+    blurb:
+      'A `COPY FROM STDIN` abandoned partway through, ending in a `CopyFail` sent the moment the row source errors.',
+    teaches: ['CopyInResponse', 'CopyFail', 'ErrorResponse'],
+    highlight: {
+      // The second COPY FROM STDIN, up to the ReadyForQuery after its
+      // ErrorResponse. Excludes the CREATE TABLE, the Parse/Describe pgx does
+      // to learn column types, and the closing Terminate.
+      1: [[29, 33]],
     },
     group: 'Bulk data',
   },
@@ -163,6 +190,19 @@ export const SCENARIOS: Scenario[] = [
         [19, 23],
         [30, 41],
       ],
+    },
+    group: 'Failure and control',
+  },
+  {
+    id: 'notice',
+    title: 'Notices',
+    blurb:
+      'An idempotent `DROP TABLE IF EXISTS` on a table that is not there, answered with a `NoticeResponse` rather than an error.',
+    teaches: ['Query', 'NoticeResponse', 'CommandComplete'],
+    highlight: {
+      // The one statement, up to the ReadyForQuery that follows it. Excludes
+      // the closing Terminate.
+      1: [[21, 24]],
     },
     group: 'Failure and control',
   },

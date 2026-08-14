@@ -35,8 +35,8 @@ func main() {
 		"connection string for scaffolding that must not be recorded, pointed directly at Postgres, "+
 			"bypassing the proxy. Only the replication modes use this.")
 	mode := flag.String("mode", "extended",
-		"what to exercise: extended, copy, cancel, error, notify, protocol32, protocol-violation, "+
-			"replication-physical, replication-logical")
+		"what to exercise: extended, copy, copy-fail, cancel, error, notify, protocol32, "+
+			"protocol-violation, replication-physical, replication-logical")
 	flag.Parse()
 
 	ctx := context.Background()
@@ -87,6 +87,8 @@ func run(ctx context.Context, dsn, setupDSN, mode string) error {
 		return extended(ctx, conn)
 	case "copy":
 		return copyFlow(ctx, conn)
+	case "copy-fail":
+		return copyFail(ctx, conn)
 	case "cancel":
 		return cancel(ctx, conn)
 	case "error":
@@ -166,6 +168,30 @@ func copyFlow(ctx context.Context, conn *pgx.Conn) error {
 	}
 	if lines := strings.Count(strings.TrimSuffix(out.String(), "\n"), "\n") + 1; lines != len(rows) {
 		return fmt.Errorf("copy out returned %d lines, want %d", lines, len(rows))
+	}
+	return nil
+}
+
+// copyFail abandons a COPY FROM STDIN partway through, which is the only way
+// a real client ever sends CopyFail: not a wire-level trick, just a row
+// source that fails after supplying some rows. pgx sends CopyFail as soon as
+// the CopyFromSource it is copying from returns an error.
+func copyFail(ctx context.Context, conn *pgx.Conn) error {
+	if _, err := conn.Exec(ctx, `CREATE TEMP TABLE copy_fail_demo (id int, label text)`); err != nil {
+		return fmt.Errorf("create temp table: %w", err)
+	}
+
+	row := 0
+	source := pgx.CopyFromFunc(func() ([]any, error) {
+		row++
+		if row > 1 {
+			return nil, errors.New("wire demo: row source failed partway through")
+		}
+		return []any{1, "will not finish"}, nil
+	})
+	_, err := conn.CopyFrom(ctx, pgx.Identifier{"copy_fail_demo"}, []string{"id", "label"}, source)
+	if err == nil {
+		return errors.New("expected the copy to fail")
 	}
 	return nil
 }

@@ -53,7 +53,10 @@ describe('scenario manifest', () => {
     'trust-auth': { 1: [['StartupMessage', 'AuthenticationOk']] },
     'simple-query': { 1: [['Query', 'ReadyForQuery']] },
     'extended-query': { 1: [['Parse', 'ReadyForQuery']] },
+    'notice': { 1: [['Query', 'ReadyForQuery']] },
+    'empty-query': { 1: [['Query', 'ReadyForQuery']] },
     'copy': { 1: [['Query', 'ReadyForQuery']] },
+    'copy-fail': { 1: [['Query', 'ReadyForQuery']] },
     'error-response': {
       // The failed Parse and the ReadyForQuery its Sync produced, then BEGIN
       // through the ReadyForQuery that reports Idle again after ROLLBACK.
