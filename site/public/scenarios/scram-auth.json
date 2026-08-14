@@ -1,20 +1,20 @@
 {
   "version": "2.0",
-  "recorded_at": "2026-08-13T11:43:45.933886+01:00",
+  "recorded_at": "2026-08-13T17:25:45.367108+01:00",
   "sessions": [
     {
       "id": 1,
-      "client_addr": "127.0.0.1:54528",
+      "client_addr": "127.0.0.1:54288",
       "server_addr": "127.0.0.1:55432",
-      "started_at": "2026-08-13T11:43:46.658545+01:00",
-      "ended_at": "2026-08-13T11:43:46.684234+01:00",
+      "started_at": "2026-08-13T17:25:46.108814+01:00",
+      "ended_at": "2026-08-13T17:25:46.129268+01:00",
       "ssl_requested": true,
       "ssl_accepted": false,
       "packets": [
         {
           "id": 1,
           "direction": "C2S",
-          "timestamp_ms": 0.04,
+          "timestamp_ms": 0.021,
           "stream_offset": 0,
           "length": 8,
           "raw_hex": "0000000804d2162f",
@@ -41,7 +41,7 @@
         {
           "id": 2,
           "direction": "S2C",
-          "timestamp_ms": 0.104,
+          "timestamp_ms": 0.055,
           "stream_offset": 0,
           "length": 1,
           "raw_hex": "4e",
@@ -61,7 +61,7 @@
         {
           "id": 3,
           "direction": "C2S",
-          "timestamp_ms": 0.225,
+          "timestamp_ms": 0.086,
           "stream_offset": 8,
           "length": 63,
           "raw_hex": "0000003f000300007573657200706f73746772657300646174616261736500706f737467726573006170706c69636174696f6e5f6e616d65007073716c0000",
@@ -180,7 +180,7 @@
         {
           "id": 4,
           "direction": "S2C",
-          "timestamp_ms": 7.828,
+          "timestamp_ms": 4.81,
           "stream_offset": 1,
           "length": 24,
           "raw_hex": "52000000170000000a534352414d2d5348412d3235360000",
@@ -241,10 +241,10 @@
         {
           "id": 5,
           "direction": "C2S",
-          "timestamp_ms": 17.138,
+          "timestamp_ms": 11.249,
           "stream_offset": 71,
           "length": 55,
-          "raw_hex": "7000000036534352414d2d5348412d32353600000000206e2c2c6e3d2c723d72334c584876667431307634697a566d3237777148694159",
+          "raw_hex": "7000000036534352414d2d5348412d32353600000000206e2c2c6e3d2c723d775a53533867666c63433845443941453749596568344f61",
           "type_char": "p",
           "type_name": "SASLInitialResponse",
           "fields": [
@@ -281,8 +281,8 @@
               ]
             },
             {
-              "name": "SASL Data (client-first-message)",
-              "value": "n,,n=,r=r3LXHvft10v4izVm27wqHiAY",
+              "name": "SASL Data (initial response)",
+              "value": "n,,n=,r=wZSS8gflcC8ED9AE7IYeh4Oa",
               "bytes": [
                 23,
                 54
@@ -293,10 +293,10 @@
         {
           "id": 6,
           "direction": "S2C",
-          "timestamp_ms": 17.513,
+          "timestamp_ms": 11.938,
           "stream_offset": 25,
           "length": 93,
-          "raw_hex": "520000005c0000000b723d72334c584876667431307634697a566d3237777148694159414d67774a68342b6a4169692f4a6a704d33456d434d2b7a2c733d3635707778414465545364494874687931654c366e673d3d2c693d34303936",
+          "raw_hex": "520000005c0000000b723d775a53533867666c63433845443941453749596568344f614c79326e38504d3974424b7232336a70717955394d5163312c733d70526867634a354f6c72583550544e70574b36354a413d3d2c693d34303936",
           "type_char": "R",
           "type_name": "AuthenticationSASLContinue",
           "fields": [
@@ -325,8 +325,8 @@
               ]
             },
             {
-              "name": "SASL Data (server-first-message)",
-              "value": "r=r3LXHvft10v4izVm27wqHiAYAMgwJh4+jAii/JjpM3EmCM+z,s=65pwxADeTSdIHthy1eL6ng==,i=4096",
+              "name": "SASL Data",
+              "value": "r=wZSS8gflcC8ED9AE7IYeh4OaLy2n8PM9tBKr23jpqyU9MQc1,s=pRhgcJ5OlrX5PTNpWK65JA==,i=4096",
               "bytes": [
                 9,
                 92
@@ -337,10 +337,10 @@
         {
           "id": 7,
           "direction": "C2S",
-          "timestamp_ms": 19.953,
+          "timestamp_ms": 13.662,
           "stream_offset": 126,
           "length": 109,
-          "raw_hex": "700000006c633d626977732c723d72334c584876667431307634697a566d3237777148694159414d67774a68342b6a4169692f4a6a704d33456d434d2b7a2c703d614155515364786d753966785870452f50575138574f4f7841594b4550445a3437692b535577776477446b3d",
+          "raw_hex": "700000006c633d626977732c723d775a53533867666c63433845443941453749596568344f614c79326e38504d3974424b7232336a70717955394d5163312c703d6a464a664e6e474f5648546444303438493247556441584e7232472b4d745376386833494446432b6830383d",
           "type_char": "p",
           "type_name": "SASLResponse",
           "fields": [
@@ -361,8 +361,8 @@
               ]
             },
             {
-              "name": "SASL Data (client-final-message)",
-              "value": "c=biws,r=r3LXHvft10v4izVm27wqHiAYAMgwJh4+jAii/JjpM3EmCM+z,p=aAUQSdxmu9fxXpE/PWQ8WOOxAYKEPDZ47i+SUwwdwDk=",
+              "name": "SASL Data",
+              "value": "c=biws,r=wZSS8gflcC8ED9AE7IYeh4OaLy2n8PM9tBKr23jpqyU9MQc1,p=jFJfNnGOVHTdD048I2GUdAXNr2G+MtSv8h3IDFC+h08=",
               "bytes": [
                 5,
                 108
@@ -373,10 +373,10 @@
         {
           "id": 8,
           "direction": "S2C",
-          "timestamp_ms": 21.892,
+          "timestamp_ms": 15.7,
           "stream_offset": 118,
           "length": 55,
-          "raw_hex": "52000000360000000c763d505943633978426c62706b794d3456493556786237626c67535643557346737765694b2f6a4374745545383d",
+          "raw_hex": "52000000360000000c763d325941786f6763535876737369576870536f6b485641776a39683147535369344b4253334963454e7038733d",
           "type_char": "R",
           "type_name": "AuthenticationSASLFinal",
           "fields": [
@@ -405,8 +405,8 @@
               ]
             },
             {
-              "name": "SASL Data (server-final-message)",
-              "value": "v=PYCc9xBlbpkyM4VI5Vxb7blgSVCUsFsweiK/jCttUE8=",
+              "name": "SASL Data (outcome)",
+              "value": "v=2YAxogcSXvssiWhpSokHVAwj9h1GSSi4KBS3IcENp8s=",
               "bytes": [
                 9,
                 54
@@ -417,7 +417,7 @@
         {
           "id": 9,
           "direction": "S2C",
-          "timestamp_ms": 21.908,
+          "timestamp_ms": 15.71,
           "stream_offset": 173,
           "length": 9,
           "raw_hex": "520000000800000000",
@@ -453,7 +453,7 @@
         {
           "id": 10,
           "direction": "S2C",
-          "timestamp_ms": 21.921,
+          "timestamp_ms": 15.715,
           "stream_offset": 182,
           "length": 24,
           "raw_hex": "5300000017696e5f686f745f7374616e646279006f666600",
@@ -497,7 +497,7 @@
         {
           "id": 11,
           "direction": "S2C",
-          "timestamp_ms": 21.932,
+          "timestamp_ms": 15.722,
           "stream_offset": 206,
           "length": 26,
           "raw_hex": "5300000019696e74656765725f6461746574696d6573006f6e00",
@@ -541,7 +541,7 @@
         {
           "id": 12,
           "direction": "S2C",
-          "timestamp_ms": 21.94,
+          "timestamp_ms": 15.726,
           "stream_offset": 232,
           "length": 22,
           "raw_hex": "530000001554696d655a6f6e65004574632f55544300",
@@ -585,7 +585,7 @@
         {
           "id": 13,
           "direction": "S2C",
-          "timestamp_ms": 21.952,
+          "timestamp_ms": 15.731,
           "stream_offset": 254,
           "length": 28,
           "raw_hex": "530000001b496e74657276616c5374796c6500706f73746772657300",
@@ -629,7 +629,7 @@
         {
           "id": 14,
           "direction": "S2C",
-          "timestamp_ms": 21.961,
+          "timestamp_ms": 15.736,
           "stream_offset": 282,
           "length": 21,
           "raw_hex": "530000001469735f737570657275736572006f6e00",
@@ -673,7 +673,7 @@
         {
           "id": 15,
           "direction": "S2C",
-          "timestamp_ms": 21.968,
+          "timestamp_ms": 15.74,
           "stream_offset": 303,
           "length": 27,
           "raw_hex": "530000001a6170706c69636174696f6e5f6e616d65007073716c00",
@@ -717,7 +717,7 @@
         {
           "id": 16,
           "direction": "S2C",
-          "timestamp_ms": 21.976,
+          "timestamp_ms": 15.745,
           "stream_offset": 330,
           "length": 39,
           "raw_hex": "530000002664656661756c745f7472616e73616374696f6e5f726561645f6f6e6c79006f666600",
@@ -761,7 +761,7 @@
         {
           "id": 17,
           "direction": "S2C",
-          "timestamp_ms": 21.985,
+          "timestamp_ms": 15.75,
           "stream_offset": 369,
           "length": 27,
           "raw_hex": "530000001a736372616d5f697465726174696f6e73003430393600",
@@ -805,7 +805,7 @@
         {
           "id": 18,
           "direction": "S2C",
-          "timestamp_ms": 21.995,
+          "timestamp_ms": 15.755,
           "stream_offset": 396,
           "length": 24,
           "raw_hex": "5300000017446174655374796c650049534f2c204d445900",
@@ -849,7 +849,7 @@
         {
           "id": 19,
           "direction": "S2C",
-          "timestamp_ms": 22.007,
+          "timestamp_ms": 15.764,
           "stream_offset": 420,
           "length": 36,
           "raw_hex": "53000000237374616e646172645f636f6e666f726d696e675f737472696e6773006f6e00",
@@ -893,7 +893,7 @@
         {
           "id": 20,
           "direction": "S2C",
-          "timestamp_ms": 22.017,
+          "timestamp_ms": 15.767,
           "stream_offset": 456,
           "length": 36,
           "raw_hex": "530000002373657373696f6e5f617574686f72697a6174696f6e00706f73746772657300",
@@ -937,7 +937,7 @@
         {
           "id": 21,
           "direction": "S2C",
-          "timestamp_ms": 22.03,
+          "timestamp_ms": 15.78,
           "stream_offset": 492,
           "length": 26,
           "raw_hex": "5300000019636c69656e745f656e636f64696e67005554463800",
@@ -981,7 +981,7 @@
         {
           "id": 22,
           "direction": "S2C",
-          "timestamp_ms": 22.037,
+          "timestamp_ms": 15.786,
           "stream_offset": 518,
           "length": 51,
           "raw_hex": "53000000327365727665725f76657273696f6e0031362e39202844656269616e2031362e392d312e706764673132302b312900",
@@ -1025,7 +1025,7 @@
         {
           "id": 23,
           "direction": "S2C",
-          "timestamp_ms": 22.043,
+          "timestamp_ms": 15.789,
           "stream_offset": 569,
           "length": 26,
           "raw_hex": "53000000197365727665725f656e636f64696e67005554463800",
@@ -1069,10 +1069,10 @@
         {
           "id": 24,
           "direction": "S2C",
-          "timestamp_ms": 22.049,
+          "timestamp_ms": 15.794,
           "stream_offset": 595,
           "length": 13,
-          "raw_hex": "4b0000000c0000006f23baa3cf",
+          "raw_hex": "4b0000000c00000069d10cb6f8",
           "type_char": "K",
           "type_name": "BackendKeyData",
           "fields": [
@@ -1094,7 +1094,7 @@
             },
             {
               "name": "Backend PID",
-              "value": 111,
+              "value": 105,
               "bytes": [
                 5,
                 8
@@ -1102,7 +1102,7 @@
             },
             {
               "name": "Secret Key",
-              "value": 599434191,
+              "value": 3507271416,
               "bytes": [
                 9,
                 12
@@ -1113,7 +1113,7 @@
         {
           "id": 25,
           "direction": "S2C",
-          "timestamp_ms": 22.057,
+          "timestamp_ms": 15.8,
           "stream_offset": 608,
           "length": 6,
           "raw_hex": "5a0000000549",
@@ -1149,7 +1149,7 @@
         {
           "id": 26,
           "direction": "C2S",
-          "timestamp_ms": 22.437,
+          "timestamp_ms": 16.366,
           "stream_offset": 235,
           "length": 39,
           "raw_hex": "510000002653454c454354202761757468656e7469636174656427204153207374617475733b00",
@@ -1185,7 +1185,7 @@
         {
           "id": 27,
           "direction": "S2C",
-          "timestamp_ms": 22.926,
+          "timestamp_ms": 17.196,
           "stream_offset": 614,
           "length": 32,
           "raw_hex": "540000001f00017374617475730000000000000000000019ffffffffffff0000",
@@ -1286,7 +1286,7 @@
         {
           "id": 28,
           "direction": "S2C",
-          "timestamp_ms": 22.936,
+          "timestamp_ms": 17.206,
           "stream_offset": 646,
           "length": 24,
           "raw_hex": "440000001700010000000d61757468656e74696361746564",
@@ -1347,7 +1347,7 @@
         {
           "id": 29,
           "direction": "S2C",
-          "timestamp_ms": 22.961,
+          "timestamp_ms": 17.278,
           "stream_offset": 670,
           "length": 14,
           "raw_hex": "430000000d53454c454354203100",
@@ -1383,7 +1383,7 @@
         {
           "id": 30,
           "direction": "S2C",
-          "timestamp_ms": 22.974,
+          "timestamp_ms": 17.286,
           "stream_offset": 684,
           "length": 6,
           "raw_hex": "5a0000000549",
@@ -1419,7 +1419,7 @@
         {
           "id": 31,
           "direction": "C2S",
-          "timestamp_ms": 23.134,
+          "timestamp_ms": 17.385,
           "stream_offset": 274,
           "length": 5,
           "raw_hex": "5800000004",

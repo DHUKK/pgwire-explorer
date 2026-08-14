@@ -64,19 +64,38 @@ describe('stateAfter, over real captures', () => {
     expect(state.backendSecret).not.toBe('')
   })
 
-  // The method is known from the server's first Authentication message, well before
-  // the exchange finishes. That is what lets the status distinguish "SCRAM, in
-  // progress" from "not started".
-  it('knows the method before authentication completes', () => {
+  // The method is known well before the exchange finishes, which is what lets the
+  // status distinguish "in progress" from "not started". For SASL it is known in
+  // two steps: the server's offer says only that it is SASL, and the client's
+  // reply is the first thing on the wire that names the mechanism.
+  it('learns the method in two steps through a SASL exchange', () => {
     const [session] = loadScenario('scram-auth')
     const packets = session!.packets
 
     const offer = packets.findIndex((p) => p.type_name === 'AuthenticationSASL')
     const atOffer = stateAfter(session!, offer)
-    expect(atOffer.authMethod).toContain('SCRAM')
+    expect(atOffer.authMethod).toBe('SASL')
     expect(atOffer.authenticated).toBe(false)
 
+    const pick = packets.findIndex((p) => p.type_name === 'SASLInitialResponse')
+    const atPick = stateAfter(session!, pick)
+    expect(atPick.authMethod).toBe('SASL (SCRAM-SHA-256)')
+    expect(atPick.authenticated).toBe(false)
+
     expect(finalState(session!).authenticated).toBe(true)
+  })
+
+  // Patched rather than captured, because every capture uses SCRAM-SHA-256: the
+  // proxy refuses TLS so the server never offers SCRAM-SHA-256-PLUS, and
+  // PostgreSQL 18's OAUTHBEARER has no example yet. A hardcoded mechanism would
+  // pass every other test in this file and still be wrong about both.
+  it('reads the SASL mechanism from the wire rather than assuming SCRAM', () => {
+    const [session] = loadScenario('scram-auth')
+    const pick = session!.packets.find((p) => p.type_name === 'SASLInitialResponse')!
+    pick.fields!.find((f) => f.name === 'Auth Mechanism')!.value = 'OAUTHBEARER'
+
+    const at = session!.packets.indexOf(pick)
+    expect(stateAfter(session!, at).authMethod).toBe('SASL (OAUTHBEARER)')
   })
 
   it('identifies md5 as the method', () => {
@@ -93,14 +112,17 @@ describe('stateAfter, over real captures', () => {
     expect(state.authenticated).toBe(true)
   })
 
-  // Trust names itself from AuthenticationOk alone, since there is no earlier
-  // message to name it. Without that the pill would read a bare "ok" and leave a
-  // reader unable to tell "no password was asked for" from "the method is not
-  // worth reporting".
-  it('names trust as the method when no credential was ever requested', () => {
+  // Reported from AuthenticationOk alone, since no earlier message named a
+  // method. Without it the pill would read a bare "ok" and leave a reader unable
+  // to tell "nothing was asked for" from "the method is not worth reporting".
+  //
+  // It reports the observation and not the configuration on purpose. This capture
+  // was recorded under trust, but trust, peer and ident all look exactly like
+  // this, so naming trust here would be a guess dressed up as a fact.
+  it('reports that no credential was requested, without naming a method', () => {
     const [session] = loadScenario('trust-auth')
     const state = finalState(session!)
-    expect(state.authMethod).toBe('trust (no password)')
+    expect(state.authMethod).toBe('no credential requested')
     expect(state.authenticated).toBe(true)
 
     // Nothing between the request and the acceptance.

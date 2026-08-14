@@ -48,6 +48,27 @@ scripts/generate-scenarios.sh            # needs Docker running and psql on PATH
 go test ./internal/capture -run TestScenarios
 ```
 
+## Currently unsupported message types
+
+Of the 52 messages the protocol specification lists, 50 are decoded and annotated field by
+field. `TestProtocolCoverage` in `internal/pgproto/coverage_test.go` checks that claim, in
+both directions, so this list cannot go stale quietly.
+
+| Message | Code | Why not |
+| --- | --- | --- |
+| `AuthenticationSSPI` | 9 | pgproto3 returns "AuthTypeSSPI is unimplemented", and pgx has no SSPI flow to hand it to |
+| `AuthenticationKerberosV5` | 2 | The protocol docs say of it: "This is no longer supported." Replaced by GSSAPI, which is decoded |
+
+`AuthenticationSCMCredential` is absent from that list because PostgreSQL 18 removed it from
+the specification. Only pre-9.1 servers sent it, and the credential it asked for travelled as
+socket ancillary data rather than in the byte stream, so there was never anything for a
+capture to show.
+
+An unsupported message is not a broken one. Framing does not depend on decoding, because
+every message carries its own length, so an unrecognised message is one whose bytes are
+located exactly and merely not explained. It renders as `Unknown` with its type identifier,
+its length, and its payload under a field naming the decode error.
+
 ## Tests
 
 ```sh
