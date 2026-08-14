@@ -106,6 +106,7 @@ export function PacketList({
 
   const [scrollTop, setScrollTop] = useState(0)
   const [viewportHeight, setViewportHeight] = useState(0)
+  const [topInset, setTopInset] = useState(0)
   const [rowMetrics, setRowMetrics] = useState({
     rowHeight: FALLBACK_ROW_HEIGHT,
     gapExtraHeight: FALLBACK_GAP_EXTRA_HEIGHT,
@@ -160,13 +161,19 @@ export function PacketList({
 
   // Measure the actual scroll container, the same as HexDump: a ResizeObserver
   // keeps it right across window resizes and the responsive breakpoint that
-  // changes the panel's own height.
+  // changes the panel's own height. topInset is .packet-list's own top
+  // padding, read off the real computed style (same reasoning as RowProbe):
+  // offsets below are measured from the sizer's origin, not scrollTop's.
   useLayoutEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    setViewportHeight(el.clientHeight)
+    const measure = () => {
+      setViewportHeight(el.clientHeight)
+      setTopInset(Number.parseFloat(getComputedStyle(el).paddingTop) || 0)
+    }
+    measure()
     if (typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(() => setViewportHeight(el.clientHeight))
+    const observer = new ResizeObserver(measure)
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
@@ -194,14 +201,14 @@ export function PacketList({
   useLayoutEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    const next = scrollTopToReveal(offsets, selected, el.scrollTop, el.clientHeight)
+    const next = scrollTopToReveal(offsets, selected, el.scrollTop, el.clientHeight, topInset)
     if (next !== el.scrollTop) {
       el.scrollTop = next
       setScrollTop(next)
     }
-  }, [selected, offsets])
+  }, [selected, offsets, topInset])
 
-  const { start, end } = visibleRowWindow(offsets, scrollTop, viewportHeight, OVERSCAN_ROWS)
+  const { start, end } = visibleRowWindow(offsets, scrollTop, viewportHeight, OVERSCAN_ROWS, topInset)
 
   // Focus the selected row once it is actually mounted, but only in response
   // to a genuinely new selection, not to every scroll-driven change of

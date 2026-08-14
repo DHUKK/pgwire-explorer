@@ -65,6 +65,10 @@ function rowAt(offsets: readonly number[], y: number): number {
  * next row immediately instead of a flash of blank space while React catches
  * up.
  *
+ * `topInset` is the scroll container's own top padding, subtracted back out
+ * before searching `offsets`, which is measured from the sizer's origin, not
+ * `scrollTop`'s. Defaults to 0.
+ *
  * Clamped to `[0, rowCount-1]`, so a scroll position that no longer fits (for
  * instance right after the selected session shrinks the list) can never ask
  * for a row that does not exist. `viewportHeight` of 0, which is what a
@@ -75,11 +79,12 @@ export function visibleRowWindow(
   scrollTop: number,
   viewportHeight: number,
   overscan = 4,
+  topInset = 0,
 ): RowWindow {
   const rowCount = offsets.length - 1
   if (rowCount <= 0) return { start: 0, end: -1 }
 
-  const safeScrollTop = Math.max(0, scrollTop)
+  const safeScrollTop = Math.max(0, scrollTop - topInset)
   const safeHeight = Math.max(0, viewportHeight)
 
   const firstVisible = rowAt(offsets, safeScrollTop)
@@ -91,29 +96,41 @@ export function visibleRowWindow(
 }
 
 /**
- * The scrollTop that brings `row` fully into view within a container
+ * The scrollTop that brings `row` into view within a container
  * `viewportHeight` tall currently scrolled to `scrollTop`. Returns `scrollTop`
  * unchanged when `row` is already fully visible, so a row that is already on
  * screen is never jostled. `row` is clamped to a real row, so asking to reveal
  * a stale or out-of-range index degrades to revealing the nearest valid one
  * rather than producing a nonsensical scroll position.
+ *
+ * When a scroll is needed, `row` lands centered in the viewport rather than
+ * flush against whichever edge it was closest to, since a row that needs
+ * revealing at all is usually a jump (a route, Home, End) rather than a step.
+ *
+ * `topInset` is the scroll container's own top padding, added to `offsets`'s
+ * sizer-relative positions to put them back in `scrollTop`'s coordinate
+ * space. Without it, a row near the bottom of a long list landed with its
+ * lower edge clipped by exactly the padding amount.
  */
 export function scrollTopToReveal(
   offsets: readonly number[],
   row: number,
   scrollTop: number,
   viewportHeight: number,
+  topInset = 0,
 ): number {
   const rowCount = offsets.length - 1
   if (rowCount <= 0) return scrollTop
 
   const clampedRow = clamp(row, 0, rowCount - 1)
-  const rowTop = offsets[clampedRow]!
-  const rowBottom = offsets[clampedRow + 1]!
+  const rowTop = offsets[clampedRow]! + topInset
+  const rowBottom = offsets[clampedRow + 1]! + topInset
 
-  if (rowTop < scrollTop) return rowTop
-  if (rowBottom > scrollTop + viewportHeight) return rowBottom - viewportHeight
-  return scrollTop
+  if (rowTop >= scrollTop && rowBottom <= scrollTop + viewportHeight) return scrollTop
+
+  const rowMid = (rowTop + rowBottom) / 2
+  const maxScrollTop = Math.max(0, offsets[rowCount]! + topInset - viewportHeight)
+  return clamp(rowMid - viewportHeight / 2, 0, maxScrollTop)
 }
 
 function clamp(value: number, min: number, max: number): number {

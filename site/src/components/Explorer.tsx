@@ -52,26 +52,24 @@ export function Explorer({ loaded, onClose }: Props) {
   // Explorer instance, so it has to reset here rather than carry the previous
   // capture's session ids into one that only coincidentally reuses them.
   //
-  // A route that named one message opens on it, with only its session shown, so
-  // the row index is that packet's position in its own session and nothing else
-  // is in the way. A focus naming a session or a packet the capture does not have
-  // is ignored: the capture still opens, at the top.
+  // A route that names one message opens with every session still shown, the
+  // same default as opening the capture cold, scrolled to that message's own
+  // position in the merged, wall-clock-ordered list. Narrowing to one session
+  // is a click away regardless of how the capture was opened, so a route has
+  // no business making that choice for the reader: a CancelRequest's own
+  // session or a replication stream's writer is exactly the kind of context a
+  // route into a multi-session capture ought to still show alongside the
+  // named message, not hide. A focus naming a session or a packet the capture
+  // does not have is ignored: the capture still opens, at the top.
   const focus = loaded.focus
   useEffect(() => {
-    const focused = focus
-      ? capture.sessions.find((s) => s.id === focus.sessionId)
-      : undefined
-    const focusedIndex = focused
-      ? focused.packets.findIndex((p) => p.id === focus!.packetId)
+    const merged = mergeSessions(capture.sessions)
+    const focusedIndex = focus
+      ? merged.findIndex((r) => r.sessionId === focus.sessionId && r.packet.id === focus.packetId)
       : -1
 
-    if (focused && focusedIndex >= 0) {
-      setSelectedSessionIds(new Set([focused.id]))
-      setRowIndex(focusedIndex)
-    } else {
-      setSelectedSessionIds(new Set(capture.sessions.map((s) => s.id)))
-      setRowIndex(0)
-    }
+    setSelectedSessionIds(new Set(capture.sessions.map((s) => s.id)))
+    setRowIndex(focusedIndex >= 0 ? focusedIndex : 0)
     setSelectedFieldPath(null)
     setCollapsed(new Set())
     setStateOpen(false)

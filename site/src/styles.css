@@ -1367,6 +1367,24 @@ kbd {
   border-left-color: var(--s2c);
 }
 
+/* Hovering a marked row used to flatten it to plain --bg-hover: .packet-row:hover
+   above ties .key-message on specificity (one class each) and comes later in the
+   file, so it won outright, and the scenario's own mark disappeared for exactly as
+   long as the pointer sat over it. Three classes here beats that tie regardless of
+   order, the same way .key-message.selected already beats a bare .selected. Mixed
+   into --bg-hover rather than replacing it, so hovering still reads as hovering. */
+.packet-row.key-message:hover {
+  background: color-mix(in srgb, var(--c2s) 15%, var(--bg-hover));
+}
+
+/* And the doubly-marked case: hovering a marked row that is also selected.
+   Reasserts the same background .key-message.selected already draws, at one
+   class higher than the rule above, so a hover cannot flatten a selected row's
+   mark either. Nothing changes visually on hover here; that is the point. */
+.packet-row.key-message.selected:hover {
+  background: color-mix(in srgb, var(--c2s) 22%, var(--bg-active));
+}
+
 /* The direction arrow. Deliberately no line-height of its own: it used to carry
    1.35, which raised its baseline by cutting the half-leading above it, and left
    the arrow sitting about a pixel higher than the message number and the session
