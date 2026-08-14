@@ -6,11 +6,49 @@
     <!-- Relative, like every other asset here, so it resolves under the /<repo>/
          prefix a GitHub Pages project site is served from. -->
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <title>pgwire explorer</title>
-    <meta name="description" content="Step through a real Postgres wire-protocol session. Every message decoded, every byte explained." />
+    <title>pgwire explorer: the Postgres wire protocol, byte by byte</title>
+    <meta name="description" content="Step through a real Postgres wire protocol session, message by message. Every byte of every packet decoded and mapped to the field that produced it." />
+    <!-- Absolute, unlike every other link here: a #hash route is the same page
+         to a crawler, so this points every variant at the one canonical URL. -->
+    <link rel="canonical" href="https://pgwire-explorer.dhuk.net/" />
+
+    <!-- Read without executing any JS, unlike the tags above, so this is what
+         a link unfurled in Slack or Twitter actually shows. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pgwire-explorer.dhuk.net/" />
+    <meta property="og:title" content="pgwire explorer" />
+    <meta property="og:description" content="Step through a real Postgres wire protocol session, message by message. Every byte of every packet decoded and mapped to the field that produced it." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="pgwire explorer" />
+    <meta name="twitter:description" content="Step through a real Postgres wire protocol session, message by message. Every byte of every packet decoded and mapped to the field that produced it." />
+
+    <!-- What the page is, for whatever reads structured data instead of (or
+         alongside) rendering the app: a search engine's rich-result parser,
+         not a human. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "pgwire explorer",
+        "description": "Step through a real Postgres wire protocol session, message by message. Every byte of every packet decoded and mapped to the field that produced it.",
+        "url": "https://pgwire-explorer.dhuk.net/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any (runs in the browser)",
+        "isAccessibleForFree": true
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <!-- The app decodes and renders everything client-side, so without
+         JavaScript this is what a reader (or a crawler that does not execute
+         it) sees instead of a blank page. -->
+    <noscript>
+      <p>
+        pgwire explorer needs JavaScript to decode and display a capture. Read the source on
+        <a href="https://github.com/DHUKK/pgwire-explorer">GitHub</a> instead.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
