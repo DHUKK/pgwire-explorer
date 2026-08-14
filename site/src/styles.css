@@ -308,6 +308,16 @@ h3 {
   border-bottom: 1px solid var(--border);
 }
 
+/* Back and the wordmark travel together on the left. Without a group, the bar's
+   space-between would push the wordmark into the middle once a third child
+   arrived. */
+.landing-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
 .landing-brand {
   font-family: var(--mono);
   font-size: 0.85rem;
@@ -380,7 +390,6 @@ h3 {
   border-radius: 3px;
   padding: 0.05em 0.25em;
 }
-
 
 .scenario-group {
   margin-bottom: 1.75rem;
@@ -1023,7 +1032,6 @@ kbd {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-
 
 /* ------------------------------------------------------------ three columns */
 
@@ -2167,6 +2175,20 @@ kbd {
 }
 
 /*
+ * The three glyphs have different advance widths in the fallback face that
+ * draws them, so without this the icon itself shifts inside the button even
+ * though the button's own min-width is fixed. A fixed-size inline-flex box
+ * centres each glyph the same way regardless of how wide it draws.
+ */
+.theme-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/*
  * stretch, not center, so the three buttons are always the same height.
  *
  * A ghost button's height is otherwise its content's, and these do not hold the
@@ -2252,4 +2274,359 @@ kbd {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
+}
+
+/* ======================================================= message index page */
+
+/*
+ * The index of every protocol message, at the #messages route.
+ *
+ * It borrows the landing page's shell (.landing, .landing-bar, .landing-inner)
+ * so the two screens are the same page with different content in it. Everything
+ * below is its own .mi- class rather than an edit to a shared one, because the
+ * packet list and this table have nothing in common and the shared rules have a
+ * history of collapsing when reused.
+ */
+
+/* Wider than the landing column: the table has six columns and a sentence in
+   one of them, and 62rem left the summary wrapping every other word. */
+/* The way into the message index. A card rather than a bar link, because it is a
+   second destination and not a piece of chrome. Wide and shallow so it reads as a
+   signpost between the headline and the examples, not as another example. */
+.landing-index-link {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  /* Above only, and a step tighter than the 3.5rem between sections, because this
+     follows on from the introduction rather than starting a new part of the page.
+     Nothing below it: the section that comes next brings its own margin, and
+     setting one here stacked with it for a gap half again as large. */
+  margin: 2.2rem 0 0;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: inherit;
+  box-shadow: var(--shadow);
+  transition: border-color 120ms ease-out, background-color 120ms ease-out;
+}
+
+.landing-index-link:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.landing-index-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+  color: var(--accent-text);
+}
+
+.landing-index-link:hover .landing-index-icon {
+  background: var(--bg-panel);
+}
+
+.landing-index-text {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.landing-index-title {
+  font-size: 0.95rem;
+  font-weight: 620;
+  color: var(--text);
+}
+
+.landing-index-arrow {
+  color: var(--accent-text);
+}
+
+.landing-index-sub {
+  font-size: 0.84rem;
+  color: var(--text-soft);
+}
+
+/* A button that reads as a link, for a route reached from inside a sentence.
+   Navigation here is a hash assignment rather than an href, so it has to be a
+   button for the keyboard and for assistive technology. */
+.text-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.text-link:hover {
+  color: var(--accent-text);
+}
+
+/* -------------------------------------------------- the identifier collisions */
+
+/* align-items: start, so a card is as tall as its own contents. Stretched, the
+   card beside tag `R` and its eleven names was mostly empty space. */
+/* ------------------------------------------------------------- the filters */
+
+/* Two items: the controls, and the count pinned to the right of them.
+ *
+ * The count is a sibling of the group rather than one more thing in it, because
+ * with margin-left: auto inside a wrapping flex row it ended up alone on a second
+ * line with a hand's width of empty space beside it. Kept outside, it stays where
+ * it is and the controls fold underneath themselves.
+ */
+.mi-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.mi-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  /* A clear step more between rows than between items, so a folded row reads as a
+     new row rather than as a gap in the same one. */
+  gap: 0.7rem 1rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mi-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+.mi-filter select {
+  padding: 0.3rem 0.4rem;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.mi-dir-buttons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.mi-dir {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+}
+
+.mi-dir:hover {
+  border-color: var(--accent);
+}
+
+.mi-dir.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.mi-count {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.mi-empty {
+  color: var(--text-soft);
+}
+
+/* -------------------------------------------------------- the phase tables */
+
+.mi-phase {
+  margin-bottom: 2rem;
+}
+
+.mi-phase h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  margin-bottom: 0.35rem;
+}
+
+/* The table is wider than a phone, so it scrolls in its own box. Without this
+   the page itself scrolls sideways, which is the one thing a layout must never
+   do. */
+.mi-table-wrap {
+  overflow-x: auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.mi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.mi-table th {
+  text-align: left;
+  font-size: 0.66rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-faint);
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.mi-table td {
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.mi-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.mi-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.mi-name {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 560;
+}
+
+.mi-name a {
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--border-strong);
+}
+
+.mi-name a:hover {
+  color: var(--accent-text);
+  border-bottom-color: var(--accent);
+}
+
+.mi-summary {
+  display: block;
+  margin-top: 0.15rem;
+  max-width: 38rem;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  line-height: 1.45;
+}
+
+/* The marker on a message the recorder cannot read. A link, so it jumps to the
+   note that explains it, because a bare asterisk on its own explains nothing.
+   Deliberately not a badge: there are four in fifty-five rows, and a badge in
+   every one of them drew the eye to the exception rather than the table. */
+.mi-star {
+  margin-left: 0.3rem;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--warn);
+  text-decoration: none;
+}
+
+.mi-star:hover {
+  text-decoration: underline;
+}
+
+/* The one line explaining the star. Short on purpose: a section per marked
+   message said four times over what one sentence says once. */
+.mi-footnote {
+  margin: 0;
+  max-width: 46rem;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+
+/* The same two colours the message rows use for the two directions, so a
+   frontend message is the same colour here as in a capture. */
+.mi-dir-tag {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mi-dir-tag.dir-F {
+  color: var(--c2s);
+}
+
+.mi-dir-tag.dir-B {
+  color: var(--s2c);
+}
+
+.mi-dir-tag.dir-FB {
+  color: var(--text-soft);
+}
+
+.mi-code,
+.mi-versions {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+/* The messages that are not in every release. Marked, because "7.4 to 8.0" among
+   a column of "7.4 to 18" is a difference of a character or two. */
+.mi-versions.partial {
+  color: var(--warn);
+}
+
+.mi-untagged,
+.mi-no-example {
+  font-size: 0.76rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.mi-example {
+  white-space: nowrap;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.8rem;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--accent-text);
+}
+
+.mi-example:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }

@@ -68,6 +68,15 @@ export interface SessionCapture {
   sessions: Session[]
 }
 
+/**
+ * One message in a capture, named the way a route names it: by session id and
+ * packet id rather than by position, so it survives a session being deselected.
+ */
+export interface PacketFocus {
+  sessionId: number
+  packetId: number
+}
+
 /** A capture plus where it came from, which is all the UI needs to label it. */
 export interface LoadedCapture {
   capture: SessionCapture
@@ -76,4 +85,9 @@ export interface LoadedCapture {
   source: 'file' | 'scenario'
   /** Set for scenarios: the teaching notes that go with it. */
   scenarioId?: string
+  /**
+   * Which message to open on, when the route named one. Set by a link from the
+   * message index. The explorer starts on the first message otherwise.
+   */
+  focus?: PacketFocus
 }

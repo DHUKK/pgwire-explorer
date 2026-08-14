@@ -254,6 +254,42 @@ func annotateStartupFormat(name string, raw []byte) []FieldAnnotation {
 // couldn't decode (truncated/malformed). Either way we degrade gracefully:
 // no panic, and every byte still gets covered by exactly one field so the
 // contiguity invariant holds even for garbage input.
+// annotateAuthSSPI recognises AuthenticationSSPI and annotates it directly,
+// returning false for anything else. It exists because pgproto3 will not decode
+// it: findAuthenticationMessageType returns "AuthTypeSSPI is unimplemented",
+// since pgx has no SSPI flow to hand the message to.
+//
+// Nothing is needed from pgproto3 to read it. The message is Int32(8) and then
+// the code, and this file computes offsets by hand anyway.
+//
+// SSPI is worth the exception because it is reachable. It is what a Windows
+// client is asked for in an Active Directory environment, so of every
+// Authentication message a visitor's own capture might contain, it is the
+// likeliest one we would otherwise fail to name.
+//
+// The other two codes pgproto3 refuses are deliberately left alone. Code 2,
+// KerberosV5, is documented as "no longer supported" and no server sends it. Code
+// 6, SCMCredential, left the specification after PostgreSQL 15, and its credential
+// travelled as socket ancillary data rather than in the byte stream, so there was
+// never anything for a capture to show.
+func annotateAuthSSPI(raw []byte) ([]FieldAnnotation, bool) {
+	// Exactly 'R' plus two Int32s. A longer frame carrying this code is
+	// malformed, and annotating it anyway would break the tiling invariant.
+	if len(raw) != 9 || raw[0] != 'R' || binary.BigEndian.Uint32(raw[1:5]) != 8 {
+		return nil, false
+	}
+	if binary.BigEndian.Uint32(raw[5:9]) != pgproto3.AuthTypeSSPI {
+		return nil, false
+	}
+
+	fields := []FieldAnnotation{
+		{Name: "Type Identifier", Value: string(raw[0]), Bytes: [2]int{0, 0}},
+		{Name: "Message Length", Value: binary.BigEndian.Uint32(raw[1:5]), Bytes: [2]int{1, 4}},
+	}
+	f, _ := fUint32(raw, 5, "Auth Type (9 = SSPI)")
+	return append(fields, f), true
+}
+
 func annotateUnknown(raw []byte, err error) []FieldAnnotation {
 	if len(raw) == 0 {
 		return nil

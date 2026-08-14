@@ -68,11 +68,18 @@ func TestAnnotatedMessageNamesFound(t *testing.T) {
 	t.Logf("annotate.go handles %d message types", len(names))
 }
 
-// documentedMessages is every message the protocol specification lists, taken
-// from https://www.postgresql.org/docs/18/protocol-message-formats.html
+// documentedMessages is every message the protocol specification lists, taken from
+// the protocol-message-formats page of the documentation for every release from
+// 7.4 to 18, and extracted from those pages rather than typed out.
 //
-// That page covers protocol 3.0 and 3.2 together, because the two differ only in
-// the layout of BackendKeyData and CancelRequest, not in which messages exist.
+// 7.4 because that is where protocol major version 3 arrived, so the range is the
+// whole life of the protocol. Every release in it, not just the newest, because a
+// capture can come from any server a visitor is running. Fifteen of the 55 arrived
+// or departed inside the range, and three of those left rather than arrived:
+// AuthenticationKerberosV4 after 8.0, AuthenticationCryptPassword after 8.3 and
+// AuthenticationSCMCredential after 15. Those three explain the gaps at
+// authentication codes 1, 4 and 6. Protocol 3.0 and 3.2 share the same message set, differing only in
+// the layout of BackendKeyData and CancelRequest.
 //
 // Hardcoded on purpose, and the one list in this file that is not derived from
 // our own code. Deriving it would only ever prove that we handle what we handle.
@@ -80,26 +87,21 @@ func TestAnnotatedMessageNamesFound(t *testing.T) {
 // message, editing this list is what makes the test start failing.
 //
 // SSLResponse and GSSENCResponse are deliberately absent: they are single reply
-// bytes rather than messages, have no entry on that page, and the proxy annotates
-// them by hand.
-//
-// AuthenticationSCMCredential is absent for a different reason. It was code 6 and
-// appears in the docs up to PostgreSQL 15, but 18 dropped it, so it is no longer
-// part of the specification this list tracks. It is not in unhandledMessages
-// either, because that list is checked against this one. Nothing was lost: only
-// pre-9.1 servers ever sent it, and the credential it asked for travelled as
-// socket ancillary data on a Unix-domain socket, so the part that did the
-// authenticating was never in the byte stream for a capture to show.
+// bytes rather than messages, have no entry on those pages, and the proxy
+// annotates them by hand.
 var documentedMessages = []string{
 	"AuthenticationCleartextPassword",
+	"AuthenticationCryptPassword",
 	"AuthenticationGSS",
 	"AuthenticationGSSContinue",
+	"AuthenticationKerberosV4",
 	"AuthenticationKerberosV5",
 	"AuthenticationMD5Password",
 	"AuthenticationOk",
 	"AuthenticationSASL",
 	"AuthenticationSASLContinue",
 	"AuthenticationSASLFinal",
+	"AuthenticationSCMCredential",
 	"AuthenticationSSPI",
 	"BackendKeyData",
 	"Bind",
@@ -153,20 +155,37 @@ var documentedMessages = []string{
 // depend on decoding. Every frame is delimited by its own length header, so an
 // unrecognised message is one we located exactly and merely cannot explain.
 //
-// All three are authentication requests, which is not a coincidence. Auth is the
-// one part of the protocol where the server picks from a set of mechanisms, so it
-// is the only place where messages accumulate and fall out of use.
+// AuthenticationSSPI was listed here until it was decoded. Unlike this one it is
+// reachable: the docs recommend SSPI on Windows and GSSAPI elsewhere, so a Windows
+// server sends code 9 rather than code 7. See annotateAuthSSPI.
 var unhandledMessages = map[string]string{
 	// The message formats page still lists code 2, and the message flow page says
 	// of it, in full: "This is no longer supported."
+	// Retired before md5, let alone SCRAM. pgproto3 has no constant for either
+	// code, so both reach its default branch and report an unknown auth type.
+	"AuthenticationKerberosV4":    "gone from the docs after PostgreSQL 8.0, when GSSAPI replaced it",
+	"AuthenticationCryptPassword": "gone from the docs after PostgreSQL 8.3, predating md5",
+
 	"AuthenticationKerberosV5": "the protocol docs say of it: \"This is no longer supported\"",
 
-	// pgproto3 defines AuthTypeSSPI = 9 and then refuses it, and pgx has no SSPI
-	// support to hand it to: it delegates even GSSAPI to an external provider
-	// through the pgconn.GSS interface. Nothing about Go or Windows prevents it.
-	"AuthenticationSSPI": "pgproto3 returns \"AuthTypeSSPI is unimplemented\". Supporting it would " +
-		"also mean resolving the client's tag 'p' reply as a GSSResponse, which is where the " +
-		"protocol carries SSPI data, rather than as the PasswordMessage pgproto3 falls back to",
+	// Only pre-9.1 servers sent it, and it left the specification after 15. It could
+	// never have been captured here either: it asked the client to send its
+	// credentials as socket ancillary data over a Unix-domain socket, where the
+	// kernel attests the uid, so the part that did the authenticating was never in
+	// the byte stream.
+	"AuthenticationSCMCredential": "dropped from the docs after PostgreSQL 15, and its credential " +
+		"travelled as socket ancillary data rather than in the byte stream",
+}
+
+// nonPgproto3Messages are annotated by a dedicated function rather than by a
+// `case *pgproto3.X:` clause, so the AST walk above cannot see them. They are the
+// messages pgproto3 refuses to decode at all.
+//
+// Hand-maintained, which is the drift the AST walk exists to avoid, so each entry
+// has a test proving it really does decode. Deleting annotateAuthSSPI would fail
+// TestAuthSSPI, not merely leave this list stale.
+var nonPgproto3Messages = map[string]bool{
+	"AuthenticationSSPI": true, // annotateAuthSSPI
 }
 
 // startupFormatMessages are the untagged messages, which annotate.go has no
@@ -209,6 +228,9 @@ func TestProtocolCoverage(t *testing.T) {
 		handled[name] = true
 	}
 	for name := range startupFormatMessages(t) {
+		handled[name] = true
+	}
+	for name := range nonPgproto3Messages {
 		handled[name] = true
 	}
 

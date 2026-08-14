@@ -69,6 +69,14 @@ func Decode(dir Direction, raw []byte, authType uint32) (d Decoded) {
 		// and pgproto3 resolves that overload from Backend.authType. The caller
 		// tracks the real state, so we feed it in here to make a stateless
 		// Backend disambiguate correctly anyway.
+		// SSPI is fed in as GSS on purpose. pgproto3 has no case for it when
+		// resolving tag 'p', so it would fall through to PasswordMessage and read a
+		// binary SSPI token as a C string called "Password". The protocol carries
+		// SSPI data in GSSResponse, the same message GSSAPI replies with, so asking
+		// for GSS is asking for the right shape rather than working around pgproto3.
+		if authType == pgproto3.AuthTypeSSPI {
+			authType = pgproto3.AuthTypeGSS
+		}
 		_ = backend.SetAuthType(authType)
 		msg, err := backend.Receive()
 		if err != nil {
@@ -78,6 +86,20 @@ func Decode(dir Direction, raw []byte, authType uint32) (d Decoded) {
 			TypeChar: string(raw[0]),
 			TypeName: messageName(msg),
 			Fields:   annotateFields(msg, raw),
+		}
+	}
+
+	// AuthenticationSSPI, which pgproto3 refuses. Annotated here rather than
+	// falling through to Unknown. AuthType is reported the same as for any other
+	// Authentication message, because the client's reply is a tag 'p' that needs
+	// this state to be resolved at all.
+	if fields, ok := annotateAuthSSPI(raw); ok {
+		return Decoded{
+			TypeChar:      string(raw[0]),
+			TypeName:      "AuthenticationSSPI",
+			Fields:        fields,
+			AuthType:      pgproto3.AuthTypeSSPI,
+			AuthTypeKnown: true,
 		}
 	}
 

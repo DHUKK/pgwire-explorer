@@ -59,6 +59,10 @@ var scenarioExpectations = map[string][]string{
 	"error-response": {
 		"ErrorResponse", "Sync", "ReadyForQuery",
 	},
+	// Unknown is the subject here, not a failure. See undecodableScenarios.
+	"protocol-violation": {
+		"StartupMessage", "AuthenticationOk", "Unknown", "ErrorResponse",
+	},
 	"notify": {
 		"NotificationResponse", "Query", "CommandComplete",
 	},
@@ -80,6 +84,14 @@ var scenarioExpectations = map[string][]string{
 		"StartupMessage", "NegotiateProtocolVersion",
 		"AuthenticationOk", "BackendKeyData", "ReadyForQuery", "Terminate",
 	},
+}
+
+// undecodableScenarios exist to show a message this decoder cannot name, so a
+// packet decoding as Unknown is what they are for rather than a fault. Every
+// other scenario treats one as a failure, because it would mean the decoder had
+// regressed on something it used to understand.
+var undecodableScenarios = map[string]bool{
+	"protocol-violation": true,
 }
 
 // authScenarios are the examples that exist to show an authentication method,
@@ -208,6 +220,13 @@ var annotationValueExpectations = map[string][]string{
 	// throwaway password in scripts/generate-scenarios.sh, in a capture of a
 	// container that no longer exists.
 	"cleartext-auth": {"wire_demo_password"},
+	// The severity and the code are the point, and so is the server naming the
+	// offending byte back: 33 is the '!' the frame was sent with.
+	"protocol-violation": {
+		"FATAL",
+		"08P01 (protocol_violation)",
+		"invalid frontend message type 33",
+	},
 	"error-response": {
 		// The extended-protocol failure.
 		"42P01 (undefined_table)",
@@ -352,7 +371,7 @@ func TestScenarios(t *testing.T) {
 					pkt := &sess.Packets[i]
 					seen[pkt.TypeName] = true
 
-					if pkt.TypeName == "Unknown" {
+					if pkt.TypeName == "Unknown" && !undecodableScenarios[name] {
 						t.Errorf("session %d packet %d did not decode: %s", sess.ID, pkt.ID, pkt.RawHex)
 					}
 

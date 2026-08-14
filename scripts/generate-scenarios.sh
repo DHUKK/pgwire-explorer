@@ -36,8 +36,8 @@ OUT=site/public/scenarios
 mkdir -p "$OUT"
 
 ALL=(scram-auth trust-auth simple-query extended-query copy error-response
-  notify cancel-request protocol-32-downgrade replication-physical
-  replication-logical cleartext-auth md5-auth)
+  notify cancel-request protocol-violation protocol-32-downgrade
+  replication-physical replication-logical cleartext-auth md5-auth)
 WANTED=("$@")
 # Expanded only when non-empty: under set -u, bash 3.2 (what macOS ships) treats
 # "${WANTED[@]}" on an empty array as an unbound variable.
@@ -289,14 +289,19 @@ capture notify demo_at_proxy notify
 # --- 8. query cancellation (two connections) --------------------------------
 capture cancel-request cancel_client
 
-# --- 9. protocol version downgrade + unsupported option (both triggers) ----
+# --- 9. a frame the server cannot understand ------------------------------
+# The bogus frame is the client's, because that is the only side we can make
+# misbehave to order. The server's reaction is real.
+capture protocol-violation demo_at_proxy protocol-violation
+
+# --- 10. protocol version downgrade + unsupported option (both triggers) ----
 # Recorded under trust, like everything else in this group and deliberately
 # before the switch to cleartext and md5 below: a scenario about version
 # negotiation showing a deprecated authentication method would be a
 # distraction from the NegotiateProtocolVersion reply it exists to show.
 capture protocol-32-downgrade demo_at_proxy_32 protocol32
 
-# --- 10 & 11. streaming replication -----------------------------------------
+# --- 11 & 12. streaming replication -----------------------------------------
 # Physical replication only needs the default wal_level (replica), but logical
 # replication needs wal_level=logical, which is NOT the image's default and,
 # unlike the auth settings above, only takes effect after a restart, not a
@@ -323,7 +328,7 @@ fi
 capture replication-physical demo_at_proxy replication-physical
 capture replication-logical demo_at_proxy replication-logical
 
-# --- 12. cleartext password authentication ----------------------------------
+# --- 13. cleartext password authentication ----------------------------------
 # The password crosses the wire in the PasswordMessage with no hashing at all,
 # which is the entire argument for the two methods above. Safe to commit only
 # because PASSWORD is this script's throwaway, is already in plaintext a few
@@ -335,7 +340,7 @@ capture replication-logical demo_at_proxy replication-logical
 set_auth password
 capture cleartext-auth psql_at_proxy -c "SELECT 'authenticated' AS status;"
 
-# --- 13. MD5 authentication (legacy) ----------------------------------------
+# --- 14. MD5 authentication (legacy) ----------------------------------------
 # Goes last because it is the one method that needs the stored secret changed,
 # not just pg_hba: password_encryption governs how ALTER USER hashes it, and md5
 # authentication cannot verify against a SCRAM verifier. Both take effect on a
