@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FieldAnnotation, PacketRecord } from '../types'
 import { docForTypeName, CATEGORY_LABELS } from '../lib/messages'
 import { docsUrlForTypeName } from '../lib/docs'
@@ -70,6 +70,36 @@ export function PacketDetail({
     return null
   }, [activePath, rowPaths])
 
+  /**
+   * The reverse of HexDump's own reveal: hovering a byte brings that byte's field
+   * row into view, so the answer to "what is this?" is never scrolled out of
+   * sight in a tree taller than its pane.
+   *
+   * Only while the dump is what is driving, which is what `hoveredByte` tells
+   * us. Hovering a field row must never scroll the list the pointer is already
+   * resting on, and that is the same guard, from the other side, as the `reveal`
+   * prop passed to HexDump below.
+   *
+   * Scrolls the tree itself rather than calling `scrollIntoView`, which would
+   * also scroll every scrollable ancestor. Below the responsive breakpoint
+   * `.explorer-body` is one of those, so the page would move too. Comparing
+   * rectangles needs no assumption about which element the row is positioned
+   * against, and no padding arithmetic.
+   */
+  const treeRef = useRef<HTMLUListElement>(null)
+  const activeRowRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (hoveredByte === null) return
+    const list = treeRef.current
+    const row = activeRowRef.current
+    if (!list || !row) return
+
+    const listBox = list.getBoundingClientRect()
+    const rowBox = row.getBoundingClientRect()
+    if (rowBox.top < listBox.top) list.scrollTop -= listBox.top - rowBox.top
+    else if (rowBox.bottom > listBox.bottom) list.scrollTop += rowBox.bottom - listBox.bottom
+  }, [activeRowPath, hoveredByte])
+
   return (
     <div className="panel detail-panel">
       <div className="panel-head">
@@ -93,121 +123,130 @@ export function PacketDetail({
           )}
           {packet.type_char && <code className="type-char">{packet.type_char}</code>}
         </h2>
+
+        {/* In the head row rather than under the summary. These three are short,
+            fixed labels, and the row had a wide empty middle while they sat in a
+            boxed strip taking a whole line of the panel to themselves. */}
+        <dl className="doc-facts">
+          <div>
+            <dt>Sender</dt>
+            <dd>
+              {doc.sender === 'frontend'
+                ? 'client (frontend)'
+                : doc.sender === 'backend'
+                  ? 'server (backend)'
+                  : 'either side'}
+            </dd>
+          </div>
+          <div>
+            <dt>Size</dt>
+            <dd>{packet.length} bytes</dd>
+          </div>
+          <div>
+            <dt>Stream offset</dt>
+            <dd>{packet.stream_offset}</dd>
+          </div>
+        </dl>
+
         <span className={`category-chip cat-${doc.category}`}>{CATEGORY_LABELS[doc.category]}</span>
       </div>
 
-      <div className="detail-scroll">
-        <section className="doc-block">
-          <p className="doc-summary">
-            <Inline text={doc.summary} />
+      {/* Three regions, not one scroll area. What the message is stays put as the
+          context for reading everything below. The fields and the bytes each
+          scroll on their own. */}
+      <section className="doc-block">
+        <p className="doc-summary">
+          <Inline text={doc.summary} />
+        </p>
+        {doc.detail && (
+          <p className="doc-detail">
+            <Inline text={doc.detail} />
           </p>
-          {doc.detail && (
-            <p className="doc-detail">
-              <Inline text={doc.detail} />
-            </p>
-          )}
+        )}
+      </section>
 
-          <dl className="doc-facts">
-            <div>
-              <dt>Sender</dt>
-              <dd>
-                {doc.sender === 'frontend'
-                  ? 'client (frontend)'
-                  : doc.sender === 'backend'
-                    ? 'server (backend)'
-                    : 'either side'}
-              </dd>
-            </div>
-            <div>
-              <dt>Size</dt>
-              <dd>{packet.length} bytes</dd>
-            </div>
-            <div>
-              <dt>Stream offset</dt>
-              <dd>{packet.stream_offset}</dd>
-            </div>
-          </dl>
-        </section>
+      <section className="fields-block">
+        <h3>
+          Fields
+          <span className="hint">click a row to pin it, or click bytes below</span>
+        </h3>
 
-        <section className="fields-block">
-          <h3>
-            Fields
-            <span className="hint">click a row to pin it, or click bytes below</span>
-          </h3>
+        {rows.length === 0 ? (
+          <p className="empty-note">This message has no annotated fields.</p>
+        ) : (
+          <ul className="field-tree" ref={treeRef} onMouseLeave={() => setHoveredPath(null)}>
+            {rows.map((row) => {
+              const { field, depth, path, hasChildren } = row
+              const empty = isEmptyRange(field)
+              const isActive = path === activeRowPath
+              return (
+                <li key={path}>
+                  <div
+                    ref={isActive ? activeRowRef : undefined}
+                    className={isActive ? 'field-row active' : 'field-row'}
+                    style={{ paddingLeft: `${depth * 1.1 + 0.5}rem` }}
+                    onMouseEnter={() => setHoveredPath(path)}
+                    onClick={() => onSelectField(path === selectedFieldPath ? null : path)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') onSelectField(path)
+                    }}
+                  >
+                    {hasChildren ? (
+                      <button
+                        className="field-twisty"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onToggleCollapsed(path)
+                        }}
+                        aria-label={collapsed.has(path) ? 'Expand' : 'Collapse'}
+                      >
+                        {collapsed.has(path) ? '▸' : '▾'}
+                      </button>
+                    ) : (
+                      <span className="field-twisty placeholder" />
+                    )}
 
-          {rows.length === 0 ? (
-            <p className="empty-note">This message has no annotated fields.</p>
-          ) : (
-            <ul className="field-tree" onMouseLeave={() => setHoveredPath(null)}>
-              {rows.map((row) => {
-                const { field, depth, path, hasChildren } = row
-                const empty = isEmptyRange(field)
-                const isActive = path === activeRowPath
-                return (
-                  <li key={path}>
-                    <div
-                      className={isActive ? 'field-row active' : 'field-row'}
-                      style={{ paddingLeft: `${depth * 1.1 + 0.5}rem` }}
-                      onMouseEnter={() => setHoveredPath(path)}
-                      onClick={() => onSelectField(path === selectedFieldPath ? null : path)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') onSelectField(path)
-                      }}
-                    >
-                      {hasChildren ? (
-                        <button
-                          className="field-twisty"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onToggleCollapsed(path)
-                          }}
-                          aria-label={collapsed.has(path) ? 'Expand' : 'Collapse'}
-                        >
-                          {collapsed.has(path) ? '▸' : '▾'}
-                        </button>
-                      ) : (
-                        <span className="field-twisty placeholder" />
-                      )}
+                    <span className="field-name">{field.name}</span>
+                    <FieldValue field={field} />
+                    <span className="field-bytes">
+                      {empty ? 'none' : `${field.bytes[0]}-${field.bytes[1]}`}
+                    </span>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </section>
 
-                      <span className="field-name">{field.name}</span>
-                      <FieldValue field={field} />
-                      <span className="field-bytes">
-                        {empty ? 'none' : `${field.bytes[0]}-${field.bytes[1]}`}
-                      </span>
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </section>
-
-        <section className="hex-block">
-          <h3>
-            Raw bytes
-            {/* Naming the hovered byte's field is the whole point of hovering
-                one. This line used to read "hover a field above" for as long as
-                the pointer was anywhere in the dump, which was exactly when it
-                had something to say. */}
-            <span className="hint">
-              {hoveredByteField
-                ? `byte ${hoveredByte} is ${hoveredByteField.field.name}`
-                : activeRange
-                  ? `highlighting ${activeRange[0]}-${activeRange[1]}`
-                  : 'hover a field above, or a byte below'}
-            </span>
-          </h3>
-          <HexDump
-            hex={packet.raw_hex}
-            highlight={activeRange}
-            onSelectByte={onSelectByte}
-            onHoverByte={setHoveredByte}
-            reveal={hoveredByte === null}
-          />
-        </section>
-      </div>
+      {/* A message with many fields used to push the bytes out of sight, so
+          reaching them scrolled the field tree away, and the two representations
+          this view exists to link could not both be on screen at once. */}
+      <section className="hex-block">
+        <h3>
+          Raw bytes
+          {/* Naming the hovered byte's field is the whole point of hovering
+              one. This line used to read "hover a field above" for as long as
+              the pointer was anywhere in the dump, which was exactly when it
+              had something to say. */}
+          <span className="hint">
+            {hoveredByteField
+              ? `byte ${hoveredByte} is ${hoveredByteField.field.name}`
+              : activeRange
+                ? `highlighting ${activeRange[0]}-${activeRange[1]}`
+                : 'hover a field above, or a byte below'}
+          </span>
+        </h3>
+        <HexDump
+          hex={packet.raw_hex}
+          highlight={activeRange}
+          onSelectByte={onSelectByte}
+          onHoverByte={setHoveredByte}
+          reveal={hoveredByte === null}
+        />
+      </section>
     </div>
   )
 }

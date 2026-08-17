@@ -73,16 +73,27 @@ export function HexDump({ hex, highlight, onSelectByte, onHoverByte, reveal }: P
   const scrollRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
   const [viewportHeight, setViewportHeight] = useState(0)
+  const [topInset, setTopInset] = useState(0)
+  // Only the horizontal position, so the column ruler above can follow the dump
+  // sideways. The ruler sits outside this scroll container, so that it does not
+  // sit in the flow above the sizer and shift every row's scroll position.
+  const [scrollLeft, setScrollLeft] = useState(0)
 
   // Measure the actual scroll container. A ResizeObserver keeps it right
   // across window resizes and the responsive breakpoint that changes the
-  // panel's own height.
+  // panel's own height. topInset is `.hex-dump`'s own top padding, read off the
+  // real computed style rather than hardcoded next to ROW_HEIGHT, because it is
+  // set in rem and so depends on the root font size.
   useLayoutEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    setViewportHeight(el.clientHeight)
+    const measure = () => {
+      setViewportHeight(el.clientHeight)
+      setTopInset(Number.parseFloat(getComputedStyle(el).paddingTop) || 0)
+    }
+    measure()
     if (typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(() => setViewportHeight(el.clientHeight))
+    const observer = new ResizeObserver(measure)
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
@@ -92,11 +103,7 @@ export function HexDump({ hex, highlight, onSelectByte, onHoverByte, reveal }: P
   // was previously selected.
   useEffect(() => {
     const el = scrollRef.current
-    // Instant, overriding `.hex-dump`'s smooth scroll-behavior. Gliding is right
-    // for moving within one packet's bytes. Gliding through the old scroll
-    // position of a packet that is no longer on screen is not: this is a reset,
-    // not a movement, and there is nothing on the way for the reader to see.
-    if (el) el.scrollTo({ top: 0, behavior: 'instant' })
+    if (el) el.scrollTop = 0
     setScrollTop(0)
   }, [hex])
 
@@ -107,17 +114,16 @@ export function HexDump({ hex, highlight, onSelectByte, onHoverByte, reveal }: P
     if (!highlight || !reveal) return
     const el = scrollRef.current
     if (!el) return
+    // The field's first byte, always. Revealing whichever of its rows was
+    // nearest instead meant a field spanning two rows could be shown from its
+    // second, leaving the bytes it starts with above the fold.
     const row = rowForOffset(highlight[0], BYTES_PER_ROW)
-    const next = scrollTopToReveal(row, ROW_HEIGHT, el.scrollTop, el.clientHeight)
+    const next = scrollTopToReveal(row, ROW_HEIGHT, el.scrollTop, el.clientHeight, topInset)
     if (next !== el.scrollTop) {
-      // `.hex-dump` sets scroll-behavior: smooth, so this glides. The state
-      // below is set to the value asked for rather than read back off the
-      // element, so which rows are mounted never depends on where an
-      // in-progress animation has got to.
       el.scrollTop = next
       setScrollTop(next)
     }
-  }, [highlight, reveal])
+  }, [highlight, reveal, topInset])
 
   const { start, end } = visibleRowWindow(
     rowCount,
@@ -125,6 +131,7 @@ export function HexDump({ hex, highlight, onSelectByte, onHoverByte, reveal }: P
     viewportHeight,
     ROW_HEIGHT,
     OVERSCAN_ROWS,
+    topInset,
   )
 
   /**
@@ -157,10 +164,32 @@ export function HexDump({ hex, highlight, onSelectByte, onHoverByte, reveal }: P
   for (let row = start; row <= end; row++) rows.push(row * BYTES_PER_ROW)
 
   return (
+    <div className="hex-dump-frame">
+      {/* Which column is which byte of the row, the header every GUI hex editor
+          has. Outside the scroll container and moved by transform rather than
+          scrolled, because the dump is wider than its pane at most widths and a
+          ruler that did not follow it sideways would label the wrong columns.
+          Decorative: the field tree is what actually names a byte. */}
+      <div className="hex-ruler-clip" aria-hidden="true">
+        <div className="hex-ruler" style={{ transform: `translateX(${-scrollLeft}px)` }}>
+          <span className="hex-offset">{'\u00a0'.repeat(4)}</span>
+          <span className="hex-bytes">
+            {Array.from({ length: BYTES_PER_ROW }, (_, i) => (
+              <span className="hex-byte" key={i}>
+                {i.toString(16).padStart(2, '0')}
+              </span>
+            ))}
+          </span>
+        </div>
+      </div>
+
     <div
       className="hex-dump"
       ref={scrollRef}
-      onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+      onScroll={(e) => {
+        setScrollTop(e.currentTarget.scrollTop)
+        setScrollLeft(e.currentTarget.scrollLeft)
+      }}
       onMouseLeave={() => onHoverByte(null)}
     >
       <div className="hex-dump-sizer" style={{ height: rowCount * ROW_HEIGHT }}>
@@ -219,6 +248,7 @@ export function HexDump({ hex, highlight, onSelectByte, onHoverByte, reveal }: P
             </span>
           </div>
         ))}
+        </div>
       </div>
     </div>
   )

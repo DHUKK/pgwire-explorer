@@ -41,6 +41,10 @@ export function rowForOffset(offset: number, bytesPerRow: number): number {
  * that does not exist. `viewportHeight` of 0, which is what a not-yet-measured
  * container reports, still yields a valid single-row window rather than an
  * empty one.
+ *
+ * `topInset` is the scroll container's own top padding, subtracted back out
+ * because row positions are measured from the sizer's origin and `scrollTop` is
+ * measured from the padding's. Defaults to 0.
  */
 export function visibleRowWindow(
   rowCount: number,
@@ -48,10 +52,11 @@ export function visibleRowWindow(
   viewportHeight: number,
   rowHeight: number,
   overscan = 4,
+  topInset = 0,
 ): RowWindow {
   if (rowCount <= 0) return { start: 0, end: -1 }
 
-  const safeScrollTop = Math.max(0, scrollTop)
+  const safeScrollTop = Math.max(0, scrollTop - topInset)
   const safeHeight = Math.max(0, viewportHeight)
 
   const firstVisible = Math.floor(safeScrollTop / rowHeight)
@@ -63,22 +68,39 @@ export function visibleRowWindow(
 }
 
 /**
- * The scrollTop that brings `row` fully into view within a container
- * `viewportHeight` tall currently scrolled to `scrollTop`. Returns `scrollTop`
- * unchanged when `row` is already fully visible, so a field that is already on
- * screen is never jostled, matching how `PacketList` already follows selection
- * with `scrollIntoView({ block: 'nearest' })`.
+ * The scrollTop that brings `row` to the top of a container `viewportHeight`
+ * tall currently scrolled to `scrollTop`. Returns `scrollTop` unchanged when
+ * `row` is already fully visible, so a field that is already on screen is never
+ * jostled.
+ *
+ * `row` lands at the top whichever direction it was reached from, rather than
+ * flush against the nearer edge. A field is revealed by the row its first byte
+ * falls in, and a field can span more rows than that one: bottom-aligning it
+ * when scrolling down put the field's first row at the last visible line and
+ * left the rest of the field below the fold. Putting it at the top means
+ * everything that follows it is on screen too, up to a viewport's worth.
+ *
+ * This is why the packet list keeps its own nearest-edge version in
+ * `packetWindow.ts` instead of sharing this. There a row is the whole thing
+ * being revealed, and a keyboard step should move the list by one row, not
+ * throw it a whole viewport.
+ *
+ * `topInset` is the scroll container's own top padding, added to put a row's
+ * sizer-relative position back into `scrollTop`'s coordinate space. Without it
+ * a row came to rest with its lower edge clipped by exactly the padding, which
+ * on a 20px row and 8px of padding is nearly half the row.
  */
 export function scrollTopToReveal(
   row: number,
   rowHeight: number,
   scrollTop: number,
   viewportHeight: number,
+  topInset = 0,
 ): number {
-  const rowTop = row * rowHeight
+  const rowTop = row * rowHeight + topInset
   const rowBottom = rowTop + rowHeight
   if (rowTop < scrollTop) return rowTop
-  if (rowBottom > scrollTop + viewportHeight) return rowBottom - viewportHeight
+  if (rowBottom > scrollTop + viewportHeight) return rowTop
   return scrollTop
 }
 
