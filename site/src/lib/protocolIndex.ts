@@ -328,9 +328,9 @@ export const UNDECODED_MESSAGE_NAMES: readonly string[] = [
  * second, competing description.
  */
 export const SUMMARY_FALLBACKS: Record<string, string> = {
-  AuthenticationKerberosV4: 'Asked the client to authenticate with Kerberos V4.',
+  AuthenticationKerberosV4: 'Asked the client to authenticate with `Kerberos V4`.',
   AuthenticationCryptPassword: 'Asked for a password hashed with `crypt(3)`.',
-  AuthenticationKerberosV5: 'Asked the client to authenticate with Kerberos V5.',
+  AuthenticationKerberosV5: 'Asked the client to authenticate with `Kerberos V5`.',
   AuthenticationSCMCredential:
     'Asked the client to send its credentials over a Unix-domain socket, where the kernel vouches for them.',
 }
@@ -406,11 +406,6 @@ export const MESSAGE_EXAMPLES: Record<string, MessageExample> = {
   Terminate: { scenario: 'simple-query', session: 1, packet: 30 },
 }
 
-/** The route that opens a capture at one message. See App's hash handling. */
-export function exampleRoute(example: MessageExample): string {
-  return `${example.scenario}/${example.session}/${example.packet}`
-}
-
 /** Which releases document a message. */
 export function versionsFor(message: ProtocolMessage): readonly string[] {
   return message.versions ?? VERSIONS
@@ -449,8 +444,4 @@ export function isDecoded(name: string): boolean {
   return !UNDECODED_MESSAGE_NAMES.includes(name)
 }
 
-/** A shipped capture containing a real instance, if one does. */
-export function exampleFor(name: string): MessageExample | undefined {
-  return MESSAGE_EXAMPLES[name]
-}
 

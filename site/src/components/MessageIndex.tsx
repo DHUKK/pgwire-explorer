@@ -6,8 +6,6 @@ import {
   PROTOCOL_MESSAGES,
   VERSIONS,
   docsUrlFor,
-  exampleFor,
-  exampleRoute,
   inEveryVersion,
   isDecoded,
   summaryFor,
@@ -18,7 +16,6 @@ import {
   type MessagePhase,
   type ProtocolMessage,
 } from '../lib/protocolIndex'
-import { scenarioById } from '../lib/scenarios'
 import { PROTOCOL_DOCS_URL } from '../lib/docs'
 import { Inline } from '../lib/inline'
 import { BookIcon, GitHubIcon } from './icons'
@@ -49,11 +46,9 @@ const DIRECTION_FILTERS: Array<{ value: DirectionFilter; label: string }> = [
 interface Props {
   /** Back to the landing page. */
   onClose: () => void
-  /** Open a shipped capture at one message. */
-  onOpenExample: (route: string) => void
 }
 
-export function MessageIndex({ onClose, onOpenExample }: Props) {
+export function MessageIndex({ onClose }: Props) {
   const [phase, setPhase] = useState<MessagePhase | 'all'>('all')
   const [direction, setDirection] = useState<DirectionFilter>('any')
   const [release, setRelease] = useState<Release | 'any'>('any')
@@ -203,7 +198,7 @@ export function MessageIndex({ onClose, onOpenExample }: Props) {
             return (
               <div key={value} className="mi-phase">
                 <h3>{PHASE_LABELS[value]}</h3>
-                <MessageTable rows={rows} onOpenExample={onOpenExample} />
+                <MessageTable rows={rows} />
               </div>
             )
           })}
@@ -219,13 +214,7 @@ export function MessageIndex({ onClose, onOpenExample }: Props) {
   )
 }
 
-function MessageTable({
-  rows,
-  onOpenExample,
-}: {
-  rows: readonly ProtocolMessage[]
-  onOpenExample: (route: string) => void
-}) {
+function MessageTable({ rows }: { rows: readonly ProtocolMessage[] }) {
   return (
     // The table is wider than a phone, so it scrolls inside its own box rather
     // than making the page scroll sideways.
@@ -238,12 +227,11 @@ function MessageTable({
             <th scope="col">Dir</th>
             <th scope="col">Code</th>
             <th scope="col">Versions</th>
-            <th scope="col">Example</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((message) => (
-            <MessageRow key={message.name} message={message} onOpenExample={onOpenExample} />
+            <MessageRow key={message.name} message={message} />
           ))}
         </tbody>
       </table>
@@ -251,16 +239,8 @@ function MessageTable({
   )
 }
 
-function MessageRow({
-  message,
-  onOpenExample,
-}: {
-  message: ProtocolMessage
-  onOpenExample: (route: string) => void
-}) {
+function MessageRow({ message }: { message: ProtocolMessage }) {
   const docs = docsUrlFor(message)
-  const example = exampleFor(message.name)
-  const scenario = example ? scenarioById(example.scenario) : undefined
 
   return (
     <tr>
@@ -321,23 +301,6 @@ function MessageRow({
 
       <td className={inEveryVersion(message) ? 'mi-versions' : 'mi-versions partial'}>
         {versionSpan(message)}
-      </td>
-
-      <td>
-        {example && scenario ? (
-          <button
-            type="button"
-            className="mi-example"
-            title={`Open the "${scenario.title}" example at message ${example.packet}`}
-            aria-label={`Open a real ${message.name}, in the "${scenario.title}" example`}
-            onClick={() => onOpenExample(exampleRoute(example))}
-          >
-            open
-            <span aria-hidden="true"> &rarr;</span>
-          </button>
-        ) : (
-          <span className="mi-no-example" aria-hidden="true" />
-        )}
       </td>
     </tr>
   )
