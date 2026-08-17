@@ -1523,7 +1523,6 @@ kbd {
 
 /* ------------------------------------------------------------ packet detail */
 
-.detail-scroll,
 .state-scroll {
   overflow-y: auto;
   flex: 1;
@@ -1551,8 +1550,12 @@ kbd {
   color: var(--error);
 }
 
+/* Fixed height, so what the message is and the facts about this instance of it
+   stay put while the two panes below scroll. Its own padding now, which it used
+   to inherit from the scroll area that wrapped all three. */
 .doc-block {
-  margin-bottom: 1.25rem;
+  flex: 0 0 auto;
+  padding: 0.9rem;
 }
 
 .doc-summary {
@@ -1597,34 +1600,89 @@ kbd {
   color: var(--accent-text);
 }
 
+/*
+ * The facts about this instance of the message, on the head row beside its name.
+ * Unboxed and on one line, because they are three short values with fixed
+ * labels: as a strip below the summary they cost a whole line of the panel while
+ * the head row sat half empty.
+ *
+ * `margin-right: auto` rather than relying on the head's `space-between`, which
+ * with three children would centre these in the gap and leave them floating
+ * between the name and the category chip instead of reading as part of the name.
+ */
 .doc-facts {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.25rem;
-  margin: 0.9rem 0 0;
-  padding: 0.6rem 0.75rem;
-  background: var(--bg-sunken);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-inset);
+  gap: 0.25rem 1rem;
+  margin: 0 auto 0 0.35rem;
+  min-width: 0;
+}
+
+.doc-facts > div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  min-width: 0;
 }
 
 .doc-facts dt {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-faint);
+  white-space: nowrap;
 }
 
 .doc-facts dd {
-  margin: 0.1rem 0 0;
-  font-size: 0.85rem;
+  margin: 0;
+  font-size: 0.78rem;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
+  color: var(--text-soft);
+  white-space: nowrap;
 }
 
-.fields-block,
+/* The head row wraps rather than crushing the name, since the detail panel is
+   only guaranteed 26rem and this row now carries the name, three facts and the
+   category chip. Only the detail panel's head: the message list's carries a
+   title and a two-item legend that always fit. */
+.detail-panel .panel-head {
+  flex-wrap: wrap;
+  row-gap: 0.35rem;
+}
+
+/*
+ * The fields and the bytes are each a pane of the detail panel rather than two
+ * sections of one scroll area, so both representations stay on screen whatever
+ * the message.
+ *
+ * Proportions rather than a draggable divider: both are always visible, and
+ * there is no ratio to store or restore. `flex-basis: 0` on both is what makes
+ * 1.2 and 1 a ratio of the space left over rather than a ratio of whatever the
+ * content happens to measure. `min-height: 0` because a flex item's default
+ * floor is its content, which a long field tree would otherwise push past the
+ * bottom of the panel.
+ */
+.fields-block {
+  flex: 1.2 1 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
 .hex-block {
-  margin-bottom: 1.25rem;
+  /* Content height, not a fixed share. Most messages are a handful of bytes, so
+     claiming half the panel for two rows left a large empty box. The cap is what
+     stops a big CopyData doing the reverse and crowding out the fields. */
+  flex: 0 1 auto;
+  max-height: 40%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.9rem;
+  border-top: 1px solid var(--border);
 }
 
 .fields-block h3,
@@ -1650,10 +1708,15 @@ kbd {
   font-size: 0.72rem;
 }
 
+/* The tree scrolls, not the block around it, so the "Fields" heading and its
+   hint stay put the way `.hex-block`'s heading does. */
 .field-tree {
   list-style: none;
   margin: 0;
   padding: 0;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .field-row {
@@ -1747,34 +1810,82 @@ kbd {
   font-family: var(--mono);
   font-size: 0.78rem;
   line-height: 1.55;
-  background: var(--bg-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   padding: 0.5rem 0.6rem;
-  max-height: 26rem;
+  /* `auto` basis, not 0, so a short message shrink-wraps to its own rows rather
+     than stretching to fill a frame that is itself content-sized. */
+  flex: 1 1 auto;
+  /* Four rows plus this element's own padding, so a five-byte Sync still gets a
+     box with some presence instead of a single line in a frame. The 20px is
+     `.hex-row`'s height, the same figure HexDump holds as ROW_HEIGHT. */
+  min-height: calc(4 * 20px + 1rem);
   overflow-x: auto;
   overflow-y: auto;
   position: relative;
-  /* Cut into the panel rather than laid on it, which is what a dump of raw
-     bytes should look like next to the prose above it. */
-  box-shadow: var(--shadow-inset);
-  /* Applies to the scrollTop assignment HexDump makes to reveal a field's
-     bytes, not just to wheel and scrollbar scrolling, so moving through the
-     field tree glides the dump instead of teleporting it. HexDump sets its own
-     scrollTop state to the value it asked for rather than reading the element
-     back, so the animation cannot confuse which rows are mounted. */
-  scroll-behavior: smooth;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hex-dump {
-    scroll-behavior: auto;
-  }
+  /* No scroll-behavior here, unlike `.packet-list`. A keyboard step in the packet
+     list always moves exactly one row, which is worth animating. Revealing a
+     field moves by however far apart its bytes happen to sit, so on a large dump
+     the same animation is a long glide with nothing to see on the way. */
 }
 
 /* Given the height the full (unvirtualized) dump would occupy, so the
    scrollbar represents every byte in the packet, not just the mounted rows.
    Rows are positioned absolutely within it by their real row number. */
+/*
+ * The ruler and the dump as one unit. The border, background and inset shadow
+ * live here rather than on `.hex-dump`, so the ruler sits inside the same box as
+ * the bytes it labels instead of floating above it, and so the ruler's own
+ * padding does not have to reckon with a border between them.
+ */
+.hex-dump-frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  /* Clips the children to the rounded corners. */
+  overflow: hidden;
+  box-shadow: var(--shadow-inset);
+}
+
+/*
+ * The ruler tracks the dump's horizontal scroll by transform, so it has to be
+ * clipped to the same box the dump occupies. The horizontal padding matches
+ * `.hex-dump`'s, plus its 1px border, so column 00 sits directly above the
+ * first byte cell rather than a border's width to its left.
+ */
+.hex-ruler-clip {
+  flex: none;
+  overflow: hidden;
+  /* Matches `.hex-dump`'s horizontal padding exactly, with no border to allow
+     for, since that now sits on the frame around both. */
+  padding: 0.4rem 0.6rem 0.25rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--text-faint);
+}
+
+/* The same three-part row shape as `.hex-row`, reusing `.hex-offset`,
+   `.hex-bytes` and `.hex-byte` so the columns cannot drift out of step with the
+   bytes: one set of widths, used twice. */
+.hex-ruler {
+  display: flex;
+  gap: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Labels, not targets. `.hex-byte` carries a hover state for the real cells. */
+.hex-ruler .hex-byte,
+.hex-ruler .hex-byte:hover {
+  background: none;
+  color: var(--text-faint);
+  font-weight: 600;
+  cursor: default;
+}
+
 .hex-dump-sizer {
   position: relative;
 }
