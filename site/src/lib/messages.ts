@@ -56,7 +56,7 @@ export const MESSAGE_DOCS: Record<string, MessageDoc> = {
   SSLRequest: {
     sender: 'frontend',
     category: 'negotiation',
-    summary: 'Asks the server to upgrade the connection to TLS.',
+    summary: 'Asks the server to upgrade the connection to `TLS`.',
   },
   SSLResponse: {
     sender: 'backend',
@@ -67,7 +67,7 @@ export const MESSAGE_DOCS: Record<string, MessageDoc> = {
   GSSENCRequest: {
     sender: 'frontend',
     category: 'negotiation',
-    summary: 'Asks the server to upgrade the connection to GSSAPI encryption.',
+    summary: 'Asks the server to upgrade the connection to `GSSAPI` encryption.',
   },
   GSSENCResponse: {
     sender: 'backend',
@@ -143,23 +143,23 @@ export const MESSAGE_DOCS: Record<string, MessageDoc> = {
   AuthenticationGSS: {
     sender: 'backend',
     category: 'auth',
-    summary: 'Asks for GSSAPI authentication.',
+    summary: 'Asks for `GSSAPI` authentication.',
   },
   AuthenticationGSSContinue: {
     sender: 'backend',
     category: 'auth',
-    summary: 'A round of GSSAPI token exchange.',
+    summary: 'A round of `GSSAPI` token exchange.',
   },
   AuthenticationSSPI: {
     sender: 'backend',
     category: 'auth',
-    summary: 'Asks for SSPI authentication, which is Windows negotiating Kerberos or NTLM.',
-    detail: 'The client answers with `GSSResponse`, the same message GSSAPI uses.',
+    summary: 'Asks for `SSPI` authentication, which is Windows negotiating Kerberos or NTLM.',
+    detail: 'The client answers with `GSSResponse`, the same message `GSSAPI` uses.',
   },
   GSSResponse: {
     sender: 'frontend',
     category: 'auth',
-    summary: 'A GSSAPI token from the client.',
+    summary: 'A `GSSAPI` token from the client.',
     detail: 'Shares type byte `p` with `PasswordMessage`, `SASLInitialResponse` and `SASLResponse`.',
   },
 
@@ -172,7 +172,7 @@ export const MESSAGE_DOCS: Record<string, MessageDoc> = {
   BackendKeyData: {
     sender: 'backend',
     category: 'startup',
-    summary: 'The process ID and secret key used to cancel queries on this connection.',
+    summary: 'The process `ID` and secret key used to cancel queries on this connection.',
   },
   ReadyForQuery: {
     sender: 'backend',
@@ -184,12 +184,12 @@ export const MESSAGE_DOCS: Record<string, MessageDoc> = {
   Query: {
     sender: 'frontend',
     category: 'query',
-    summary: 'Runs a SQL string immediately, without prepared parameters.',
+    summary: 'Runs a `SQL` string immediately, without prepared parameters.',
   },
   Parse: {
     sender: 'frontend',
     category: 'query',
-    summary: 'Parses a SQL statement, creating a prepared statement.',
+    summary: 'Parses a `SQL` statement, creating a prepared statement.',
   },
   Bind: {
     sender: 'frontend',
@@ -230,7 +230,7 @@ export const MESSAGE_DOCS: Record<string, MessageDoc> = {
   FunctionCall: {
     sender: 'frontend',
     category: 'query',
-    summary: 'Calls a server-side function directly by OID, bypassing SQL.',
+    summary: 'Calls a server-side function directly by `OID`, bypassing `SQL`.',
     detail: 'A legacy path. `Bind` and `Execute` against a `SELECT` do the same thing.',
   },
 
@@ -296,36 +296,36 @@ export const MESSAGE_DOCS: Record<string, MessageDoc> = {
   CopyInResponse: {
     sender: 'backend',
     category: 'copy',
-    summary: 'The server is ready to receive COPY data.',
+    summary: 'The server is ready to receive `COPY` data.',
     detail: 'The connection switches to copy-in mode.',
   },
   CopyOutResponse: {
     sender: 'backend',
     category: 'copy',
-    summary: 'The server is about to stream COPY data out.',
+    summary: 'The server is about to stream `COPY` data out.',
     detail: 'The connection switches to copy-out mode.',
   },
   CopyBothResponse: {
     sender: 'backend',
     category: 'copy',
-    summary: 'The connection streams COPY data in both directions.',
+    summary: 'The connection streams `COPY` data in both directions.',
     detail: 'Sent only when the backend starts streaming replication.',
   },
   CopyData: {
     sender: 'either',
     category: 'copy',
-    summary: 'A chunk of COPY data.',
+    summary: 'A chunk of `COPY` data.',
     detail: 'When used for replication this wraps `XLogData`, a `Primary keepalive message`, a `Standby status update`, or a `Hot standby feedback message` instead of a plain `COPY`.',
   },
   CopyDone: {
     sender: 'either',
     category: 'copy',
-    summary: 'The COPY stream ended normally.',
+    summary: 'The `COPY` stream ended normally.',
   },
   CopyFail: {
     sender: 'frontend',
     category: 'copy',
-    summary: 'The client is abandoning a COPY, with a reason.',
+    summary: 'The client is abandoning a `COPY`, with a reason.',
   },
 
   // ---------------------------------------------------------------------- error
@@ -344,7 +344,7 @@ export const MESSAGE_DOCS: Record<string, MessageDoc> = {
   NotificationResponse: {
     sender: 'backend',
     category: 'async',
-    summary: 'A LISTEN/NOTIFY event pushed from the server, unprompted by a client message.',
+    summary: 'A `LISTEN`/`NOTIFY` event pushed from the server, unprompted by a client message.',
   },
 
   // -------------------------------------------------------------------- unknown

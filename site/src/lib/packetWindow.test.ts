@@ -95,17 +95,34 @@ describe('scrollTopToReveal', () => {
     expect(scrollTopToReveal(offsets, 5, 0, 400)).toBe(0)
   })
 
-  it('scrolls up to reveal a row above the viewport, centering it', () => {
-    // Content (200px) is shorter than the viewport (400px), so the only
-    // sane centered position clamps to 0.
+  it('scrolls up to reveal a row above the viewport, aligning its top edge', () => {
+    // Content (200px) is shorter than the viewport (400px), so this cannot
+    // scroll at all and the row's own top of 40 clamps to 0.
     const offsets = rowOffsets(new Array(10).fill(false), 20, 8)
     expect(scrollTopToReveal(offsets, 2, 1000, 400)).toBe(0)
   })
 
-  it('scrolls down to reveal a row below the viewport, centering it', () => {
-    // Row 100 spans 2000..2020, midpoint 2010, centered at 2010 - 200 = 1810.
+  it('scrolls down to reveal a row below the viewport, aligning its bottom edge', () => {
+    // Row 100 spans 2000..2020, so its bottom sits flush with the viewport's
+    // at 2020 - 400. One step past the edge scrolls by one row, not half a
+    // viewport, which is the whole point of aligning to the nearest edge.
     const offsets = rowOffsets(new Array(200).fill(false), 20, 8)
-    expect(scrollTopToReveal(offsets, 100, 1000, 400)).toBe(1810)
+    expect(scrollTopToReveal(offsets, 100, 1000, 400)).toBe(1620)
+  })
+
+  // The two that matter for keyboard stepping. A step off either edge has to
+  // move the list by one row. Centering the row instead moved it by half a
+  // viewport, which read as the list jumping away under the reader.
+  it('scrolls by exactly one row for a step past the bottom edge', () => {
+    // A 200px viewport at the top shows rows 0..9, so row 10 is one step out.
+    const offsets = rowOffsets(new Array(100).fill(false), 20, 8)
+    expect(scrollTopToReveal(offsets, 10, 0, 200)).toBe(20)
+  })
+
+  it('scrolls by exactly one row for a step past the top edge', () => {
+    // Scrolled to row 10, stepping back up to row 9 at 180..200.
+    const offsets = rowOffsets(new Array(100).fill(false), 20, 8)
+    expect(scrollTopToReveal(offsets, 9, 200, 200)).toBe(180)
   })
 
   it('reveals the first row by scrolling to the top', () => {
@@ -114,11 +131,12 @@ describe('scrollTopToReveal', () => {
   })
 
   it('accounts for a gap marker as part of the target row itself', () => {
-    // Row 5's gap marker makes its own slot 28px tall: top 100, bottom 128,
-    // midpoint 114, centered at 114 - 25 = 89.
+    // Row 5's gap marker makes its own slot 28px tall: top 100, bottom 128, so
+    // its bottom lands flush with the viewport's at 128 - 50. The marker counts
+    // as part of the row, so revealing the row reveals the marker above it too.
     const gaps = [false, false, false, false, false, true, false, false]
     const offsets = rowOffsets(gaps, 20, 8)
-    expect(scrollTopToReveal(offsets, 5, 0, 50)).toBe(89)
+    expect(scrollTopToReveal(offsets, 5, 0, 50)).toBe(78)
   })
 
   it('clamps a row index past the end to the last real row', () => {
@@ -127,10 +145,10 @@ describe('scrollTopToReveal', () => {
   })
 
   it('accounts for the scroll container\'s own top padding', () => {
-    // With a 10px inset, row 100 sits at 2010..2030, midpoint 2020, centered
-    // at 1820, not the 1810 a zero inset would give.
+    // With a 10px inset, row 100 sits at 2010..2030, so its bottom lands flush
+    // at 1630, not the 1620 a zero inset would give.
     const offsets = rowOffsets(new Array(200).fill(false), 20, 8)
-    expect(scrollTopToReveal(offsets, 100, 1000, 400, 10)).toBe(1820)
+    expect(scrollTopToReveal(offsets, 100, 1000, 400, 10)).toBe(1630)
   })
 
   it('with no inset given, matches the inset-of-zero case', () => {

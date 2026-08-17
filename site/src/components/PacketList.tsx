@@ -245,7 +245,10 @@ export function PacketList({
 
     const active = document.activeElement
     if (active !== selectedButtonRef.current && active && scrollRef.current?.contains(active)) {
-      selectedButtonRef.current?.focus()
+      // preventScroll because the layout effect above owns scrolling. focus()
+      // reveals an off-screen element instantly, which during the smooth scroll
+      // that effect just started would cancel it and jump instead.
+      selectedButtonRef.current?.focus({ preventScroll: true })
     }
   }, [selected, start, end])
 

@@ -103,9 +103,10 @@ export function visibleRowWindow(
  * a stale or out-of-range index degrades to revealing the nearest valid one
  * rather than producing a nonsensical scroll position.
  *
- * When a scroll is needed, `row` lands centered in the viewport rather than
- * flush against whichever edge it was closest to, since a row that needs
- * revealing at all is usually a jump (a route, Home, End) rather than a step.
+ * When a scroll is needed, `row` lands flush against whichever edge it fell off,
+ * the nearest-edge behaviour of `scrollIntoView({ block: 'nearest' })` and the
+ * same rule `hexWindow.ts` follows. Centering it instead would turn one keyboard
+ * step off the bottom into a half-viewport jump.
  *
  * `topInset` is the scroll container's own top padding, added to `offsets`'s
  * sizer-relative positions to put them back in `scrollTop`'s coordinate
@@ -125,12 +126,15 @@ export function scrollTopToReveal(
   const clampedRow = clamp(row, 0, rowCount - 1)
   const rowTop = offsets[clampedRow]! + topInset
   const rowBottom = offsets[clampedRow + 1]! + topInset
-
-  if (rowTop >= scrollTop && rowBottom <= scrollTop + viewportHeight) return scrollTop
-
-  const rowMid = (rowTop + rowBottom) / 2
   const maxScrollTop = Math.max(0, offsets[rowCount]! + topInset - viewportHeight)
-  return clamp(rowMid - viewportHeight / 2, 0, maxScrollTop)
+
+  // Whichever edge the row fell off, it lands flush against it. A row already
+  // inside the viewport matches neither test and so is left alone.
+  if (rowTop < scrollTop) return clamp(rowTop, 0, maxScrollTop)
+  if (rowBottom > scrollTop + viewportHeight) {
+    return clamp(rowBottom - viewportHeight, 0, maxScrollTop)
+  }
+  return scrollTop
 }
 
 function clamp(value: number, min: number, max: number): number {

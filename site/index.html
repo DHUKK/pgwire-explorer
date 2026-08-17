@@ -12,6 +12,21 @@
          to a crawler, so this points every variant at the one canonical URL. -->
     <link rel="canonical" href="https://pgwire-explorer.dhuk.net/" />
 
+    <!-- Stamps the theme before the first paint, so a reader who chose light or
+         dark never sees a flash of whichever the OS prefers. ThemeToggle
+         reapplies it on mount and handles every later change, so this copy only
+         has to run once. The key is duplicated rather than imported because this
+         has to be a plain inline script, not a module. "system" stamps nothing
+         and falls through to prefers-color-scheme, same as ThemeToggle. -->
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('pgwire-theme')
+          if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme
+        } catch (e) {}
+      })()
+    </script>
+
     <!-- Read without executing any JS, unlike the tags above, so this is what
          a link unfurled in Slack or Twitter actually shows. -->
     <meta property="og:type" content="website" />

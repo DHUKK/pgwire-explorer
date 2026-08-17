@@ -1200,6 +1200,19 @@ kbd {
   flex: 1;
   min-height: 0;
   position: relative;
+  /* Animates the one-row nudge PacketList makes when a keyboard step lands
+     outside the window. Only programmatic scrolls are affected, so the wheel and
+     the scrollbar stay exactly as native as before. The row's focus() call has to
+     pass preventScroll, or the browser reveals the row instantly and there is
+     nothing left to animate. */
+  scroll-behavior: smooth;
+}
+
+/* Animation is the part that is optional, not the scrolling. */
+@media (prefers-reduced-motion: reduce) {
+  .packet-list {
+    scroll-behavior: auto;
+  }
 }
 
 .packet-list-sizer {
@@ -2621,24 +2634,8 @@ kbd {
   color: var(--warn);
 }
 
-.mi-untagged,
-.mi-no-example {
+.mi-untagged {
   font-size: 0.76rem;
   color: var(--text-faint);
   white-space: nowrap;
-}
-
-.mi-example {
-  white-space: nowrap;
-  padding: 0.15rem 0.45rem;
-  font-size: 0.8rem;
-  background: var(--bg-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--accent-text);
-}
-
-.mi-example:hover {
-  border-color: var(--accent);
-  background: var(--accent-soft);
 }

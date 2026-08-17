@@ -9,7 +9,6 @@ import {
   SUMMARY_FALLBACKS,
   UNDECODED_MESSAGE_NAMES,
   VERSIONS,
-  exampleRoute,
   docsUrlFor,
   inEveryVersion,
   isDecoded,
@@ -317,12 +316,6 @@ describe('example messages', () => {
     const known = new Set(PROTOCOL_MESSAGES.map((m) => m.name))
     const missing = [...present].filter((name) => known.has(name) && !(name in MESSAGE_EXAMPLES))
     expect(missing.sort(), 'messages in a capture with no example').toEqual([])
-  })
-
-  it('builds a route the hash router understands', () => {
-    expect(exampleRoute({ scenario: 'simple-query', session: 1, packet: 21 })).toBe(
-      'simple-query/1/21',
-    )
   })
 })
 
