@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { CaptureError } from '../lib/capture'
+import { useCallback, useRef, useState } from 'react'
 import { SCENARIOS, SCENARIO_GROUPS } from '../lib/scenarios'
 import { formatFileSize, formatSavedAt, type SavedCaptureMeta } from '../lib/savedCaptures'
 import { Inline } from '../lib/inline'
@@ -9,7 +8,6 @@ import { PROTOCOL_MESSAGES, VERSIONS } from '../lib/protocolIndex'
 import { ThemeToggle } from './ThemeToggle'
 
 interface Props {
-  error: CaptureError | null
   loadingId: string | null
   onPickScenario: (id: string) => void
   onPickFile: (file: File) => void
@@ -27,7 +25,6 @@ export const REPO_URL = 'https://github.com/DHUKK/pgwire-explorer'
 const RECORD_COMMAND = 'go run ./cmd/pgwire-capture --out cap.json'
 
 export function Landing({
-  error,
   loadingId,
   onPickScenario,
   onPickFile,
@@ -262,8 +259,6 @@ export function Landing({
             </span>
           </div>
 
-          {error && <AlertBox error={error} />}
-
           {savedCaptures.length > 0 && (
             <div className="saved-captures">
               <h3>Saved in this browser</h3>
@@ -302,21 +297,6 @@ export function Landing({
           )}
         </section>
       </div>
-    </div>
-  )
-}
-
-/** Scrolls itself into view on mount, so a fresh error is never off-screen. */
-function AlertBox({ error }: { error: CaptureError }) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }, [])
-
-  return (
-    <div ref={ref} className="alert" role="alert">
-      <strong>{error.message}</strong>
     </div>
   )
 }

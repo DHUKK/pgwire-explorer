@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Landing } from '../components/Landing'
-import { CaptureError, parseCapture } from '../lib/capture'
+import { parseCapture } from '../lib/capture'
 import {
   deleteSavedCapture,
   listSavedCaptures,
@@ -11,39 +11,23 @@ import {
 import { stashUploaded } from '../lib/loadCapture'
 import { useNotice } from '../lib/notice'
 
-interface Props {
-  /**
-   * An error from a route that could not load, such as a scenario id that does
-   * not exist. The landing page with a banner over it is the error screen, so a
-   * reader lands somewhere they can act rather than on a dead end.
-   */
-  initialError?: CaptureError
-}
-
 /**
  * The landing page and everything that belongs to it: the saved-capture list,
  * uploading a file, and deleting one.
  *
  * All of that state lives here rather than above the routes, because this is the
- * only screen that renders any of it. The one exception is the save notice,
+ * only screen that renders any of it. The one exception is the notice bar,
  * which outlives this screen and so lives in NoticeProvider.
  */
-export function LandingScreen({ initialError }: Props) {
+export function LandingScreen() {
   const navigate = useNavigate()
   const { setNotice } = useNotice()
 
-  const [error, setError] = useState<CaptureError | null>(initialError ?? null)
   const [savedCaptures, setSavedCaptures] = useState<SavedCaptureMeta[]>([])
   // Which example is being fetched, so its card can show a spinner. The router
   // keeps this screen mounted while the loader runs, so a local click still has
   // somewhere to show progress.
   const [loadingId, setLoadingId] = useState<string | null>(null)
-
-  // A different route failing while this screen is already mounted has to
-  // replace whatever error was showing, not be swallowed by the initial state.
-  useEffect(() => {
-    setError(initialError ?? null)
-  }, [initialError])
 
   // The saved-captures list is metadata only, so refreshing it never touches a
   // capture's own bytes. Failing to list is treated the same as there being
@@ -63,7 +47,6 @@ export function LandingScreen({ initialError }: Props) {
 
   const loadFile = useCallback(
     async (file: File) => {
-      setError(null)
       let capture
       try {
         capture = parseCapture(await file.text())
@@ -73,7 +56,7 @@ export function LandingScreen({ initialError }: Props) {
         // reason (an exact JSON path, most of the time) is logged for whoever
         // can actually act on it rather than shown here.
         console.error('Could not load capture from file:', err)
-        setError(new CaptureError('Invalid capture file.'))
+        setNotice('Invalid capture file.')
         return
       }
 
@@ -108,7 +91,6 @@ export function LandingScreen({ initialError }: Props) {
 
   return (
     <Landing
-      error={error}
       loadingId={loadingId}
       onPickScenario={(id) => {
         setLoadingId(id)

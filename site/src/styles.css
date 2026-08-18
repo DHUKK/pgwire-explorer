@@ -240,6 +240,12 @@ body {
   height: 100%;
 }
 
+/* No box of its own, so it stays out of the height chain #root's children
+   rely on (.landing, .explorer). The accessibility landmark still holds. */
+main {
+  display: contents;
+}
+
 code,
 kbd,
 .mono {
@@ -686,13 +692,14 @@ kbd {
   background: var(--error-soft);
 }
 
-/* ------------------------------------------------------------ save notice */
+/* ----------------------------------------------------------- notice bar */
 
-/* A brief, dismissible note when saving or reopening a saved capture failed.
+/* A brief, dismissible note for a failure: saving or reopening a saved
+   capture, an uploaded file that will not parse, a route that could not load.
    Rendered by App itself rather than by Landing or Explorer, so it can appear
-   over either screen regardless of which one is on display when the failure
-   happens. */
-.save-notice {
+   over any screen regardless of which one is on display when the failure
+   happens. Every note routed through here is a failure, hence the red. */
+.notice-bar {
   position: fixed;
   bottom: 1.25rem;
   right: 1.25rem;
@@ -700,16 +707,17 @@ kbd {
   display: flex;
   align-items: flex-start;
   gap: 0.6rem;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-strong);
+  background: var(--error-soft);
+  border: 1px solid var(--error);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 0.7rem 0.85rem;
   font-size: 0.85rem;
+  color: var(--text);
   z-index: 30;
 }
 
-.save-notice button {
+.notice-bar button {
   flex: none;
   background: none;
   border: none;
@@ -719,16 +727,7 @@ kbd {
   padding: 0;
 }
 
-.save-notice button:hover {
-  color: var(--text);
-}
-
-.alert {
-  background: var(--error-soft);
-  border: 1px solid var(--error);
-  border-radius: var(--radius);
-  padding: 0.85rem 1rem;
-  margin-top: 1rem;
+.notice-bar button:hover {
   color: var(--text);
 }
 
@@ -2357,8 +2356,12 @@ kbd {
 
   /* Square, now there is only a glyph in them. 2rem is the width .theme-toggle
      already sets for itself, and this selector outranks it, so stating the same
-     value is what makes all three buttons in the bar one size rather than two. */
-  .landing-links .ghost-button {
+     value is what makes every icon-only button in a top bar one size rather
+     than several. Covers the landing links, the back button wherever it sits
+     (landing bar, message index, explorer header), and the theme toggle. */
+  .landing-links .ghost-button,
+  .landing-bar-left .ghost-button,
+  .explorer-header .ghost-button {
     padding: 0.3rem;
     min-width: 2rem;
     justify-content: center;
