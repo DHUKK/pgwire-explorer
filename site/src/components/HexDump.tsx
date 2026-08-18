@@ -1,12 +1,7 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { byteToHex, byteToPrintable, decodeHexRange } from '../lib/hex'
-import {
-  highlightEdge,
-  rowCountFor,
-  rowForOffset,
-  scrollTopToReveal,
-  visibleRowWindow,
-} from '../lib/hexWindow'
+import { highlightEdge, rowCountFor, rowForOffset } from '../lib/hexWindow'
 
 const BYTES_PER_ROW = 16
 
@@ -15,6 +10,8 @@ const ROW_HEIGHT = 20
 
 /** Extra rows kept mounted past each edge of the viewport. */
 const OVERSCAN_ROWS = 6
+
+const VERTICAL_PADDING = 8
 
 interface Props {
   /**
@@ -71,68 +68,46 @@ export function HexDump({ hex, highlight, onSelectByte, onHoverByte, reveal }: P
   const byteLength = hex.length / 2
   const rowCount = rowCountFor(byteLength, BYTES_PER_ROW)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [scrollTop, setScrollTop] = useState(0)
-  const [viewportHeight, setViewportHeight] = useState(0)
-  const [topInset, setTopInset] = useState(0)
   // Only the horizontal position, so the column ruler above can follow the dump
   // sideways. The ruler sits outside this scroll container, so that it does not
   // sit in the flow above the sizer and shift every row's scroll position.
   const [scrollLeft, setScrollLeft] = useState(0)
 
-  // Measure the actual scroll container. A ResizeObserver keeps it right
-  // across window resizes and the responsive breakpoint that changes the
-  // panel's own height. topInset is `.hex-dump`'s own top padding, read off the
-  // real computed style rather than hardcoded next to ROW_HEIGHT, because it is
-  // set in rem and so depends on the root font size.
-  useLayoutEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-    const measure = () => {
-      setViewportHeight(el.clientHeight)
-      setTopInset(Number.parseFloat(getComputedStyle(el).paddingTop) || 0)
-    }
-    measure()
-    if (typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(measure)
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+  const rowVirtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: OVERSCAN_ROWS,
+    paddingStart: VERTICAL_PADDING,
+    paddingEnd: VERTICAL_PADDING,
+  })
 
   // A new packet's bytes replace the old ones in place, so without this the
   // dump could open already scrolled to a position that belonged to whatever
   // was previously selected.
   useEffect(() => {
-    const el = scrollRef.current
-    if (el) el.scrollTop = 0
-    setScrollTop(0)
-  }, [hex])
+    rowVirtualizer.scrollToOffset(0)
+  }, [hex, rowVirtualizer])
 
   // The other half of the two-way link: a hover or a selection may name bytes
   // outside the currently rendered window, so bring them into view instead of
   // silently failing to highlight them.
   useEffect(() => {
     if (!highlight || !reveal) return
-    const el = scrollRef.current
-    if (!el) return
-    // The field's first byte, always. Revealing whichever of its rows was
-    // nearest instead meant a field spanning two rows could be shown from its
-    // second, leaving the bytes it starts with above the fold.
+    // The field's first byte, always: a field spanning rows should show from
+    // its first, not whichever row is nearest.
     const row = rowForOffset(highlight[0], BYTES_PER_ROW)
-    const next = scrollTopToReveal(row, ROW_HEIGHT, el.scrollTop, el.clientHeight, topInset)
-    if (next !== el.scrollTop) {
-      el.scrollTop = next
-      setScrollTop(next)
-    }
-  }, [highlight, reveal, topInset])
+    const rowStart = VERTICAL_PADDING + row * ROW_HEIGHT
+    const rowEnd = rowStart + ROW_HEIGHT
+    const scrollOffset = rowVirtualizer.scrollOffset ?? 0
+    const viewportSize = rowVirtualizer.scrollRect?.height ?? 0
+    const alreadyVisible = rowStart >= scrollOffset && rowEnd <= scrollOffset + viewportSize
+    if (!alreadyVisible) rowVirtualizer.scrollToIndex(row, { align: 'start' })
+  }, [highlight, reveal, rowVirtualizer])
 
-  const { start, end } = visibleRowWindow(
-    rowCount,
-    scrollTop,
-    viewportHeight,
-    ROW_HEIGHT,
-    OVERSCAN_ROWS,
-    topInset,
-  )
+  const virtualRows = rowVirtualizer.getVirtualItems()
+  const start = virtualRows[0]?.index ?? 0
+  const end = virtualRows[virtualRows.length - 1]?.index ?? -1
 
   /**
    * The bytes for the mounted rows only, indexed from `windowStart`.
@@ -160,9 +135,6 @@ export function HexDump({ hex, highlight, onSelectByte, onHoverByte, reveal }: P
     return edge ? `${base} highlighted run-${edge}` : base
   }
 
-  const rows: number[] = []
-  for (let row = start; row <= end; row++) rows.push(row * BYTES_PER_ROW)
-
   return (
     <div className="hex-dump-frame">
       {/* Which column is which byte of the row, the header every GUI hex editor
@@ -186,15 +158,14 @@ export function HexDump({ hex, highlight, onSelectByte, onHoverByte, reveal }: P
     <div
       className="hex-dump"
       ref={scrollRef}
-      onScroll={(e) => {
-        setScrollTop(e.currentTarget.scrollTop)
-        setScrollLeft(e.currentTarget.scrollLeft)
-      }}
+      onScroll={(e) => setScrollLeft(e.currentTarget.scrollLeft)}
       onMouseLeave={() => onHoverByte(null)}
     >
-      <div className="hex-dump-sizer" style={{ height: rowCount * ROW_HEIGHT }}>
-        {rows.map((rowStart) => (
-          <div className="hex-row" key={rowStart} style={{ top: (rowStart / BYTES_PER_ROW) * ROW_HEIGHT }}>
+      <div className="hex-dump-sizer" style={{ height: rowVirtualizer.getTotalSize() }}>
+        {virtualRows.map((virtualRow) => {
+          const rowStart = virtualRow.index * BYTES_PER_ROW
+          return (
+          <div className="hex-row" key={virtualRow.key} style={{ top: virtualRow.start }}>
             <span className="hex-offset">{rowStart.toString(16).padStart(4, '0')}</span>
 
             <span className="hex-bytes">
@@ -247,7 +218,8 @@ export function HexDump({ hex, highlight, onSelectByte, onHoverByte, reveal }: P
               })}
             </span>
           </div>
-        ))}
+          )
+        })}
         </div>
       </div>
     </div>

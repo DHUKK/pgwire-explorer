@@ -1192,9 +1192,9 @@ kbd {
    position are ever mounted, the same idea as .hex-dump below. .packet-list-
    sizer is given the height the full list would occupy, so the scrollbar
    still represents every packet, and each mounted row is positioned
-   absolutely within it at its own precomputed offset. */
+   absolutely within it at its own offset. */
 .packet-list {
-  padding: 0.4rem;
+  padding: 0 0.4rem;
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
@@ -1222,41 +1222,13 @@ kbd {
   position: relative;
 }
 
-/* Positioned at its own precomputed top (see packetWindow.ts). No explicit
-   height: a row's real height comes from its content, exactly as it did
-   before virtualization, and PacketList measures that real height off-screen
-   (see RowProbe) rather than asserting one here that could drift from it. */
+/* Positioned at its own offset, computed by the virtualizer. No explicit
+   height: a row's real height comes from its content, and the virtualizer
+   measures each mounted row for real rather than asserting one here. */
 .packet-list-row {
   position: absolute;
   left: 0;
   width: 100%;
-}
-
-/* RowProbe's two rows: rendered in the real markup, each also carrying
-   `.packet-list-row` so they are positioned (and sized) exactly the way a
-   real row is, inside the same `.packet-list` scroll container real rows
-   render in. That match has to be exact on two axes, not just width: a
-   `position: absolute` row starts a new block formatting context, which
-   stops `.time-gap`'s own top margin from collapsing into it the way it
-   would in ordinary flow, so a row that is only in normal flow measures a
-   few pixels shorter than the real, absolutely positioned thing. `height: 0`
-   with `overflow: hidden` on `.packet-list-probe` is what keeps its children
-   from being seen or adding scroll height despite that: a zero-height box
-   clips its overflowing children from the page without stopping
-   `getBoundingClientRect()` from reporting their real, unclipped size, which
-   is the whole point of measuring them. This used to render with
-   `position: fixed` at a corner far outside the viewport instead, which
-   escaped the row list's own width along with its layout and drifted the
-   measured height of a gap row from its real one for the same underlying
-   reason: a shortcut that changes the very thing being measured. */
-.packet-list-probe {
-  height: 0;
-  overflow: hidden;
-  visibility: hidden;
-  pointer-events: none;
-  list-style: none;
-  margin: 0;
-  padding: 0;
 }
 
 .time-gap {
@@ -1810,7 +1782,7 @@ kbd {
   font-family: var(--mono);
   font-size: 0.78rem;
   line-height: 1.55;
-  padding: 0.5rem 0.6rem;
+  padding: 0 0.6rem;
   /* `auto` basis, not 0, so a short message shrink-wraps to its own rows rather
      than stretching to fill a frame that is itself content-sized. */
   flex: 1 1 auto;
