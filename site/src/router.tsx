@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import {
   Outlet,
   createHashHistory,
@@ -11,7 +12,7 @@ import { MessageIndex } from './components/MessageIndex'
 import { LandingScreen } from './screens/LandingScreen'
 import { CaptureError } from './lib/capture'
 import { loadLocalCapture, loadScenarioCapture } from './lib/loadCapture'
-import { NoticeBar, NoticeProvider } from './lib/notice'
+import { NoticeBar, NoticeProvider, useNotice } from './lib/notice'
 import type { LoadedCapture } from './types'
 
 /**
@@ -86,19 +87,23 @@ function CaptureScreen({ loaded }: { loaded: LoadedCapture }) {
 }
 
 /**
- * A load that failed. The landing page carrying the reason is the error screen,
- * so a reader ends up somewhere they can pick something else instead of at a
- * dead end. Anything the loader did not raise itself is still worth showing
- * plainly rather than as a blank page.
+ * A load that failed. Rather than an error page of its own, this sends the
+ * reader back to the landing page with the reason as a dismissible notice, so
+ * they end up somewhere they can pick something else instead of at a dead end.
+ * Anything the loader did not raise itself is still worth showing plainly
+ * rather than as a blank page.
  */
 function CaptureErrorScreen({ error }: { error: Error }) {
-  return (
-    <LandingScreen
-      initialError={
-        error instanceof CaptureError ? error : new CaptureError('Could not load that capture.')
-      }
-    />
-  )
+  const navigate = useNavigate()
+  const { setNotice } = useNotice()
+  const message = error instanceof CaptureError ? error.message : 'Could not load that capture.'
+
+  useEffect(() => {
+    setNotice(message)
+    void navigate({ to: '/' })
+  }, [message, navigate, setNotice])
+
+  return null
 }
 
 const localRoute = createRoute({

@@ -692,13 +692,14 @@ kbd {
   background: var(--error-soft);
 }
 
-/* ------------------------------------------------------------ save notice */
+/* ----------------------------------------------------------- notice bar */
 
-/* A brief, dismissible note when saving or reopening a saved capture failed.
+/* A brief, dismissible note for a failure: saving or reopening a saved
+   capture, an uploaded file that will not parse, a route that could not load.
    Rendered by App itself rather than by Landing or Explorer, so it can appear
-   over either screen regardless of which one is on display when the failure
-   happens. */
-.save-notice {
+   over any screen regardless of which one is on display when the failure
+   happens. Every note routed through here is a failure, hence the red. */
+.notice-bar {
   position: fixed;
   bottom: 1.25rem;
   right: 1.25rem;
@@ -706,16 +707,17 @@ kbd {
   display: flex;
   align-items: flex-start;
   gap: 0.6rem;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-strong);
+  background: var(--error-soft);
+  border: 1px solid var(--error);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 0.7rem 0.85rem;
   font-size: 0.85rem;
+  color: var(--text);
   z-index: 30;
 }
 
-.save-notice button {
+.notice-bar button {
   flex: none;
   background: none;
   border: none;
@@ -725,16 +727,7 @@ kbd {
   padding: 0;
 }
 
-.save-notice button:hover {
-  color: var(--text);
-}
-
-.alert {
-  background: var(--error-soft);
-  border: 1px solid var(--error);
-  border-radius: var(--radius);
-  padding: 0.85rem 1rem;
-  margin-top: 1rem;
+.notice-bar button:hover {
   color: var(--text);
 }
 

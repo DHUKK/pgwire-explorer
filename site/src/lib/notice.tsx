@@ -5,8 +5,8 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
  *
  * This lives above the routes rather than inside one, for two reasons. It has to
  * be able to appear whichever screen is on, and some of the notes are set by a
- * loader on the way to a screen that then never renders, so the state cannot
- * belong to any single route's component.
+ * route that failed to load, on its way back to the landing page, so the state
+ * cannot belong to any single route's component.
  */
 interface NoticeValue {
   notice: string | null
@@ -32,7 +32,7 @@ export function NoticeBar() {
   const { notice, setNotice } = useNotice()
   if (!notice) return null
   return (
-    <div className="save-notice" role="status">
+    <div className="notice-bar" role="alert">
       <span>{notice}</span>
       <button type="button" aria-label="Dismiss" onClick={() => setNotice(null)}>
         ×
