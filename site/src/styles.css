@@ -2363,8 +2363,12 @@ kbd {
 
   /* Square, now there is only a glyph in them. 2rem is the width .theme-toggle
      already sets for itself, and this selector outranks it, so stating the same
-     value is what makes all three buttons in the bar one size rather than two. */
-  .landing-links .ghost-button {
+     value is what makes every icon-only button in a top bar one size rather
+     than several. Covers the landing links, the back button wherever it sits
+     (landing bar, message index, explorer header), and the theme toggle. */
+  .landing-links .ghost-button,
+  .landing-bar-left .ghost-button,
+  .explorer-header .ghost-button {
     padding: 0.3rem;
     min-width: 2rem;
     justify-content: center;
