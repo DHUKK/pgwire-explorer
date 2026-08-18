@@ -240,6 +240,12 @@ body {
   height: 100%;
 }
 
+/* No box of its own, so it stays out of the height chain #root's children
+   rely on (.landing, .explorer). The accessibility landmark still holds. */
+main {
+  display: contents;
+}
+
 code,
 kbd,
 .mono {

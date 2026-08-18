@@ -50,7 +50,9 @@ import type { LoadedCapture } from './types'
 const rootRoute = createRootRoute({
   component: () => (
     <NoticeProvider>
-      <Outlet />
+      <main>
+        <Outlet />
+      </main>
       <NoticeBar />
     </NoticeProvider>
   ),
