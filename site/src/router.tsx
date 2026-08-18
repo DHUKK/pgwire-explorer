@@ -127,6 +127,8 @@ const routeTree = rootRoute.addChildren([indexRoute, messagesRoute, localRoute, 
 export const router = createRouter({
   routeTree,
   history: createHashHistory(),
+  scrollRestoration: ({ location }) => location.pathname === '/' || location.pathname === '/messages',
+  scrollRestorationBehavior: 'instant',
   // Nothing here is a distinct document to a crawler, and the shell renders
   // instantly, so there is no separate not-found screen: an unknown route is a
   // scenario id that does not exist, which the error screen already explains.
